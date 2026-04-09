@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { loginAction } from '@/actions/auth';
