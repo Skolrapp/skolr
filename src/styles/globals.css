@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --g:      #10B981;
+  --g-l:    #34d399;
+  --g-d:    #059669;
+  --g-bg:   rgba(16,185,129,0.10);
+  --g-border: rgba(16,185,129,0.22);
+  --ink-900: #0a0a0a;
+  --ink-800: #111111;
+  --ink-700: #171717;
+  --ink-600: #1a1a1a;
+  --ink-500: #222222;
+  --ink-400: #2a2a2a;
+  --ink-300: #333333;
+  --frost-100: #ffffff;
+  --frost-300: #e5e5e5;
+  --frost-400: #a3a3a3;
+  --frost-500: #737373;
+  --frost-600: #525252;
+}
+
+@layer base {
+  html  { -webkit-tap-highlight-color: transparent; background: #111111; color: #fff; }
+  body  { background: #111111; color: #fff; }
+  *     { -webkit-font-smoothing: antialiased; }
+  input, select, textarea { font-size: 16px; }
+  button, a, [role="button"] { min-height: 44px; min-width: 44px; }
+  ::-webkit-scrollbar       { width: 3px; height: 3px; }
+  ::-webkit-scrollbar-track { background: #1a1a1a; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #10B981; }
+}
+
+@layer components {
+
+  /* ── Buttons ── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold text-sm
+           active:scale-95 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed;
+    min-height: 44px;
+  }
+  .btn-primary {
+    @apply btn w-full px-5 py-3;
+    background: #10B981;
+    color: #000;
+  }
+  .btn-primary:hover:not(:disabled) { background: #34d399; }
+
+  .btn-secondary {
+    @apply btn w-full px-5 py-3;
+    background: transparent;
+    border: 1px solid #2a2a2a;
+    color: #fff;
+  }
+  .btn-secondary:hover { background: #1a1a1a; border-color: #333; }
+
+  .btn-ghost {
+    @apply btn px-4 py-2 text-sm font-medium;
+    color: #737373;
+    min-width: unset;
+  }
+  .btn-ghost:hover { background: #1a1a1a; color: #fff; }
+
+  .btn-danger {
+    @apply btn px-4 py-2 text-xs;
+    border: 1px solid #3f1212;
+    color: #ef4444;
+    min-width: unset;
+    min-height: unset;
+  }
+  .btn-danger:hover { background: #1c0e0e; }
+
+  /* ── Inputs ── */
+  .inp {
+    @apply w-full rounded-xl px-4 py-3 text-base placeholder-neutral-600 outline-none transition-all;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #fff;
+  }
+  .inp:focus   { border-color: #10B981; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+
+  .sel {
+    @apply w-full rounded-xl px-4 py-3 text-base outline-none transition-all;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #fff;
+  }
+  .sel:focus   { border-color: #10B981; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+  .sel option  { background: #1a1a1a; }
+
+  .phone-prefix {
+    @apply flex items-center px-3 rounded-xl text-sm font-mono whitespace-nowrap flex-shrink-0;
+    background: #222;
+    border: 1px solid #2a2a2a;
+    color: #737373;
+    min-height: 44px;
+  }
+
+  /* ── Cards ── */
+  .card          { @apply rounded-2xl p-4; background: #1a1a1a; border: 1px solid #222; }
+  .card-elevated { @apply rounded-2xl p-4; background: #222; border: 1px solid #2a2a2a; }
+  .card-glow     { @apply rounded-2xl p-4; background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.2); }
+
+  /* ── Badges ── */
+  .badge        { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+  .badge-green  { background: rgba(52,211,153,0.15);  color: #34d399; }
+  .badge-blue   { background: rgba(96,165,250,0.15);  color: #60a5fa; }
+  .badge-amber  { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+  .badge-purple { background: rgba(167,139,250,0.15); color: #a78bfa; }
+  .badge-pink   { background: rgba(244,114,182,0.15); color: #f472b6; }
+  .badge-gray   { background: #222; color: #737373; }
+  .badge-red    { background: rgba(239,68,68,0.15);   color: #f87171; }
+
+  /* ── Layout ── */
+  .page     { @apply max-w-2xl mx-auto px-4 py-6 pb-28; }
+  .sec-head { @apply text-sm font-bold text-white mb-3; }
+  .lbl      { @apply block text-xs font-medium mb-1.5; color: #a3a3a3; }
+
+  /* ── Skeleton ── */
+  .skel { @apply rounded-xl animate-pulse; background: #222; }
+}
+
+/* ── Bottom nav ── */
+.bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: #0a0a0a;
+  border-top: 1px solid #1f1f1f;
+}
+
+/* ── Offline ── */
+.offline-bar {
+  background: #f59e0b;
+  color: #000;
+  @apply text-xs font-semibold text-center py-2 px-4;
+}
+
+/* ── PWA banner ── */
+.pwa-bar {
+  background: #1a1a1a;
+  border-top: 1px solid #2a2a2a;
+  @apply px-4 py-3;
+  padding-bottom: env(safe-area-inset-bottom, 12px);
+}
+
+/* ── Tab bar ── */
+.tab-bar   { background: #1a1a1a; border: 1px solid #2a2a2a; @apply flex rounded-xl overflow-hidden; }
+.tab-item  { @apply flex-1 py-2.5 text-xs font-medium capitalize !min-h-0 !rounded-none transition-colors; color: #737373; }
+.tab-item.on { background: #10B981; color: #000; font-weight: 700; }
+
+/* ── Selector card ── */
+.sel-card     { @apply w-full flex items-center gap-3 p-3.5 rounded-xl text-left !min-h-0 !min-w-0 transition-all; background: #1a1a1a; border: 1px solid #2a2a2a; }
+.sel-card:hover { border-color: #333; }
+.sel-card.on  { border-width: 2px; border-color: #10B981; background: rgba(16,185,129,0.07); }
+
+/* ── Divider ── */
+.div  { height: 1px; background: #1f1f1f; }
+
+/* ── Progress bar ── */
+.prog-track { @apply h-1 rounded-full overflow-hidden; background: #222; }
+.prog-fill  { @apply h-full rounded-full transition-all; background: #10B981; }

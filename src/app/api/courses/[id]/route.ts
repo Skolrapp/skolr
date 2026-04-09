@@ -1,0 +1,48 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { validateSession } from '@/lib/auth';
+import { createSupabaseAdmin } from '@/lib/supabase/server';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const token = request.cookies.get('sk_token')?.value;
+  const session = token ? await validateSession(token) : null;
+  if (!session) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+
+  const { id } = await params;
+  const supabase = createSupabaseAdmin();
+
+  const { data: course, error } = await supabase
+    .from('courses')
+    .select('*, users!instructor_id(name)')
+    .eq('id', id)
+    .eq('is_published', true)
+    .single();
+
+  if (error || !course) return NextResponse.json({ success: false, error: 'Course not found.' }, { status: 404 });
+
+  // Get enrollment progress
+  const { data: enrollment } = await supabase
+    .from('enrollments')
+    .select('progress_seconds, completed')
+    .eq('user_id', session.user.id)
+    .eq('course_id', id)
+    .single();
+
+  // Increment view count
+  await supabase.from('courses').update({ view_count: (course.view_count || 0) + 1 }).eq('id', id);
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      course: {
+        ...course,
+        instructor_name: (course.users as { name: string } | null)?.name || 'Unknown',
+        users: undefined,
+      },
+      progress_seconds: enrollment?.progress_seconds ?? 0,
+      enrolled: !!enrollment,
+    },
+  });
+}
