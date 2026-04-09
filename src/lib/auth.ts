@@ -160,7 +160,7 @@ export async function getUserDevices(userId: string, currentFingerprint?: string
     .eq('user_id', userId)
     .order('last_active', { ascending: false });
 
-  return (data || []).map(d => ({ ...d, is_current: currentFingerprint ? d.fingerprint === currentFingerprint : false }));
+  return (data || []).map((d: Record<string, unknown> & { fingerprint: string }) => ({ ...d, is_current: currentFingerprint ? d.fingerprint === currentFingerprint : false }));
 }
 
 export async function removeDevice(userId: string, deviceId: string) {
