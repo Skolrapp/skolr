@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
@@ -183,4 +183,10 @@ function CoursesContent() {
     </div>
   );
 }
-export default function CoursesPage() { return <Suspense fallback={null}><CoursesContent /></Suspense>; }
+export default function CoursesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" style={{ background: '#111111' }}><div className="page pt-4"><div className="space-y-3">{[1,2,3,4].map(i=><div key={i} className="card flex gap-3"><div className="skel w-16 h-16 rounded-xl flex-shrink-0"/><div className="flex-1 space-y-2 py-1"><div className="skel h-3 w-4/5 rounded"/><div className="skel h-2.5 w-1/2 rounded"/></div></div>)}</div></div></div>}>
+      <CoursesContent />
+    </Suspense>
+  );
+}
