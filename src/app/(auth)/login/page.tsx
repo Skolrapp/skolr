@@ -36,7 +36,7 @@ export default function LoginPage() {
       if ('error' in result) {
         setError(result.code === 'DEVICE_LIMIT_EXCEEDED'
           ? 'Device limit reached (max 2). Remove a device in Account → Devices.'
-          : result.error);
+          : (result.error || 'Login failed. Please try again.'));
       } else if (result.success) {
         router.push(result.role === 'instructor' ? '/instructor' : '/dashboard');
       }
