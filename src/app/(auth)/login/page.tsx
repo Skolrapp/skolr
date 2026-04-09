@@ -6,7 +6,7 @@ import { loginAction } from '@/actions/auth';
 
 const G = '#10B981';
 
-export default function LoginPage() {
+function LoginContent() {
   const params    = useSearchParams();
   const router    = useRouter();
   const [pending, startTransition] = useTransition();
@@ -111,3 +111,4 @@ export default function LoginPage() {
     </div>
   );
 }
+export default function LoginPage() { return <Suspense fallback={null}><LoginContent /></Suspense>; }

@@ -11,7 +11,7 @@ import type { Course, EducationLevel } from '@/types';
 const G = '#10B981';
 function fmtDur(s: number) { if (!s) return ''; const m = Math.floor(s/60); return m < 60 ? `${m}m` : `${Math.floor(m/60)}h ${m%60}m`; }
 
-export default function CoursesPage() {
+function CoursesContent() {
   const { user }  = useAuth();
   const sp        = useSearchParams();
   const [level,   setLevel]   = useState<EducationLevel|''>((sp.get('level') as EducationLevel) || '');
@@ -183,3 +183,4 @@ export default function CoursesPage() {
     </div>
   );
 }
+export default function CoursesPage() { return <Suspense fallback={null}><CoursesContent /></Suspense>; }

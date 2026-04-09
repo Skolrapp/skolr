@@ -11,7 +11,7 @@ import type { Device, SubscriptionTier, PaymentProvider, BillingCycle } from '@/
 const G = '#10B981';
 type Tab = 'plans' | 'devices' | 'account';
 
-export default function SettingsPage() {
+function SettingsContent() {
   const sp = useSearchParams();
   const { user, logout, refetch } = useAuth();
   const [tab,      setTab]      = useState<Tab>((sp.get('tab') as Tab) || 'plans');
@@ -326,3 +326,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+export default function SettingsPage() { return <Suspense fallback={null}><SettingsContent /></Suspense>; }
