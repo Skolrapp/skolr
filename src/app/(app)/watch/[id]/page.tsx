@@ -155,8 +155,6 @@ function WatchContent() {
             {tab === 'reviews' && <Reviews courseId={id} userId={user?.id} />}
 
             {tab === 'qa' && (
-
-            {tab === 'qa' && (
               <div className="text-center py-12">
                 <p className="text-sm font-semibold mb-1" style={{ color: '#e5e5e5' }}>Q&A coming soon</p>
                 <p className="text-xs" style={{ color: '#525252' }}>Ask your instructor questions about this lesson</p>
