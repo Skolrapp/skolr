@@ -133,3 +133,15 @@ export interface ApiResponse<T = unknown> {
   error?: string;
   code?: string;
 }
+
+export interface Chapter {
+  id: string;
+  course_id: string;
+  title: string;
+  description?: string;
+  video_hls_url: string;
+  duration_seconds: number;
+  order_index: number;
+  is_published: boolean;
+  created_at: string;
+}
