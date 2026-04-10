@@ -152,7 +152,9 @@ function WatchContent() {
 
             {tab === 'quiz' && <AIQuiz course={{ ...course, title: currentTitle }} />}
 
-            {tab === 'reviews' {tab === 'qa' && ({tab === 'qa' && ( <Reviews courseId={id} userId={user?.id} />}
+            {tab === 'reviews' && <Reviews courseId={id} userId={user?.id} />}
+
+            {tab === 'qa' && (
 
             {tab === 'qa' && (
               <div className="text-center py-12">
