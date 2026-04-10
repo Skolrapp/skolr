@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import VideoPlayer from '@/components/player/VideoPlayer';
 import BottomNav from '@/components/layout/BottomNav';
 import AIQuiz from '@/components/ai/AIQuiz';
+import Reviews from '@/components/ui/Reviews';
 import { useAuth } from '@/hooks/useAuth';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
 import { LEVEL_COLORS } from '@/lib/constants';
@@ -115,7 +116,7 @@ function WatchContent() {
           </div>
 
           <div className="flex" style={{ borderBottom: '1px solid #1f1f1f' }}>
-            {['overview', 'quiz', 'qa', 'notes'].map(t => (
+            {['overview', 'quiz', 'reviews', 'qa', 'notes'].map(t => (
               <button key={t} onClick={() => setTab(t)} className="px-4 py-3 text-sm font-medium capitalize !min-h-0 !min-w-0 !rounded-none transition-colors"
                 style={tab === t ? { color: G, borderBottom: '2px solid ' + G } : { color: '#737373', borderBottom: '2px solid transparent' }}>
                 {t === 'qa' ? 'Q&A' : t === 'quiz' ? 'AI Quiz' : t}
@@ -150,6 +151,8 @@ function WatchContent() {
             )}
 
             {tab === 'quiz' && <AIQuiz course={{ ...course, title: currentTitle }} />}
+
+            {tab === 'reviews' {tab === 'qa' && ({tab === 'qa' && ( <Reviews courseId={id} userId={user?.id} />}
 
             {tab === 'qa' && (
               <div className="text-center py-12">
