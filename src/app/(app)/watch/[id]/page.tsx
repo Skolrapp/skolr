@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import VideoPlayer from '@/components/player/VideoPlayer';
 import BottomNav from '@/components/layout/BottomNav';
+import AIQuiz from '@/components/ai/AIQuiz';
 import { useAuth } from '@/hooks/useAuth';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
 import { LEVEL_COLORS } from '@/lib/constants';
@@ -147,6 +148,9 @@ export default function WatchPage() {
             </div>
           </div>
         )}
+
+        {/* AI Quiz */}
+        <AIQuiz course={course} />
       </div>
 
       <BottomNav role={user?.role} />
