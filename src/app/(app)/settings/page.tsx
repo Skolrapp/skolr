@@ -1,5 +1,5 @@
 'use client';
-import { useState, Suspense, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
@@ -11,7 +11,7 @@ import type { Device, SubscriptionTier, PaymentProvider, BillingCycle } from '@/
 const G = '#10B981';
 type Tab = 'plans' | 'devices' | 'account';
 
-function SettingsContent() {
+export default function SettingsPage() {
   const sp = useSearchParams();
   const { user, logout, refetch } = useAuth();
   const [tab,      setTab]      = useState<Tab>((sp.get('tab') as Tab) || 'plans');
@@ -324,13 +324,5 @@ function SettingsContent() {
       </div>
       <BottomNav role={user.role} />
     </div>
-  );
-}
-
-export default function SettingsPage() {
-  return (
-    <Suspense fallback={null}>
-      <SettingsContent />
-    </Suspense>
   );
 }
