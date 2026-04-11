@@ -7,3 +7,4 @@ export default async function RootPage() {
   if (user) redirect(user.role === 'instructor' ? '/instructor' : '/dashboard');
   return <LandingPage />;
 }
+}
