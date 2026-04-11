@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
+import TopHeader from '@/components/layout/TopHeader';
 import { EDUCATION_LEVELS, LEVEL_COLORS, SUBJECTS } from '@/lib/constants';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
 import type { Course, EducationLevel } from '@/types';
@@ -124,6 +125,7 @@ function CoursesContent() {
       </div>
 
       {/* Results */}
+      <TopHeader />
       <div className="page pt-4">
         <p className="text-xs mb-3" style={{ color: '#525252' }}>{loading ? 'Loading...' : `${total.toLocaleString()} course${total !== 1 ? 's' : ''}`}</p>
 

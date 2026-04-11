@@ -4,6 +4,7 @@ import { useState, Suspense, useEffect, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
+import TopHeader from '@/components/layout/TopHeader';
 import { SUBSCRIPTION_BUNDLES } from '@/lib/subscriptions';
 import { MOBILE_MONEY_PROVIDERS, BILLING_CYCLES } from '@/lib/constants';
 import { startFreeTrialAction } from '@/actions/trial';
@@ -80,6 +81,7 @@ function SettingsContent() {
 
   return (
     <div className="min-h-screen" style={{ background: '#111111' }}>
+      <TopHeader />
       <div className="page">
 
         <div className="flex items-center justify-between mb-5">

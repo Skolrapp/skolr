@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
+import TopHeader from '@/components/layout/TopHeader';
 import type { EarningsSummary, Transaction } from '@/types';
 
 const G = '#10B981';
@@ -28,6 +29,7 @@ export default function InstructorPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#111111' }}>
+      <TopHeader />
       <div className="page animate-fade-in">
 
         {/* Header */}

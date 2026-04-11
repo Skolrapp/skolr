@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
+import TopHeader from '@/components/layout/TopHeader';
 import { EDUCATION_LEVELS, LEVEL_COLORS } from '@/lib/constants';
 import { canAccessLevel, isSubscriptionActive, SUBSCRIPTION_BUNDLES } from '@/lib/subscriptions';
 import type { Course, EducationLevel } from '@/types';
@@ -37,6 +38,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#111111' }}>
+      <TopHeader />
       <div className="page animate-fade-in">
 
         {/* Header */}

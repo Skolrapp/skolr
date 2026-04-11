@@ -153,7 +153,7 @@ export default function LandingPage() {
                 </div>
                 <span style={{ fontWeight: 800, fontSize: 20 }}>Skolr</span>
               </div>
-              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, maxWidth: 240 }}>Your pace, your space. HD education for every level in Tanzania.</p>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, maxWidth: 240 }}>Your pace, your space.</p>
             </div>
             {[
               { title: 'Learn', links: [['Primary (Std 1-7)', '/courses'], ['Secondary (Form 1-4)', '/courses'], ['High School', '/courses'], ['Undergraduate', '/courses'], ['Masters', '/courses']] },
