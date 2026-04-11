@@ -59,7 +59,7 @@ function LoginContent() {
               </svg>
             </div>
             <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#fff' }}>Skolr</h1>
-            <p className="text-sm mt-1 font-medium" style={{ color: '#737373' }}>Your HD Classroom</p>
+            <p className="text-sm mt-1 font-medium" style={{ color: '#737373' }}>Your pace, your space</p>
           </div>
 
           {warn && (
