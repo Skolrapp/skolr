@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,7 +11,7 @@ import type { Course, EducationLevel } from '@/types';
 const G = '#10B981';
 function fmtDur(s: number) { if (!s) return ''; const m = Math.floor(s/60); return m < 60 ? `${m}m` : `${Math.floor(m/60)}h ${m%60}m`; }
 
-function CoursesContent() {
+export default function CoursesPage() {
   const { user }  = useAuth();
   const sp        = useSearchParams();
   const [level,   setLevel]   = useState<EducationLevel|''>((sp.get('level') as EducationLevel) || '');
@@ -181,12 +181,5 @@ function CoursesContent() {
       </div>
       <BottomNav role={user?.role} />
     </div>
-  );
-}
-export default function CoursesPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen" style={{ background: '#111111' }}><div className="page pt-4"><div className="space-y-3">{[1,2,3,4].map(i=><div key={i} className="card flex gap-3"><div className="skel w-16 h-16 rounded-xl flex-shrink-0"/><div className="flex-1 space-y-2 py-1"><div className="skel h-3 w-4/5 rounded"/><div className="skel h-2.5 w-1/2 rounded"/></div></div>)}</div></div></div>}>
-      <CoursesContent />
-    </Suspense>
   );
 }
