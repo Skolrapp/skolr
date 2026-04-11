@@ -5,7 +5,7 @@ import '@/styles/globals.css';
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export const metadata: Metadata = {
-  title: 'Skolr — Your pace, your space',
+  title: 'Skolr — Your HD Classroom',
   description: "Tanzania's premier HD education platform. Stream lessons, track progress, learn anywhere.",
   applicationName: 'Skolr',
   manifest: '/manifest.json',

@@ -1,12 +1,12 @@
 'use client';
-import { useState, useEffect, useTransition, Suspense } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { loginAction } from '@/actions/auth';
 
 const G = '#10B981';
 
-function LoginContent() {
+export default function LoginPage() {
   const params    = useSearchParams();
   const router    = useRouter();
   const [pending, startTransition] = useTransition();
@@ -36,7 +36,7 @@ function LoginContent() {
       if ('error' in result) {
         setError(result.code === 'DEVICE_LIMIT_EXCEEDED'
           ? 'Device limit reached (max 2). Remove a device in Account → Devices.'
-          : (result.error || 'Login failed. Please try again.'));
+          : result.error);
       } else if (result.success) {
         router.push(result.role === 'instructor' ? '/instructor' : '/dashboard');
       }
@@ -59,7 +59,7 @@ function LoginContent() {
               </svg>
             </div>
             <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#fff' }}>Skolr</h1>
-            <p className="text-sm mt-1 font-medium" style={{ color: '#737373' }}>Your pace, your space</p>
+            <p className="text-sm mt-1 font-medium" style={{ color: '#737373' }}>Your HD Classroom</p>
           </div>
 
           {warn && (
@@ -111,4 +111,3 @@ function LoginContent() {
     </div>
   );
 }
-export default function LoginPage() { return <Suspense fallback={null}><LoginContent /></Suspense>; }
