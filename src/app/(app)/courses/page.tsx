@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, Suspense, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,7 +11,7 @@ import type { Course, EducationLevel } from '@/types';
 const G = '#10B981';
 function fmtDur(s: number) { if (!s) return ''; const m = Math.floor(s/60); return m < 60 ? `${m}m` : `${Math.floor(m/60)}h ${m%60}m`; }
 
-export default function CoursesPage() {
+function CoursesContent() {
   const { user }  = useAuth();
   const sp        = useSearchParams();
   const [level,   setLevel]   = useState<EducationLevel|''>((sp.get('level') as EducationLevel) || '');
@@ -181,5 +181,13 @@ export default function CoursesPage() {
       </div>
       <BottomNav role={user?.role} />
     </div>
+  );
+}
+
+export default function CoursesPage() {
+  return (
+    <Suspense fallback={null}>
+      <CoursesContent />
+    </Suspense>
   );
 }
