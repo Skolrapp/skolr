@@ -5,7 +5,7 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'skolr-dev-secret-CHANGE-IN-PRODUCTION-32chars!!'
 );
 
-const PUBLIC = ['/login', '/register', '/api/auth/', '/manifest.json', '/favicon.ico'];
+const PUBLIC = ['/', '/landing', '/login', '/register', '/api/auth/', '/manifest.json', '/favicon.ico'];
 
 async function verifyJWT(token: string) {
   try {
