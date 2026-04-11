@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import VideoPlayer from '@/components/player/VideoPlayer';
 import BottomNav from '@/components/layout/BottomNav';
-import AIQuiz from '@/components/ai/AIQuiz';
+import ZealQuiz from '@/components/ai/ZealQuiz';
 import Reviews from '@/components/ui/Reviews';
 import { useAuth } from '@/hooks/useAuth';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
@@ -119,7 +119,7 @@ function WatchContent() {
             {['overview', 'quiz', 'reviews', 'qa', 'notes'].map(t => (
               <button key={t} onClick={() => setTab(t)} className="px-4 py-3 text-sm font-medium capitalize !min-h-0 !min-w-0 !rounded-none transition-colors"
                 style={tab === t ? { color: G, borderBottom: '2px solid ' + G } : { color: '#737373', borderBottom: '2px solid transparent' }}>
-                {t === 'qa' ? 'Q&A' : t === 'quiz' ? 'AI Quiz' : t}
+                {t === 'qa' ? 'Q&A' : t === 'quiz' ? 'Quiz' : t}
               </button>
             ))}
           </div>
@@ -150,7 +150,7 @@ function WatchContent() {
               </div>
             )}
 
-            {tab === 'quiz' && <AIQuiz course={{ ...course, title: currentTitle }} />}
+            {tab === 'quiz' && <ZealQuiz course={{ ...course, title: currentTitle }} />}
 
             {tab === 'reviews' && <Reviews courseId={id} userId={user?.id} />}
 
