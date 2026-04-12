@@ -2,172 +2,168 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import BottomNav from '@/components/layout/BottomNav';
+import Footer from '@/components/layout/Footer';
 import TopHeader from '@/components/layout/TopHeader';
-import { EDUCATION_LEVELS, LEVEL_COLORS } from '@/lib/constants';
-import { canAccessLevel, isSubscriptionActive, SUBSCRIPTION_BUNDLES } from '@/lib/subscriptions';
-import type { Course, EducationLevel } from '@/types';
+import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
+import type { Course } from '@/types';
 
 const G = '#10B981';
 
-function fmtDur(s: number) { if (!s) return ''; const m = Math.floor(s/60); return m < 60 ? `${m}m` : `${Math.floor(m/60)}h ${m%60}m`; }
+const LEVELS = [
+  { id: 'primary',       label: 'Primary',       sub: 'Standard 1-7',   color: '#3b82f6', bg: '#eff6ff', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
+  { id: 'secondary',     label: 'Secondary',     sub: 'Form 1-4',        color: '#8b5cf6', bg: '#f5f3ff', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z' },
+  { id: 'highschool',    label: 'High School',   sub: 'Form 5-6',        color: '#f59e0b', bg: '#fffbeb', icon: 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z' },
+  { id: 'undergraduate', label: 'Undergraduate', sub: 'Year 1-3',        color: '#10b981', bg: '#ecfdf5', icon: 'M12 14l9-5-9-5-9 5 9 5z' },
+  { id: 'masters',       label: 'Masters',       sub: 'Postgraduate',    color: '#ef4444', bg: '#fef2f2', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
+];
 
-export default function DashboardPage() {
-  const { user, logout, loading } = useAuth();
-  const [courses, setCourses]     = useState<Course[]>([]);
-  const [counts,  setCounts]      = useState<Partial<Record<EducationLevel, number>>>({});
-  const [fetching,setFetching]    = useState(true);
+function Thumb({ color, bg, title }: { color: string; bg: string; title: string }) {
+  return (
+    <div style={{ width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg,' + bg + ',' + color + '22)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: -15, right: -15, width: 80, height: 80, borderRadius: '50%', background: color + '18' }} />
+      <div style={{ width: 40, height: 40, borderRadius: 10, background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+        <span style={{ color: '#fff', fontSize: 16, fontWeight: 800 }}>{title.charAt(0)}</span>
+      </div>
+    </div>
+  );
+}
+
+export default function HomePage() {
+  const { user } = useAuth();
+  const [courses,  setCourses]  = useState<Course[]>([]);
+  const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
     if (!user) return;
     fetch('/api/courses?per_page=6', { credentials: 'include' })
       .then(r => r.json())
-      .then(d => { if (d.success) { setCourses(d.data.items); setCounts(d.data.category_counts || {}); } })
+      .then(d => { if (d.success) setCourses(d.data.items); })
       .finally(() => setFetching(false));
   }, [user]);
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#111111' }}>
-      <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: '#2a2a2a', borderTopColor: G }} />
-    </div>
-  );
   if (!user) return null;
 
-  const subActive = isSubscriptionActive(user.subscription_expires_at);
-  const bundle    = SUBSCRIPTION_BUNDLES.find(b => b.id === user.subscription_tier);
+  const isActive  = isSubscriptionActive(user.subscription_expires_at);
+  const firstName = user.name?.split(' ')[0] || 'there';
 
   return (
-    <div className="min-h-screen" style={{ background: '#111111' }}>
+    <div style={{ background: '#fff', minHeight: '100vh', fontFamily: "'Inter',-apple-system,sans-serif", color: '#0a0a0a' }}>
       <TopHeader />
-      <div className="page animate-fade-in">
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
-              style={{ background: 'rgba(16,185,129,0.15)', color: G }}>
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <p className="text-xs" style={{ color: '#737373' }}>Welcome back</p>
-              <p className="text-sm font-bold" style={{ color: '#fff' }}>{user.name.split(' ')[0]}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {subActive && bundle ? (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.2)' }}>
-                <div className="w-1.5 h-1.5 rounded-full" style={{ background: G }} />
-                <span className="text-xs font-semibold" style={{ color: G }}>{bundle.name}</span>
-              </div>
-            ) : (
-              <Link href="/settings" className="badge badge-amber text-xs !min-h-0 !min-w-0">Free</Link>
-            )}
-            <button className="btn-ghost text-xs !min-w-0 px-2" onClick={logout}>Sign out</button>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="card">
-            <p className="text-xs mb-1" style={{ color: '#737373' }}>Courses available</p>
-            <p className="text-2xl font-bold" style={{ color: G }}>{Object.values(counts).reduce((a,b)=>a+(b||0),0) || '—'}</p>
-          </div>
-          <div className="card">
-            <p className="text-xs mb-1" style={{ color: '#737373' }}>My access</p>
-            <p className="text-sm font-bold" style={{ color: '#fff' }}>{bundle?.name || 'Free plan'}</p>
-            <p className="text-xs mt-0.5" style={{ color: subActive ? G : '#ef4444' }}>
-              {subActive ? 'Active' : user.subscription_tier === 'free' ? 'Upgrade to unlock' : 'Expired'}
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 60%,#0d2818 100%)', padding: '32px 24px' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>Welcome back,</p>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fff', marginBottom: 6 }}>{firstName}</h1>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>
+              {isActive ? 'Your subscription is active — keep learning!' : 'Start your free trial to access all courses.'}
             </p>
           </div>
-        </div>
-
-        {/* Level cards */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="sec-head mb-0">Browse by level</h2>
+          <div style={{ display: 'flex', gap: 24 }}>
+            {([['Plan', user.subscription_tier?.replace(/_/g, ' ') || 'Free', '#fff'], ['Access', isActive ? 'Active' : 'None', isActive ? G : '#ef4444']] as [string,string,string][]).map(([label, value, color]) => (
+              <div key={label} style={{ textAlign: 'center' }}>
+                <p style={{ fontSize: 14, fontWeight: 800, color }}>{value}</p>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{label}</p>
+              </div>
+            ))}
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            {EDUCATION_LEVELS.map(level => {
-              const col     = LEVEL_COLORS[level.key];
-              const hasAccess = subActive && canAccessLevel(user.subscription_tier, level.key);
-              const count   = counts[level.key] || 0;
+          {!isActive && (
+            <Link href="/settings" style={{ padding: '10px 20px', fontSize: 13, fontWeight: 700, color: '#0a0a0a', background: '#fff', borderRadius: 8, textDecoration: 'none' }}>
+              Start free trial
+            </Link>
+          )}
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px' }}>
+
+        <div style={{ marginBottom: 48 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 20 }}>
+            <div>
+              <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Browse by level</h2>
+              <p style={{ fontSize: 14, color: '#6b7280' }}>Choose your education level to find the right courses</p>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 14 }}>
+            {LEVELS.map(level => {
+              const hasAccess = isActive && canAccessLevel(user.subscription_tier, level.id as any);
               return (
-                <Link key={level.key} href={hasAccess ? `/courses?level=${level.key}` : '/settings'}
-                  className={`card flex flex-col gap-2 transition-transform active:scale-95 no-underline relative overflow-hidden ${!hasAccess ? 'opacity-60' : ''}`}>
-                  {!hasAccess && (
-                    <div className="absolute top-2 right-2">
-                      <svg className="w-3.5 h-3.5" style={{ color: '#525252' }} viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 1C8.676 1 6 3.676 6 7v1H4v15h16V8h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v1H8V7c0-2.276 1.724-4 4-4zm0 9c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/>
-                      </svg>
-                    </div>
-                  )}
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: col.bg, color: col.color }}>
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-                    </svg>
+                <Link key={level.id} href={'/courses?level=' + level.id}
+                  style={{ display: 'block', padding: '20px 16px', background: level.bg, borderRadius: 12, textDecoration: 'none', border: '1px solid ' + level.color + '22', position: 'relative' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 10, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={level.color} strokeWidth="1.8"><path d={level.icon}/></svg>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold" style={{ color: '#fff' }}>{level.label}</p>
-                    <p className="text-xs mt-0.5" style={{ color: '#737373' }}>{level.description}</p>
-                    {count > 0 && <p className="text-xs font-semibold mt-1" style={{ color: col.color }}>{count} courses</p>}
-                  </div>
+                  <p style={{ fontSize: 14, fontWeight: 800, color: '#0a0a0a', marginBottom: 3 }}>{level.label}</p>
+                  <p style={{ fontSize: 12, color: '#6b7280' }}>{level.sub}</p>
+                  {hasAccess && <div style={{ position: 'absolute', top: 10, right: 10, width: 8, height: 8, borderRadius: '50%', background: G }} />}
                 </Link>
               );
             })}
           </div>
         </div>
 
-        {/* Recent courses */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="sec-head mb-0">Recently added</h2>
-            <Link href="/courses" className="text-xs font-semibold !min-h-0 !min-w-0 inline-flex" style={{ color: G }}>See all</Link>
+        <div style={{ marginBottom: 48 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 20 }}>
+            <div>
+              <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Recommended for you</h2>
+              <p style={{ fontSize: 14, color: '#6b7280' }}>Courses matched to your level</p>
+            </div>
+            <Link href="/courses" style={{ fontSize: 13, fontWeight: 600, color: G, textDecoration: 'none' }}>View all</Link>
           </div>
           {fetching ? (
-            <div className="space-y-2">{[1,2,3].map(i=><div key={i} className="card flex gap-3"><div className="skel w-12 h-12 rounded-xl flex-shrink-0"/><div className="flex-1 space-y-2 py-1"><div className="skel h-3 w-3/4 rounded"/><div className="skel h-2.5 w-1/2 rounded"/></div></div>)}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
+              {[1,2,3].map(i => (
+                <div key={i} style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+                  <div style={{ height: 160, background: '#f3f4f6' }} />
+                  <div style={{ padding: 14 }}>
+                    <div style={{ height: 14, background: '#f3f4f6', borderRadius: 4, marginBottom: 8 }} />
+                    <div style={{ height: 10, background: '#f3f4f6', borderRadius: 4, width: '60%' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : courses.length === 0 ? (
-            <div className="card text-center py-6"><p className="text-sm" style={{ color: '#525252' }}>No courses yet.</p></div>
+            <div style={{ textAlign: 'center', padding: '40px', background: '#f9fafb', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+              <p style={{ fontSize: 14, color: '#6b7280' }}>No courses yet. Check back soon.</p>
+            </div>
           ) : (
-            <div className="space-y-2">
-              {courses.map(c => {
-                const col = LEVEL_COLORS[c.category];
-                return (
-                  <Link key={c.id} href={`/watch/${c.id}`}
-                    className="card flex gap-3 items-center no-underline active:scale-[0.98] transition-transform">
-                    <div className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden" style={{ background: col.bg }}>
-                      {c.thumbnail_url
-                        ? <img src={c.thumbnail_url} alt="" className="w-full h-full object-cover rounded-xl" />
-                        : <svg className="w-5 h-5" style={{ color: col.color }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
+              {courses.map(c => (
+                <Link key={c.id} href={'/watch/' + c.id}
+                  style={{ textDecoration: 'none', color: 'inherit', display: 'block', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden' }}>
+                  <Thumb color="#3b82f6" bg="#eff6ff" title={c.title} />
+                  <div style={{ padding: '14px 16px' }}>
+                    <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#eff6ff', color: '#3b82f6' }}>{c.category}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#f3f4f6', color: '#6b7280' }}>{c.subject}</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate" style={{ color: '#fff' }}>{c.title}</p>
-                      <p className="text-xs mt-0.5" style={{ color: '#737373' }}>{c.subject} {c.sub_category ? `· ${c.sub_category}` : ''} {c.duration_seconds > 0 ? `· ${fmtDur(c.duration_seconds)}` : ''}</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4, marginBottom: 6 }}>{c.title}</p>
+                    <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 10 }}>{c.instructor_name}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 12, color: '#f59e0b' }}>★★★★★</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: G }}>
+                        {canAccessLevel(user.subscription_tier, c.category) && isActive ? 'Watch now' : 'Free trial'}
+                      </span>
                     </div>
-                    <svg className="w-4 h-4 flex-shrink-0" style={{ color: '#2a2a2a' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
-                  </Link>
-                );
-              })}
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
         </div>
 
-        {/* Upgrade CTA if on free */}
-        {user.subscription_tier === 'free' && (
-          <div className="card-glow animate-slide-up">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.2)' }}>
-                <svg className="w-3.5 h-3.5" style={{ color: G }} viewBox="0 0 24 24" fill="currentColor"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-              </div>
-              <p className="text-sm font-bold" style={{ color: G }}>Unlock HD Learning</p>
+        {!isActive && (
+          <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a1a2e)', borderRadius: 16, padding: '28px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 48 }}>
+            <div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 4 }}>Unlock all courses</h3>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>Start your 7-day free trial — no payment needed.</p>
             </div>
-            <p className="text-xs mb-4" style={{ color: '#a3a3a3' }}>
-              Choose a plan that matches your level. Pay with M-Pesa, Tigo Pesa, or Airtel Money.
-            </p>
-            <Link href="/settings" className="btn-primary text-sm py-2.5">View subscription plans</Link>
+            <Link href="/settings" style={{ padding: '10px 22px', fontSize: 13, fontWeight: 700, color: '#0a0a0a', background: '#fff', borderRadius: 8, textDecoration: 'none' }}>Start free trial</Link>
           </div>
         )}
       </div>
-      <BottomNav role={user.role} />
+
+      <Footer />
     </div>
   );
 }
