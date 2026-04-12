@@ -61,7 +61,7 @@ function CoursesContent(){
   const currentLevel=LEVELS.find(l=>l.id===level)||LEVELS[0];
   const isActive=isSubscriptionActive(user?.subscription_expires_at);
   const totalPages=Math.ceil(total/PER);
-  const homeHref=user?.role==='instructor'?'/instructor':'/dashboard';
+  const homeHref=user?(user.role==='instructor'?'/instructor':'/dashboard'):'/';
 
   if(!user)return null;
 
@@ -86,7 +86,7 @@ function CoursesContent(){
             Home
           </Link>
           <div style={{width:32,height:32,borderRadius:'50%',background:'rgba(16,185,129,0.12)',border:'2px solid #e5e7eb',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-            <span style={{fontSize:12,fontWeight:700,color:G}}>{user.name?.charAt(0).toUpperCase()}</span>
+            <span style={{fontSize:12,fontWeight:700,color:G}}>{user?.name?.charAt(0).toUpperCase()}</span>
           </div>
         </div>
       </header>
@@ -169,7 +169,7 @@ function CoursesContent(){
             <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20}}>
               {courses.map(c=>{
                 const lvl=LEVELS.find(l=>l.id===c.category)||LEVELS[1];
-                const access=isActive&&canAccessLevel(user.subscription_tier,c.category);
+                const access=isActive&&canAccessLevel(user?.subscription_tier,c.category);
                 return(
                   <Link key={c.id} href={'/watch/'+c.id}
                     style={{textDecoration:'none',color:'inherit',display:'block',background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,overflow:'hidden',transition:'transform 0.2s,box-shadow 0.2s'}}
@@ -185,7 +185,7 @@ function CoursesContent(){
                       <p style={{fontSize:11,color:'#9ca3af',marginBottom:10}}>{c.instructor_name}</p>
                       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                         <span style={{fontSize:11,color:'#f59e0b'}}>★★★★★</span>
-                        <span style={{fontSize:11,fontWeight:700,color:access?'#0a0a0a':G}}>{access?'Watch now':'Free trial'}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:access?'#0a0a0a':G}}>{!user?'Sign up to watch':access?'Watch now':'Free trial'}</span>
                       </div>
                     </div>
                   </Link>

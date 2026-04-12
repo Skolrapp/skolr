@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateSession } from '@/lib/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
-  const token = request.cookies.get('sk_token')?.value;
-  if (!token || !(await validateSession(token))) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  // Public — no auth required
 
   const { searchParams } = new URL(request.url);
   const level   = searchParams.get('level');
