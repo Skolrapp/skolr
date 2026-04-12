@@ -4,193 +4,227 @@ import { useState, Suspense, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import BottomNav from '@/components/layout/BottomNav';
-import TopHeader from '@/components/layout/TopHeader';
-import { EDUCATION_LEVELS, LEVEL_COLORS, SUBJECTS } from '@/lib/constants';
+import Footer from '@/components/layout/Footer';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
 import type { Course, EducationLevel } from '@/types';
 
 const G = '#10B981';
-function fmtDur(s: number) { if (!s) return ''; const m = Math.floor(s/60); return m < 60 ? `${m}m` : `${Math.floor(m/60)}h ${m%60}m`; }
+const LEVELS = [
+  { id: '',              label: 'All Levels',    color: '#6b7280', bg: '#f9fafb' },
+  { id: 'primary',       label: 'Primary',       color: '#3b82f6', bg: '#eff6ff', sub: 'Std 1-7' },
+  { id: 'secondary',     label: 'Secondary',     color: '#8b5cf6', bg: '#f5f3ff', sub: 'Form 1-4' },
+  { id: 'highschool',    label: 'High School',   color: '#f59e0b', bg: '#fffbeb', sub: 'Form 5-6' },
+  { id: 'undergraduate', label: 'Undergraduate', color: '#10b981', bg: '#ecfdf5', sub: 'Year 1-3' },
+  { id: 'masters',       label: 'Masters',       color: '#ef4444', bg: '#fef2f2', sub: 'Postgraduate' },
+];
+const SUBJECTS = ['Mathematics','Physics','Chemistry','Biology','Geography','History','Kiswahili','English','Commerce','ICT'];
+const SORT_OPTIONS = [{id:'popular',label:'Most popular'},{id:'newest',label:'Newest first'},{id:'rating',label:'Highest rated'}];
 
-function CoursesContent() {
-  const { user }  = useAuth();
-  const sp        = useSearchParams();
-  const [level,   setLevel]   = useState<EducationLevel|''>((sp.get('level') as EducationLevel) || '');
-  const [sub,     setSub]     = useState('');
-  const [subject, setSubject] = useState('');
-  const [search,  setSearch]  = useState('');
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [total,   setTotal]   = useState(0);
-  const [page,    setPage]    = useState(1);
-  const [hasMore, setHasMore] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [showF,   setShowF]   = useState(false);
+function Thumb({color,bg,title}:{color:string;bg:string;title:string}){
+  return(
+    <div style={{width:'100%',aspectRatio:'16/9',background:'linear-gradient(135deg,'+bg+','+color+'22)',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden'}}>
+      <div style={{position:'absolute',top:-12,right:-12,width:70,height:70,borderRadius:'50%',background:color+'18'}}/>
+      <div style={{width:38,height:38,borderRadius:9,background:color,display:'flex',alignItems:'center',justifyContent:'center',zIndex:1}}>
+        <span style={{color:'#fff',fontSize:15,fontWeight:800}}>{title.charAt(0)}</span>
+      </div>
+    </div>
+  );
+}
 
-  const selLevel = EDUCATION_LEVELS.find(l => l.key === level);
-  const selCol   = level ? LEVEL_COLORS[level] : null;
-  const subActive = isSubscriptionActive(user?.subscription_expires_at);
+function CoursesContent(){
+  const {user}=useAuth();
+  const sp=useSearchParams();
+  const [level,setLevel]=useState<EducationLevel|''>((sp.get('level') as EducationLevel)||'');
+  const [subject,setSubject]=useState(sp.get('subject')||'');
+  const [sort,setSort]=useState('popular');
+  const [courses,setCourses]=useState<Course[]>([]);
+  const [total,setTotal]=useState(0);
+  const [page,setPage]=useState(1);
+  const [fetching,setFetching]=useState(true);
+  const PER=9;
 
-  const fetch_ = useCallback(async (reset = false) => {
-    setLoading(true);
-    const p = new URLSearchParams({ page: String(reset ? 1 : page), per_page: '15' });
-    if (level)   p.set('level',   level);
-    if (sub)     p.set('sub',     sub);
-    if (subject) p.set('subject', subject);
-    if (search)  p.set('q',       search);
-    const res  = await fetch(`/api/courses?${p}`, { credentials: 'include' });
-    const data = await res.json();
-    if (data.success) {
-      setCourses(prev => reset ? data.data.items : [...prev, ...data.data.items]);
-      setTotal(data.data.total);
-      setHasMore(data.data.has_more);
-      if (reset) setPage(1);
-    }
-    setLoading(false);
-  }, [level, sub, subject, search, page]);
+  const fetchCourses=useCallback(()=>{
+    setFetching(true);
+    const params=new URLSearchParams();
+    if(level)params.set('level',level);
+    if(subject)params.set('subject',subject);
+    params.set('per_page',String(PER));
+    params.set('page',String(page));
+    fetch('/api/courses?'+params.toString(),{credentials:'include'})
+      .then(r=>r.json())
+      .then(d=>{if(d.success){setCourses(d.data.items);setTotal(d.data.total||d.data.items.length);}})
+      .finally(()=>setFetching(false));
+  },[level,subject,page]);
 
-  useEffect(() => { fetch_(true); }, [level, sub, subject]); // eslint-disable-line
-  useEffect(() => { const t = setTimeout(() => fetch_(true), 350); return () => clearTimeout(t); }, [search]); // eslint-disable-line
+  useEffect(()=>{fetchCourses();},[fetchCourses]);
 
-  return (
-    <div className="min-h-screen" style={{ background: '#111111' }}>
-      {/* Sticky search/filter header */}
-      <div className="sticky top-0 z-30" style={{ background: '#111111', borderBottom: '1px solid #1a1a1a' }}>
-        <div className="max-w-2xl mx-auto px-4 py-3 space-y-2">
-          <div className="relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: '#525252' }}
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input className="inp pl-9 pr-10 py-2.5 text-sm" placeholder="Search Skolr courses..."
-              value={search} onChange={e => setSearch(e.target.value)} />
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 !min-h-0 !min-w-0 p-1" onClick={() => setShowF(f => !f)}>
-              <svg className="w-5 h-5" style={{ color: showF ? G : '#525252' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
-              </svg>
-            </button>
+  const currentLevel=LEVELS.find(l=>l.id===level)||LEVELS[0];
+  const isActive=isSubscriptionActive(user?.subscription_expires_at);
+  const totalPages=Math.ceil(total/PER);
+  const homeHref=user?.role==='instructor'?'/instructor':'/dashboard';
+
+  if(!user)return null;
+
+  return(
+    <div style={{background:'#fff',minHeight:'100vh',fontFamily:"'Inter',-apple-system,sans-serif",color:'#0a0a0a'}}>
+
+      <header style={{background:'#fff',borderBottom:'1px solid #e5e7eb',position:'sticky',top:0,zIndex:50}}>
+        <div style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',gap:16,height:60,padding:'0 24px'}}>
+          <Link href={homeHref} style={{display:'flex',alignItems:'center',gap:8,textDecoration:'none',flexShrink:0}}>
+            <div style={{width:30,height:30,background:G,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <span style={{fontWeight:800,fontSize:18,color:'#0a0a0a'}}>Skolr</span>
+          </Link>
+          <div style={{flex:1,maxWidth:400,display:'flex',alignItems:'center',gap:8,background:'#f9fafb',border:'1.5px solid #e5e7eb',borderRadius:999,padding:'7px 14px'}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Search courses, subjects..." style={{background:'none',border:'none',outline:'none',fontSize:13,color:'#0a0a0a',width:'100%',fontFamily:'inherit'}}/>
           </div>
-
-          {/* Level pills */}
-          <div className="flex gap-2 overflow-x-auto pb-0.5">
-            <button onClick={() => { setLevel(''); setSub(''); }}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold !min-h-0 !min-w-0"
-              style={level === '' ? { background: G, color: '#000', border: 'none' } : { background: '#1a1a1a', color: '#525252', border: '1px solid #2a2a2a' }}>
-              All
-            </button>
-            {EDUCATION_LEVELS.map(l => (
-              <button key={l.key} onClick={() => { setLevel(l.key); setSub(''); }}
-                className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold !min-h-0 !min-w-0"
-                style={level === l.key
-                  ? { background: LEVEL_COLORS[l.key].color, color: '#000', border: 'none' }
-                  : { background: '#1a1a1a', color: '#525252', border: '1px solid #2a2a2a' }}>
-                {l.label.split(' ')[0]}
-              </button>
-            ))}
+          <div style={{flex:1}}/>
+          <Link href={homeHref} style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',fontSize:13,fontWeight:600,color:'#6b7280',textDecoration:'none',borderRadius:8,border:'1px solid #e5e7eb',flexShrink:0}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Home
+          </Link>
+          <div style={{width:32,height:32,borderRadius:'50%',background:'rgba(16,185,129,0.12)',border:'2px solid #e5e7eb',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <span style={{fontSize:12,fontWeight:700,color:G}}>{user.name?.charAt(0).toUpperCase()}</span>
           </div>
+        </div>
+      </header>
 
-          {/* Sub-category pills */}
-          {selLevel && selLevel.sub_categories.length > 0 && selCol && (
-            <div className="flex gap-2 overflow-x-auto pb-0.5">
-              <button onClick={() => setSub('')}
-                className="flex-shrink-0 px-3 py-1 rounded-full text-xs font-semibold !min-h-0 !min-w-0"
-                style={sub === '' ? { background: selCol.color, color: '#000', border: 'none' } : { background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#737373' }}>
-                All
-              </button>
-              {selLevel.sub_categories.map(s => (
-                <button key={s} onClick={() => setSub(s)}
-                  className="flex-shrink-0 px-3 py-1 rounded-full text-xs font-semibold !min-h-0 !min-w-0"
-                  style={sub === s ? { background: selCol.color, color: '#000', border: 'none' } : { background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#737373' }}>
-                  {s}
+      <div style={{background:level?'linear-gradient(135deg,'+(currentLevel as any).color+'dd,'+(currentLevel as any).color+'aa)':'linear-gradient(135deg,#0a0a0a,#1a1a2e)',padding:'28px 24px'}}>
+        <div style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:16}}>
+          <div>
+            <h1 style={{fontSize:24,fontWeight:800,color:'#fff',marginBottom:6}}>{currentLevel.label==='All Levels'?'All Courses':currentLevel.label+' Courses'}</h1>
+            <p style={{fontSize:14,color:'rgba(255,255,255,0.65)',marginBottom:12}}>{(currentLevel as any).sub||'Browse all education levels'} · {total} courses</p>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+              {LEVELS.slice(1).map(l=>(
+                <button key={l.id} onClick={()=>{setLevel(l.id as EducationLevel);setPage(1);}}
+                  style={{padding:'4px 12px',fontSize:11,fontWeight:600,borderRadius:999,border:'none',background:level===l.id?'#fff':'rgba(255,255,255,0.18)',color:level===l.id?'#0a0a0a':'#fff',cursor:'pointer'}}>
+                  {l.label}
                 </button>
               ))}
             </div>
-          )}
-
-          {showF && (
-            <div className="pt-1 space-y-2" style={{ borderTop: '1px solid #1a1a1a' }}>
-              <select className="sel text-sm py-2" value={subject} onChange={e => setSubject(e.target.value)}>
-                <option value="">All subjects</option>
-                {SUBJECTS.map(s => <option key={s}>{s}</option>)}
-              </select>
-              {(level || sub || subject || search) && (
-                <button className="text-xs font-semibold !min-h-0 !min-w-0 px-0" style={{ color: '#ef4444' }}
-                  onClick={() => { setLevel(''); setSub(''); setSubject(''); setSearch(''); }}>
-                  Clear all filters
-                </button>
-              )}
-            </div>
-          )}
+          </div>
+          <div style={{display:'flex',gap:20}}>
+            {[['Courses',String(total)],['Subjects','12'],['Students','8.4K']].map(([lbl,val])=>(
+              <div key={lbl} style={{textAlign:'center'}}>
+                <p style={{fontSize:20,fontWeight:800,color:'#fff'}}>{val}</p>
+                <p style={{fontSize:11,color:'rgba(255,255,255,0.5)',marginTop:2}}>{lbl}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Results */}
-      <TopHeader />
-      <div className="page pt-4">
-        <p className="text-xs mb-3" style={{ color: '#525252' }}>{loading ? 'Loading...' : `${total.toLocaleString()} course${total !== 1 ? 's' : ''}`}</p>
-
-        {loading && courses.length === 0 ? (
-          <div className="space-y-3">{[1,2,3,4].map(i=><div key={i} className="card flex gap-3"><div className="skel w-16 h-16 rounded-xl flex-shrink-0"/><div className="flex-1 space-y-2 py-1"><div className="skel h-3 w-4/5 rounded"/><div className="skel h-2.5 w-1/2 rounded"/></div></div>)}</div>
-        ) : courses.length === 0 ? (
-          <div className="flex flex-col items-center py-16 text-center">
-            <p className="text-sm font-semibold mb-1" style={{ color: '#e5e5e5' }}>No courses found</p>
-            <p className="text-xs" style={{ color: '#525252' }}>Try different filters</p>
+      <div style={{maxWidth:1280,margin:'0 auto',display:'flex',gap:0,padding:'0 24px',alignItems:'flex-start'}}>
+        <aside style={{width:220,flexShrink:0,paddingTop:24,paddingRight:24,borderRight:'1px solid #e5e7eb',minHeight:600}}>
+          <div style={{marginBottom:24}}>
+            <p style={{fontSize:11,fontWeight:700,color:'#9ca3af',textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Subject</p>
+            <button onClick={()=>setSubject('')} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'6px 8px',borderRadius:7,border:'none',background:!subject?'#ecfdf5':'transparent',color:!subject?'#059669':'#6b7280',fontSize:12,fontWeight:!subject?700:400,cursor:'pointer',textAlign:'left',marginBottom:2}}>
+              <div style={{width:7,height:7,borderRadius:2,background:!subject?G:'#e5e7eb',flexShrink:0}}/>All subjects
+            </button>
+            {SUBJECTS.map(s=>(
+              <button key={s} onClick={()=>setSubject(subject===s?'':s)} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'6px 8px',borderRadius:7,border:'none',background:subject===s?'#ecfdf5':'transparent',color:subject===s?'#059669':'#6b7280',fontSize:12,fontWeight:subject===s?700:400,cursor:'pointer',textAlign:'left',marginBottom:2}}>
+                <div style={{width:7,height:7,borderRadius:2,background:subject===s?G:'#e5e7eb',flexShrink:0}}/>{s}
+              </button>
+            ))}
           </div>
-        ) : (
-          <>
-            <div className="space-y-3">
-              {courses.map(c => {
-                const col       = LEVEL_COLORS[c.category];
-                const hasAccess = subActive && user && canAccessLevel(user.subscription_tier, c.category);
-                return (
-                  <Link key={c.id} href={hasAccess ? `/watch/${c.id}` : '/settings'}
-                    className="card flex gap-3 items-start no-underline active:scale-[0.98] transition-transform relative overflow-hidden">
-                    {!hasAccess && (
-                      <div className="absolute inset-0 rounded-2xl flex items-center justify-end pr-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
-                          <svg className="w-3 h-3" style={{ color: '#fbbf24' }} viewBox="0 0 24 24" fill="currentColor"><path d="M12 1C8.676 1 6 3.676 6 7v1H4v15h16V8h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v1H8V7c0-2.276 1.724-4 4-4zm0 9c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/></svg>
-                          <span className="text-xs font-semibold" style={{ color: '#fbbf24' }}>Upgrade</span>
-                        </div>
+          <div>
+            <p style={{fontSize:11,fontWeight:700,color:'#9ca3af',textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Sort by</p>
+            {SORT_OPTIONS.map(o=>(
+              <button key={o.id} onClick={()=>setSort(o.id)} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'6px 8px',borderRadius:7,border:'none',background:sort===o.id?'#ecfdf5':'transparent',color:sort===o.id?'#059669':'#6b7280',fontSize:12,fontWeight:sort===o.id?700:400,cursor:'pointer',textAlign:'left',marginBottom:2}}>
+                <div style={{width:7,height:7,borderRadius:2,background:sort===o.id?G:'#e5e7eb',flexShrink:0}}/>{o.label}
+              </button>
+            ))}
+          </div>
+        </aside>
+
+        <div style={{flex:1,paddingTop:24,paddingLeft:24,minWidth:0}}>
+          <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:4,marginBottom:16,scrollbarWidth:'none'}}>
+            {LEVELS.map(l=>(
+              <button key={l.id} onClick={()=>{setLevel(l.id as EducationLevel);setPage(1);}}
+                style={{padding:'6px 14px',fontSize:11,fontWeight:600,borderRadius:999,border:'1.5px solid '+(level===l.id?'#0a0a0a':'#e5e7eb'),background:level===l.id?'#0a0a0a':'#fff',color:level===l.id?'#fff':'#6b7280',cursor:'pointer',whiteSpace:'nowrap',flexShrink:0}}>
+                {l.label}
+              </button>
+            ))}
+          </div>
+          <p style={{fontSize:13,color:'#9ca3af',marginBottom:16}}>{fetching?'Loading...':total+' courses'+(subject?' in '+subject:'')+(level?' · '+currentLevel.label:'')}</p>
+
+          {fetching?(
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20}}>
+              {[1,2,3,4,5,6].map(i=>(
+                <div key={i} style={{borderRadius:12,overflow:'hidden',border:'1px solid #e5e7eb'}}>
+                  <div style={{height:150,background:'#f3f4f6'}}/>
+                  <div style={{padding:14}}><div style={{height:12,background:'#f3f4f6',borderRadius:4,marginBottom:8}}/><div style={{height:10,background:'#f3f4f6',borderRadius:4,width:'60%'}}/></div>
+                </div>
+              ))}
+            </div>
+          ):courses.length===0?(
+            <div style={{textAlign:'center',padding:'60px 24px',background:'#f9fafb',borderRadius:12,border:'1px solid #e5e7eb'}}>
+              <p style={{fontSize:16,fontWeight:700,marginBottom:8}}>No courses found</p>
+              <p style={{fontSize:14,color:'#6b7280',marginBottom:16}}>Try a different level or subject.</p>
+              <button onClick={()=>{setLevel('');setSubject('');}} style={{padding:'10px 20px',fontSize:13,fontWeight:700,color:'#fff',background:G,border:'none',borderRadius:8,cursor:'pointer'}}>Clear filters</button>
+            </div>
+          ):(
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20}}>
+              {courses.map(c=>{
+                const lvl=LEVELS.find(l=>l.id===c.category)||LEVELS[1];
+                const access=isActive&&canAccessLevel(user.subscription_tier,c.category);
+                return(
+                  <Link key={c.id} href={'/watch/'+c.id}
+                    style={{textDecoration:'none',color:'inherit',display:'block',background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,overflow:'hidden',transition:'transform 0.2s,box-shadow 0.2s'}}
+                    onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.08)';}}
+                    onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='none';}}>
+                    <Thumb color={(lvl as any).color||'#3b82f6'} bg={(lvl as any).bg||'#eff6ff'} title={c.title}/>
+                    <div style={{padding:'12px 14px'}}>
+                      <div style={{display:'flex',gap:5,marginBottom:7}}>
+                        <span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:4,background:(lvl as any).bg||'#eff6ff',color:(lvl as any).color||'#3b82f6'}}>{c.sub_category||c.category}</span>
+                        <span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:4,background:'#f3f4f6',color:'#6b7280'}}>{c.subject}</span>
                       </div>
-                    )}
-                    <div className="w-16 h-16 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden" style={{ background: col.bg }}>
-                      {c.thumbnail_url
-                        ? <img src={c.thumbnail_url} alt="" className="w-full h-full object-cover rounded-xl" />
-                        : <svg className="w-7 h-7" style={{ color: col.color }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold leading-snug line-clamp-2" style={{ color: '#fff' }}>{c.title}</p>
-                      <p className="text-xs mt-1 truncate" style={{ color: '#737373' }}>{c.instructor_name}</p>
-                      <div className="flex flex-wrap gap-1.5 mt-1.5">
-                        <span className="badge text-xs" style={{ background: col.bg, color: col.color }}>{c.sub_category || c.category}</span>
-                        <span className="badge badge-gray text-xs">{c.subject}</span>
-                        {c.duration_seconds > 0 && <span className="badge badge-gray text-xs">{fmtDur(c.duration_seconds)}</span>}
+                      <p style={{fontSize:13,fontWeight:700,lineHeight:1.4,marginBottom:5,color:'#0a0a0a'}}>{c.title}</p>
+                      <p style={{fontSize:11,color:'#9ca3af',marginBottom:10}}>{c.instructor_name}</p>
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                        <span style={{fontSize:11,color:'#f59e0b'}}>★★★★★</span>
+                        <span style={{fontSize:11,fontWeight:700,color:access?'#0a0a0a':G}}>{access?'Watch now':'Free trial'}</span>
                       </div>
                     </div>
                   </Link>
                 );
               })}
             </div>
-            {hasMore && (
-              <div className="text-center mt-6">
-                <button className="btn-secondary text-sm py-2.5 w-auto px-8"
-                  onClick={() => { setPage(p => p+1); fetch_(false); }} disabled={loading}>
-                  {loading ? 'Loading...' : 'Load more'}
+          )}
+
+          {totalPages>1&&(
+            <div style={{display:'flex',justifyContent:'center',gap:6,marginTop:32,marginBottom:16}}>
+              <button onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={page===1}
+                style={{padding:'7px 14px',fontSize:12,fontWeight:600,borderRadius:7,border:'1px solid #e5e7eb',background:'#fff',color:page===1?'#d1d5db':'#374151',cursor:page===1?'default':'pointer'}}>
+                Prev
+              </button>
+              {Array.from({length:Math.min(5,totalPages)},(_,i)=>i+1).map(p=>(
+                <button key={p} onClick={()=>setPage(p)}
+                  style={{width:32,height:32,borderRadius:7,border:'1px solid '+(page===p?'#0a0a0a':'#e5e7eb'),background:page===p?'#0a0a0a':'#fff',color:page===p?'#fff':'#374151',fontSize:12,fontWeight:600,cursor:'pointer'}}>
+                  {p}
                 </button>
-              </div>
-            )}
-          </>
-        )}
+              ))}
+              <button onClick={()=>setPage(p=>Math.min(totalPages,p+1))} disabled={page===totalPages}
+                style={{padding:'7px 14px',fontSize:12,fontWeight:600,borderRadius:7,border:'1px solid #e5e7eb',background:'#fff',color:page===totalPages?'#d1d5db':'#374151',cursor:page===totalPages?'default':'pointer'}}>
+                Next
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-      <BottomNav role={user?.role} />
+
+      <Footer/>
+      <style>{'@media(max-width:768px){aside{display:none!important;}}@media(max-width:640px){div[style*="repeat(3,1fr)"]{grid-template-columns:repeat(1,1fr)!important;}}@media(min-width:641px) and (max-width:900px){div[style*="repeat(3,1fr)"]{grid-template-columns:repeat(2,1fr)!important;}}'}</style>
     </div>
   );
 }
 
-export default function CoursesPage() {
-  return (
+export default function CoursesPage(){
+  return(
     <Suspense fallback={null}>
-      <CoursesContent />
+      <CoursesContent/>
     </Suspense>
   );
 }
