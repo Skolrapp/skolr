@@ -17,10 +17,17 @@ export async function GET(
     .from('courses')
     .select('*, users!instructor_id(name)')
     .eq('id', id)
-    .eq('is_published', true)
     .single();
 
   if (error || !course) return NextResponse.json({ success: false, error: 'Course not found.' }, { status: 404 });
+
+  const canViewDraft =
+    session.user.role === 'admin' ||
+    course.instructor_id === session.user.id;
+
+  if (!course.is_published && !canViewDraft) {
+    return NextResponse.json({ success: false, error: 'Course not found.' }, { status: 404 });
+  }
 
   // Get enrollment progress
   const { data: enrollment } = await supabase
@@ -31,7 +38,9 @@ export async function GET(
     .single();
 
   // Increment view count
-  await supabase.from('courses').update({ view_count: (course.view_count || 0) + 1 }).eq('id', id);
+  if (course.is_published) {
+    await supabase.from('courses').update({ view_count: (course.view_count || 0) + 1 }).eq('id', id);
+  }
 
   return NextResponse.json({
     success: true,

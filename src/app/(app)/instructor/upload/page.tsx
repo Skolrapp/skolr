@@ -2,11 +2,11 @@
 
 import { ChangeEvent, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import * as tus from 'tus-js-client';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
 import { EDUCATION_LEVELS, SUBJECTS } from '@/lib/constants';
 import { uploadCourseAction } from '@/actions/courses';
+import { uploadVideoToBunny } from '@/lib/bunny/client';
 import type { EducationLevel } from '@/types';
 
 const G = '#10B981';
@@ -18,16 +18,6 @@ const LEVEL_COLORS_DARK: Record<EducationLevel, { color: string; bg: string }> =
   masters: { color: '#f472b6', bg: 'rgba(244,114,182,0.1)' },
 };
 
-type BunnyUploadConfig = {
-  videoId: string;
-  libraryId: string;
-  expirationTime: number;
-  signature: string;
-  uploadEndpoint: string;
-  hlsUrl: string;
-  embedUrl: string;
-};
-
 type UploadedVideo = {
   videoId: string;
   hlsUrl: string;
@@ -35,14 +25,6 @@ type UploadedVideo = {
   durationSeconds: number;
   fileName: string;
 };
-
-function formatUploadProgress(bytesUploaded: number, bytesTotal: number) {
-  if (!bytesTotal) return 'Preparing upload...';
-  const percent = Math.round((bytesUploaded / bytesTotal) * 100);
-  const uploadedMb = (bytesUploaded / 1024 / 1024).toFixed(1);
-  const totalMb = (bytesTotal / 1024 / 1024).toFixed(1);
-  return `${percent}% uploaded (${uploadedMb} MB / ${totalMb} MB)`;
-}
 
 export default function UploadPage() {
   const router = useRouter();
@@ -52,7 +34,7 @@ export default function UploadPage() {
   const [category, setCategory] = useState<EducationLevel | ''>('');
   const [subCat, setSubCat] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [success, setSuccess] = useState<{ title: string } | null>(null);
+  const [success, setSuccess] = useState<{ title: string; courseId: string } | null>(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
   const [uploadedVideo, setUploadedVideo] = useState<UploadedVideo | null>(null);
@@ -65,81 +47,16 @@ export default function UploadPage() {
 
   const uploadToBunny = async (file: File) => {
     setUploadingVideo(true);
-    setUploadProgress('Preparing Bunny upload...');
     setVideoMetaError(null);
     setUploadedVideo(null);
 
     try {
-      const createRes = await fetch('/api/instructor/bunny-upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          title: file.name.replace(/\.[^.]+$/, ''),
-        }),
-      });
-
-      const createJson = await createRes.json();
-      if (!createRes.ok || !createJson.success) {
-        throw new Error(createJson.error || 'Failed to prepare Bunny upload.');
-      }
-
-      const config = createJson.data as BunnyUploadConfig;
-
-      await new Promise<void>((resolve, reject) => {
-        const upload = new tus.Upload(file, {
-          endpoint: config.uploadEndpoint,
-          retryDelays: [0, 3000, 5000, 10000, 20000],
-          chunkSize: 5 * 1024 * 1024,
-          uploadDataDuringCreation: true,
-          removeFingerprintOnSuccess: true,
-          metadata: {
-            filename: file.name,
-            filetype: file.type || 'video/mp4',
-            title: file.name.replace(/\.[^.]+$/, ''),
-          },
-          headers: {
-            AuthorizationSignature: config.signature,
-            AuthorizationExpire: String(config.expirationTime),
-            VideoId: config.videoId,
-            LibraryId: config.libraryId,
-          },
-          onError: (error) => reject(error),
-          onProgress: (bytesUploaded, bytesTotal) => {
-            setUploadProgress(formatUploadProgress(bytesUploaded, bytesTotal));
-          },
-          onSuccess: () => resolve(),
-        });
-
-        upload.findPreviousUploads().then((previousUploads) => {
-          if (previousUploads.length > 0) {
-            upload.resumeFromPreviousUpload(previousUploads[0]);
-          }
-          upload.start();
-        }).catch(reject);
-      });
-
-      const durationSeconds = await new Promise<number>((resolve) => {
-        const media = document.createElement('video');
-        const objectUrl = URL.createObjectURL(file);
-        media.preload = 'metadata';
-        media.onloadedmetadata = () => resolve(Math.round(media.duration || 0));
-        media.onerror = () => resolve(0);
-        media.onloadeddata = () => URL.revokeObjectURL(objectUrl);
-        media.src = objectUrl;
-      });
-
-      setUploadedVideo({
-        videoId: config.videoId,
-        hlsUrl: config.hlsUrl,
-        embedUrl: config.embedUrl,
-        durationSeconds,
-        fileName: file.name,
-      });
-      if (!durationSeconds || Number.isNaN(durationSeconds)) {
+      const uploaded = await uploadVideoToBunny(file, setUploadProgress);
+      setUploadedVideo(uploaded);
+      if (!uploaded.durationSeconds || Number.isNaN(uploaded.durationSeconds)) {
         setDurationSeconds('');
       } else {
-        setDurationSeconds(String(durationSeconds));
+        setDurationSeconds(String(uploaded.durationSeconds));
       }
       setUploadProgress('Upload complete. Bunny is processing the stream.');
     } catch (error) {
@@ -197,7 +114,7 @@ export default function UploadPage() {
       if (result?.error) {
         setErrors({ title: result.error });
       } else if (result?.success) {
-        setSuccess({ title: result.title! });
+        setSuccess({ title: result.title!, courseId: result.courseId! });
         setUploadedVideo(null);
         setUploadProgress('');
         setDurationSeconds('');
@@ -229,6 +146,12 @@ export default function UploadPage() {
             <p className="text-xs mb-5" style={{ color: '#737373' }}>"{success.title}" saved as draft.</p>
             <div className="flex gap-2 justify-center">
               <button className="btn-primary w-auto px-5 text-sm py-2.5" onClick={() => setSuccess(null)}>Upload another</button>
+              <button
+                className="btn-secondary w-auto px-5 text-sm py-2.5"
+                onClick={() => router.push(`/instructor/courses/${success.courseId}/chapters`)}
+              >
+                Add chapters
+              </button>
               <button className="btn-secondary w-auto px-5 text-sm py-2.5" onClick={() => router.push('/instructor')}>Dashboard</button>
             </div>
           </div>
