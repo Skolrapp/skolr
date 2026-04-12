@@ -31,6 +31,16 @@ const COURSES = [
   { title: 'English Literature', instructor: 'Dr. James Kiromo',  level: 'Form 2',   subject: 'English',     rating: 4.7, students: 432,  color: '#6366f1', bg: '#eef2ff' },
 ];
 
+function getCourseLevel(level: string): string {
+  const l = level.toLowerCase();
+  if (l.includes('std') || l.includes('standard')) return 'primary';
+  if (l.includes('5-6') || l.includes('form 5') || l.includes('form 6')) return 'highschool';
+  if (l.includes('form')) return 'secondary';
+  if (l.includes('year') || l.includes('bsc')) return 'undergraduate';
+  if (l.includes('masters') || l.includes('postgrad')) return 'masters';
+  return 'secondary';
+}
+
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
@@ -46,9 +56,9 @@ export default function LandingPage() {
             <span style={{ fontWeight: 800, fontSize: 20, color: '#0a0a0a' }}>Skolr</span>
           </Link>
           <nav className="desktop-only" style={{ display: 'flex', gap: 4, flex: 1 }}>
-            {[['Browse', '/courses'], ['Teach', '/instructor'], ['Pricing', '/settings']].map(([l, h]) => (
-              <Link key={l} href={h} style={{ padding: '7px 12px', fontSize: 14, fontWeight: 500, color: '#6b7280', textDecoration: 'none', borderRadius: 6 }}>{l}</Link>
-            ))}
+            <Link href="/courses" style={{ padding: '7px 12px', fontSize: 14, fontWeight: 500, color: '#6b7280', textDecoration: 'none', borderRadius: 6 }}>Browse</Link>
+            <Link href="/instructor" style={{ padding: '7px 12px', fontSize: 14, fontWeight: 500, color: '#6b7280', textDecoration: 'none', borderRadius: 6 }}>Teach</Link>
+            <Link href="/settings" style={{ padding: '7px 12px', fontSize: 14, fontWeight: 500, color: '#6b7280', textDecoration: 'none', borderRadius: 6 }}>Pricing</Link>
           </nav>
           <div className="sk-header-search desktop-only">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f9fafb', border: '1.5px solid #e5e7eb', borderRadius: 999, padding: '7px 14px' }}>
@@ -66,14 +76,12 @@ export default function LandingPage() {
             </svg>
           </button>
         </div>
-        {/* Mobile search */}
         <div className="sk-mobile-search">
           <div className="sk-mobile-search-inner">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" placeholder="Search courses..." />
           </div>
         </div>
-        {/* Mobile drawer */}
         {menuOpen && (
           <div className="sk-drawer open">
             <div className="sk-drawer-overlay" onClick={() => setMenuOpen(false)} />
@@ -86,9 +94,12 @@ export default function LandingPage() {
                   <span style={{ fontWeight: 800, fontSize: 18, color: '#0a0a0a' }}>Skolr</span>
                 </div>
               </div>
-              {[['Browse Courses', '/courses'], ['Teach on Skolr', '/instructor'], ['Pricing', '/settings']].map(([l, h]) => (
-                <Link key={l} href={h} className="sk-drawer-item" onClick={() => setMenuOpen(false)}>{l}</Link>
-              ))}
+              <Link href="/courses" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Browse Courses</Link>
+              <Link href="/courses?level=primary" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Primary (Std 1-7)</Link>
+              <Link href="/courses?level=secondary" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Secondary (Form 1-4)</Link>
+              <Link href="/courses?level=highschool" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>High School (Form 5-6)</Link>
+              <Link href="/instructor" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Teach on Skolr</Link>
+              <Link href="/settings" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Pricing</Link>
               <div style={{ margin: '12px 20px', borderTop: '1px solid #f3f4f6', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <Link href="/login" style={{ display: 'block', padding: '11px', fontSize: 14, fontWeight: 600, color: '#0a0a0a', textDecoration: 'none', border: '1.5px solid #e5e7eb', borderRadius: 8, textAlign: 'center' }}>Log in</Link>
                 <Link href="/register" style={{ display: 'block', padding: '11px', fontSize: 14, fontWeight: 700, color: '#fff', background: G, textDecoration: 'none', borderRadius: 8, textAlign: 'center' }}>Get started free</Link>
@@ -100,22 +111,14 @@ export default function LandingPage() {
 
       {/* HERO */}
       <section style={{ position: 'relative', minHeight: 520, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-        {/* Banner background — replace backgroundImage URL with a real photo when ready */}
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 0,
-          backgroundImage: 'url(/banner.jpg)',
-          backgroundSize: 'cover', backgroundPosition: 'center',
-          backgroundColor: '#0a0a0a',
-        }} />
-        {/* Dark overlay for text readability */}
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(135deg, rgba(10,10,10,0.88) 0%, rgba(26,26,46,0.82) 50%, rgba(13,40,24,0.88) 100%)' }} />
-        {/* SVG abstract shapes as placeholder art */}
-        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, opacity: 0.15 }} viewBox="0 0 1280 520" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="900" cy="100" r="300" fill="#10B981" />
-          <circle cx="1100" cy="400" r="200" fill="#3b82f6" />
-          <circle cx="800" cy="350" r="150" fill="#8b5cf6" />
-          <rect x="600" y="50" width="200" height="200" rx="40" fill="#f59e0b" transform="rotate(20 700 150)" />
-          <circle cx="1050" cy="150" r="80" fill="#10B981" />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, backgroundImage: 'url(/banner.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#0a0a0a' }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(135deg,rgba(10,10,10,0.88) 0%,rgba(26,26,46,0.82) 50%,rgba(13,40,24,0.88) 100%)' }} />
+        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, opacity: 0.12 }} viewBox="0 0 1280 520" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="900" cy="100" r="300" fill="#10B981"/>
+          <circle cx="1100" cy="400" r="200" fill="#3b82f6"/>
+          <circle cx="800" cy="350" r="150" fill="#8b5cf6"/>
+          <rect x="600" y="50" width="200" height="200" rx="40" fill="#f59e0b" transform="rotate(20 700 150)"/>
+          <circle cx="1050" cy="150" r="80" fill="#10B981"/>
         </svg>
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 24px', width: '100%', position: 'relative', zIndex: 2 }}>
           <div className="sk-hero-grid">
@@ -135,22 +138,22 @@ export default function LandingPage() {
                 <Link href="/courses" className="sk-hero-btn" style={{ padding: '13px 28px', fontSize: 15, fontWeight: 700, color: '#fff', border: '2px solid rgba(255,255,255,0.25)', borderRadius: 10, textDecoration: 'none' }}>Browse courses</Link>
               </div>
               <div className="sk-banner-stats" style={{ display: 'flex', gap: 28 }}>
-                {[['10K+', 'Students'], ['500+', 'Lessons'], ['50+', 'Instructors']].map(([n, l]) => (
+                {[['10K+','Students'],['500+','Lessons'],['50+','Instructors']].map(([n,l]) => (
                   <div key={l}><p style={{ fontSize: 22, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{n}</p><p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 3 }}>{l}</p></div>
                 ))}
               </div>
             </div>
             <div className="sk-hero-right" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {COURSES.slice(0, 4).map((c, i) => (
+              {COURSES.slice(0,4).map((hc,i) => (
                 <div key={i} style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.09)' }}>
-                  <div style={{ height: 72, background: 'linear-gradient(135deg,' + c.bg + '20,' + c.color + '30)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: 30, height: 30, borderRadius: 7, background: c.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ color: '#fff', fontSize: 13, fontWeight: 800 }}>{c.subject.charAt(0)}</span>
+                  <div style={{ height: 72, background: 'linear-gradient(135deg,'+hc.bg+'20,'+hc.color+'30)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 30, height: 30, borderRadius: 7, background: hc.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ color: '#fff', fontSize: 13, fontWeight: 800 }}>{hc.subject.charAt(0)}</span>
                     </div>
                   </div>
                   <div style={{ padding: '8px 10px' }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: '#fff', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</p>
-                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.instructor}</p>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: '#fff', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hc.title}</p>
+                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hc.instructor}</p>
                   </div>
                 </div>
               ))}
@@ -163,7 +166,7 @@ export default function LandingPage() {
       <div style={{ borderBottom: '1px solid #f3f4f6', padding: '14px 24px' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <p style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500 }}>Aligned to:</p>
-          {['NECTA', 'PSLE', 'CSEE', 'ACSEE', 'HESLB'].map(b => (
+          {['NECTA','PSLE','CSEE','ACSEE','HESLB'].map(b => (
             <span key={b} style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', padding: '3px 10px', border: '1px solid #e5e7eb', borderRadius: 5 }}>{b}</span>
           ))}
         </div>
@@ -177,8 +180,7 @@ export default function LandingPage() {
         </div>
         <div className="sk-cat-grid">
           {CATEGORIES.map(cat => (
-            <Link key={cat.label} href={'/courses?subject=' + cat.label}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: cat.bg, borderRadius: 10, textDecoration: 'none', border: '1px solid ' + cat.color + '22' }}>
+            <Link key={cat.label} href={'/courses?subject='+cat.label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: cat.bg, borderRadius: 10, textDecoration: 'none', border: '1px solid '+cat.color+'22' }}>
               <div style={{ width: 36, height: 36, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={cat.color} strokeWidth="1.8"><path d={cat.icon}/></svg>
               </div>
@@ -196,25 +198,25 @@ export default function LandingPage() {
             <Link href="/courses" className="sk-section-link">View all</Link>
           </div>
           <div className="sk-course-grid">
-            {COURSES.map((c, i) => (
-              <Link key={i} href="/courses" className="sk-course-card">
-                <div className="sk-course-thumb" style={{ width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg,' + c.bg + ',' + c.color + '22)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
-                  <div style={{ position: 'absolute', top: -10, right: -10, width: 70, height: 70, borderRadius: '50%', background: c.color + '18' }} />
-                  <div style={{ width: 40, height: 40, borderRadius: 10, background: c.color, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
-                    <span style={{ color: '#fff', fontSize: 16, fontWeight: 800 }}>{c.subject.charAt(0)}</span>
+            {COURSES.map((course,i) => (
+              <Link key={i} href={'/courses?level='+getCourseLevel(course.level)} className="sk-course-card">
+                <div className="sk-course-thumb" style={{ width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg,'+course.bg+','+course.color+'22)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+                  <div style={{ position: 'absolute', top: -10, right: -10, width: 70, height: 70, borderRadius: '50%', background: course.color+'18' }} />
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: course.color, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                    <span style={{ color: '#fff', fontSize: 16, fontWeight: 800 }}>{course.subject.charAt(0)}</span>
                   </div>
                 </div>
                 <div className="sk-course-body" style={{ padding: '12px 14px' }}>
                   <div style={{ display: 'flex', gap: 5, marginBottom: 7, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: c.color + '15', color: c.color }}>{c.level}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#f3f4f6', color: '#6b7280' }}>{c.subject}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: course.color+'15', color: course.color }}>{course.level}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#f3f4f6', color: '#6b7280' }}>{course.subject}</span>
                   </div>
-                  <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4, marginBottom: 5, color: '#0a0a0a' }}>{c.title}</p>
-                  <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 8 }}>{c.instructor}</p>
+                  <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4, marginBottom: 5, color: '#0a0a0a' }}>{course.title}</p>
+                  <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 8 }}>{course.instructor}</p>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                      <span style={{ color: '#f59e0b', fontSize: 11 }}>{'★'.repeat(Math.floor(c.rating))}</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: '#92400e' }}>{c.rating}</span>
+                      <span style={{ color: '#f59e0b', fontSize: 11 }}>{'★'.repeat(Math.floor(course.rating))}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#92400e' }}>{course.rating}</span>
                     </div>
                     <span style={{ fontSize: 12, fontWeight: 700, color: G }}>Free trial</span>
                   </div>
@@ -233,7 +235,7 @@ export default function LandingPage() {
         <div className="sk-instructor-grid">
           {INSTRUCTORS.map(inst => (
             <div key={inst.name} style={{ background: '#fff', borderRadius: 14, padding: 20, border: '1px solid #e5e7eb', textAlign: 'center' }}>
-              <div style={{ width: 64, height: 64, borderRadius: '50%', background: inst.bg, border: '3px solid ' + inst.color + '30', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: inst.bg, border: '3px solid '+inst.color+'30', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
                 <span style={{ fontSize: 24, fontWeight: 800, color: inst.color }}>{inst.initial}</span>
               </div>
               <p style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 3 }}>{inst.name}</p>
@@ -242,7 +244,7 @@ export default function LandingPage() {
                 <div><p style={{ fontSize: 15, fontWeight: 800, color: '#0a0a0a' }}>{inst.courses}</p><p style={{ fontSize: 10, color: '#9ca3af' }}>Courses</p></div>
                 <div><p style={{ fontSize: 15, fontWeight: 800, color: '#0a0a0a' }}>{inst.students.toLocaleString()}</p><p style={{ fontSize: 10, color: '#9ca3af' }}>Students</p></div>
               </div>
-              <Link href="/courses" style={{ display: 'block', padding: '8px', fontSize: 12, fontWeight: 700, color: inst.color, background: inst.bg, borderRadius: 7, textDecoration: 'none' }}>View courses</Link>
+              <Link href={'/courses?subject='+inst.subject.split(' & ')[0]} style={{ display: 'block', padding: '8px', fontSize: 12, fontWeight: 700, color: inst.color, background: inst.bg, borderRadius: 7, textDecoration: 'none' }}>View courses</Link>
             </div>
           ))}
         </div>
@@ -273,13 +275,13 @@ export default function LandingPage() {
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, maxWidth: 220 }}>Your pace, your space.</p>
           </div>
           {[
-            { title: 'Learn',   links: [['Primary','/courses'],['Secondary','/courses'],['High School','/courses'],['University','/courses']] },
-            { title: 'Skolr',   links: [['Courses','/courses'],['Teach','/instructor'],['Free Trial','/register'],['Pricing','/settings']] },
+            { title: 'Learn',   links: [['Primary','/courses?level=primary'],['Secondary','/courses?level=secondary'],['High School','/courses?level=highschool'],['University','/courses?level=undergraduate']] },
+            { title: 'Skolr',   links: [['All Courses','/courses'],['Teach on Skolr','/instructor'],['Free Trial','/register'],['Pricing','/settings']] },
             { title: 'Support', links: [['Help','#'],['Contact','#'],['Privacy','#'],['Terms','#']] },
           ].map(col => (
             <div key={col.title}>
               <h4 style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', marginBottom: 12 }}>{col.title}</h4>
-              {col.links.map(([label, href]) => (
+              {col.links.map(([label,href]) => (
                 <Link key={label} href={href} style={{ display: 'block', fontSize: 13, color: 'rgba(255,255,255,0.55)', textDecoration: 'none', marginBottom: 8 }}>{label}</Link>
               ))}
             </div>
