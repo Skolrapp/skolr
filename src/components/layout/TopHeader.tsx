@@ -11,38 +11,67 @@ export default function TopHeader() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
+
+  const homeHref = user?.role === 'instructor' ? '/instructor' : '/dashboard';
+  const initial  = user?.name?.charAt(0).toUpperCase() || '?';
+  const hasPhoto = !!(user as any)?.avatar_url && !imgError;
 
   return (
-    <header style={{ background: '#111111', borderBottom: '1px solid #1f1f1f', padding: '0 16px', position: 'sticky', top: 0, zIndex: 50 }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, height: 56 }}>
-        <Link href={user?.role === 'instructor' ? '/instructor' : '/dashboard'} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
-          <div style={{ width: 28, height: 28, background: G, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, zIndex: 50 }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 16, height: 60, padding: '0 24px' }}>
+        <Link href={homeHref} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
+          <div style={{ width: 30, height: 30, background: G, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           </div>
-          <span style={{ fontWeight: 800, fontSize: 17, color: '#fff' }}>Skolr</span>
+          <span style={{ fontWeight: 800, fontSize: 18, color: '#0a0a0a' }}>Skolr</span>
         </Link>
-        <div style={{ flex: 1, maxWidth: 480 }}>
+        <div style={{ flex: 1, maxWidth: 440 }}>
           <SearchBar placeholder="Search courses, instructors..." />
         </div>
-        <nav style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-          <Link href="/courses" style={{ padding: '6px 10px', fontSize: 13, fontWeight: 500, color: '#a3a3a3', textDecoration: 'none', borderRadius: 6 }}>Courses</Link>
-          {user?.role === 'instructor' && <Link href="/instructor" style={{ padding: '6px 10px', fontSize: 13, fontWeight: 500, color: '#a3a3a3', textDecoration: 'none', borderRadius: 6 }}>Dashboard</Link>}
-          {user?.role === 'student' && <Link href="/dashboard" style={{ padding: '6px 10px', fontSize: 13, fontWeight: 500, color: '#a3a3a3', textDecoration: 'none', borderRadius: 6 }}>Home</Link>}
-        </nav>
+        <div style={{ flex: 1 }} />
         <div style={{ position: 'relative', flexShrink: 0 }}>
-          <button onClick={() => setMenuOpen(m => !m)} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(16,185,129,0.15)', border: `1.5px solid ${menuOpen ? G : 'rgba(16,185,129,0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', minHeight: 0, minWidth: 0 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: G }}>{user?.name?.charAt(0).toUpperCase() || '?'}</span>
+          <button onClick={() => setMenuOpen(m => !m)}
+            style={{ width: 34, height: 34, borderRadius: '50%', background: hasPhoto ? 'transparent' : 'rgba(16,185,129,0.12)', border: '2px solid ' + (menuOpen ? G : '#e5e7eb'), display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', minHeight: 0, minWidth: 0, overflow: 'hidden', padding: 0 }}>
+            {hasPhoto ? (
+              <img src={(user as any).avatar_url} alt={user?.name || ''} onError={() => setImgError(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <span style={{ fontSize: 13, fontWeight: 700, color: G }}>{initial}</span>
+            )}
           </button>
           {menuOpen && (
-            <div style={{ position: 'absolute', right: 0, top: 40, background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 12, padding: '8px', minWidth: 180, zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }} onMouseLeave={() => setMenuOpen(false)}>
-              <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid #222' }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{user?.name}</p>
-                <p style={{ fontSize: 11, color: '#525252', marginTop: 2, textTransform: 'capitalize' }}>{user?.role}</p>
+            <div style={{ position: 'absolute', right: 0, top: 42, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '6px', minWidth: 190, zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }} onMouseLeave={() => setMenuOpen(false)}>
+              <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: hasPhoto ? 'transparent' : '#ecfdf5', border: '1px solid #e5e7eb', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {hasPhoto ? <img src={(user as any).avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 14, fontWeight: 700, color: G }}>{initial}</span>}
+                </div>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#0a0a0a' }}>{user?.name}</p>
+                  <p style={{ fontSize: 11, color: '#9ca3af', textTransform: 'capitalize' }}>{user?.role}</p>
+                </div>
               </div>
-              {[{label:'Settings',href:'/settings'},{label:user?.role==='instructor'?'My Courses':'My Learning',href:user?.role==='instructor'?'/instructor':'/dashboard'}].map(item=>(
-                <button key={item.label} onClick={()=>{router.push(item.href);setMenuOpen(false);}} style={{ display:'block',width:'100%',padding:'9px 12px',fontSize:13,color:'#e5e5e5',background:'transparent',border:'none',borderRadius:8,cursor:'pointer',textAlign:'left',minHeight:0,minWidth:0 }} onMouseEnter={e=>(e.currentTarget.style.background='#222')} onMouseLeave={e=>(e.currentTarget.style.background='transparent')}>{item.label}</button>
+              {[
+                { label: 'Home', href: homeHref },
+                { label: 'Browse Courses', href: '/courses' },
+                { label: 'Subscription', href: '/settings' },
+                ...(user?.role === 'instructor' ? [{ label: 'My Courses', href: '/instructor' }] : []),
+                { label: 'Edit Profile', href: user?.role === 'instructor' ? '/instructors/' + user?.id : '/settings' },
+              ].map(item => (
+                <button key={item.label} onClick={() => { router.push(item.href); setMenuOpen(false); }}
+                  style={{ display: 'block', width: '100%', padding: '9px 12px', fontSize: 13, color: '#374151', background: 'transparent', border: 'none', borderRadius: 7, cursor: 'pointer', textAlign: 'left', minHeight: 0, minWidth: 0 }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  {item.label}
+                </button>
               ))}
-              <button onClick={()=>{logout();setMenuOpen(false);}} style={{ display:'block',width:'100%',padding:'9px 12px',fontSize:13,color:'#ef4444',background:'transparent',border:'none',borderRadius:8,cursor:'pointer',textAlign:'left',marginTop:4,borderTop:'1px solid #222',minHeight:0,minWidth:0 }} onMouseEnter={e=>(e.currentTarget.style.background='rgba(239,68,68,0.08)')} onMouseLeave={e=>(e.currentTarget.style.background='transparent')}>Sign out</button>
+              <div style={{ borderTop: '1px solid #f3f4f6', marginTop: 4 }}>
+                <button onClick={() => { logout(); setMenuOpen(false); }}
+                  style={{ display: 'block', width: '100%', padding: '9px 12px', fontSize: 13, color: '#ef4444', background: 'transparent', border: 'none', borderRadius: 7, cursor: 'pointer', textAlign: 'left', minHeight: 0, minWidth: 0 }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#fef2f2')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  Sign out
+                </button>
+              </div>
             </div>
           )}
         </div>
