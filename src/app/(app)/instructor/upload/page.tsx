@@ -40,6 +40,10 @@ export default function UploadPage() {
   const [uploadedVideo, setUploadedVideo] = useState<UploadedVideo | null>(null);
   const [videoMetaError, setVideoMetaError] = useState<string | null>(null);
   const [durationSeconds, setDurationSeconds] = useState('');
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
+  const [thumbnailPreview, setThumbnailPreview] = useState('');
+  const [thumbnailError, setThumbnailError] = useState('');
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
 
   const selLevel = EDUCATION_LEVELS.find((l) => l.key === category);
   const subCats = selLevel?.sub_categories || [];
@@ -80,6 +84,42 @@ export default function UploadPage() {
     await uploadToBunny(file);
   };
 
+  const handleThumbnailChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setThumbnailError('Please choose an image file.');
+      return;
+    }
+
+    setUploadingThumbnail(true);
+    setThumbnailError('');
+
+    try {
+      const body = new FormData();
+      body.append('file', file);
+
+      const response = await fetch('/api/instructor/thumbnail-upload', {
+        method: 'POST',
+        credentials: 'include',
+        body,
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to upload thumbnail.');
+      }
+
+      setThumbnailUrl(data.data.thumbnail_url);
+      setThumbnailPreview(data.data.thumbnail_url);
+    } catch (error) {
+      setThumbnailError(error instanceof Error ? error.message : 'Failed to upload thumbnail.');
+    } finally {
+      setUploadingThumbnail(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
@@ -102,6 +142,9 @@ export default function UploadPage() {
 
     fd.set('category', category);
     fd.set('sub_category', subCat);
+    if (thumbnailUrl) {
+      fd.set('thumbnail_url', thumbnailUrl);
+    }
     if (uploadedVideo) {
       fd.set('video_hls_url', uploadedVideo.hlsUrl);
       if (!fd.get('duration_seconds')) {
@@ -118,6 +161,8 @@ export default function UploadPage() {
         setUploadedVideo(null);
         setUploadProgress('');
         setDurationSeconds('');
+        setThumbnailUrl('');
+        setThumbnailPreview('');
       }
     });
   };
@@ -159,6 +204,7 @@ export default function UploadPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <input type="hidden" name="video_hls_url" value={uploadedVideo?.hlsUrl || ''} readOnly />
+          <input type="hidden" name="thumbnail_url" value={thumbnailUrl} readOnly />
 
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2" style={{ borderBottom: '1px solid #1a1a1a' }}>
@@ -281,9 +327,23 @@ export default function UploadPage() {
               </p>
             </div>
 
-            <div>
-              <label className="lbl">Thumbnail URL - optional</label>
-              <input className="inp" name="thumbnail_url" placeholder="https://cdn.example.com/thumb.jpg" />
+            <div className="rounded-2xl p-4" style={{ background: '#171717', border: '1px solid #262626' }}>
+              <label className="lbl">Thumbnail image - optional</label>
+              <input className="inp" type="file" accept="image/*" onChange={handleThumbnailChange} disabled={uploadingThumbnail || pending} />
+              {uploadingThumbnail && <p className="text-xs mt-2" style={{ color: '#d4d4d8' }}>Uploading thumbnail...</p>}
+              {thumbnailError && <p className="text-xs mt-2" style={{ color: '#f87171' }}>{thumbnailError}</p>}
+              {thumbnailPreview && (
+                <div className="mt-3">
+                  <img
+                    src={thumbnailPreview}
+                    alt="Course thumbnail preview"
+                    className="w-full max-w-xs h-40 object-cover rounded-xl"
+                  />
+                </div>
+              )}
+              <p className="text-xs mt-2" style={{ color: '#525252' }}>
+                Upload an image and Skolr will save the thumbnail automatically. No URL paste needed.
+              </p>
             </div>
 
             <div>

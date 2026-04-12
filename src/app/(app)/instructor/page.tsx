@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
 import TopHeader from '@/components/layout/TopHeader';
+import Link from 'next/link';
 import type { EarningsSummary, Transaction } from '@/types';
 
 const G = '#10B981';
@@ -14,8 +15,10 @@ const fmtDate = (s: string) => new Date(s).toLocaleDateString('en-GB', { day: 'n
 export default function InstructorPage() {
   const { user, logout } = useAuth();
   const [data,    setData]    = useState<EarningsSummary | null>(null);
+  const [courses, setCourses] = useState<any[]>([]);
   const [period,  setPeriod]  = useState<Period>('month');
   const [loading, setLoading] = useState(true);
+  const [coursesLoading, setCoursesLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -24,6 +27,14 @@ export default function InstructorPage() {
       .then(d => { if (d.success) setData(d.data); })
       .finally(() => setLoading(false));
   }, [period]);
+
+  useEffect(() => {
+    setCoursesLoading(true);
+    fetch('/api/instructor/courses', { credentials: 'include' })
+      .then(r => r.json())
+      .then(d => { if (d.success) setCourses(d.data); })
+      .finally(() => setCoursesLoading(false));
+  }, []);
 
   if (!user) return null;
 
@@ -51,6 +62,59 @@ export default function InstructorPage() {
         </div>
 
         <h1 className="text-xl font-bold mb-5" style={{ color: '#fff' }}>Earnings dashboard</h1>
+
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="sec-head !mb-0">Your courses</h2>
+            <Link href="/instructor/upload" className="text-xs font-semibold" style={{ color: G }}>New course</Link>
+          </div>
+          {coursesLoading ? (
+            <div className="space-y-2">{[1,2].map(i => <div key={i} className="skel h-20 rounded-2xl" />)}</div>
+          ) : courses.length === 0 ? (
+            <div className="card">
+              <p className="text-sm" style={{ color: '#fff' }}>No courses yet.</p>
+              <p className="text-xs mt-1" style={{ color: '#737373' }}>Upload your first course, then add chapters and thumbnails here.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {courses.map((course) => (
+                <div key={course.id} className="card">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0"
+                      style={{ background: '#1a1a1a', border: '1px solid #222' }}
+                    >
+                      {course.thumbnail_url ? (
+                        <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs font-bold" style={{ color: '#525252' }}>
+                          SK
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold" style={{ color: '#fff' }}>{course.title}</p>
+                      <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                        {course.subject} • {course.chapter_count} {course.chapter_count === 1 ? 'chapter' : 'chapters'}
+                      </p>
+                      <p className="text-xs mt-1" style={{ color: course.is_published ? G : '#fbbf24' }}>
+                        {course.is_published ? 'Published' : 'Draft'}
+                      </p>
+                      <div className="flex gap-3 mt-3">
+                        <Link href={`/instructor/courses/${course.id}/chapters`} className="text-xs font-semibold" style={{ color: G }}>
+                          Manage chapters
+                        </Link>
+                        <Link href={`/watch/${course.id}`} className="text-xs font-semibold" style={{ color: '#60a5fa' }}>
+                          Preview
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Period tabs */}
         <div className="flex gap-2 mb-5">
