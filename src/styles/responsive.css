@@ -26,7 +26,7 @@
 .sk-header-spacer  { flex: 1; }
 .sk-header-home    { display: flex; align-items: center; gap: 5px; padding: 6px 12px; font-size: 13px; font-weight: 600; color: #6b7280; text-decoration: none; border-radius: 8px; border: 1px solid #e5e7eb; flex-shrink: 0; }
 .sk-header-avatar  { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; cursor: pointer; border: 2px solid #e5e7eb; background: rgba(16,185,129,0.1); }
-.sk-hamburger      { display: none; background: none; border: none; cursor: pointer; padding: 6px; flex-shrink: 0; }
+.sk-hamburger      { display: none; background: none; border: none; cursor: pointer; padding: 6px; flex-shrink: 0; margin-left: auto; }
 
 @media (max-width: 768px) {
   .sk-header-inner   { height: 52px; padding: 0 16px; gap: 10px; }
