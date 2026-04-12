@@ -56,8 +56,8 @@ export default function LandingPage() {
             <span style={{ fontWeight: 800, fontSize: 20, color: '#0a0a0a' }}>Skolr</span>
           </Link>
           <nav className="desktop-only" style={{ display: 'flex', gap: 4, flex: 1 }}>
-            <Link href="/courses" style={{ padding: '7px 12px', fontSize: 14, fontWeight: 500, color: '#6b7280', textDecoration: 'none', borderRadius: 6 }}>Browse</Link>
-            <Link href="/instructor" style={{ padding: '7px 12px', fontSize: 14, fontWeight: 500, color: '#6b7280', textDecoration: 'none', borderRadius: 6 }}>Teach</Link>
+            
+            <Link href="/login" style={{ padding: '7px 12px', fontSize: 14, fontWeight: 500, color: '#6b7280', textDecoration: 'none', borderRadius: 6 }}>Teach</Link>
             <Link href="/settings" style={{ padding: '7px 12px', fontSize: 14, fontWeight: 500, color: '#6b7280', textDecoration: 'none', borderRadius: 6 }}>Pricing</Link>
           </nav>
           <div className="sk-header-search desktop-only">
@@ -98,7 +98,7 @@ export default function LandingPage() {
               <Link href="/courses?level=primary" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Primary (Std 1-7)</Link>
               <Link href="/courses?level=secondary" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Secondary (Form 1-4)</Link>
               <Link href="/courses?level=highschool" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>High School (Form 5-6)</Link>
-              <Link href="/instructor" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Teach on Skolr</Link>
+              <Link href="/login" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Teach on Skolr</Link>
               <Link href="/settings" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Pricing</Link>
               <div style={{ margin: '12px 20px', borderTop: '1px solid #f3f4f6', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <Link href="/login" style={{ display: 'block', padding: '11px', fontSize: 14, fontWeight: 600, color: '#0a0a0a', textDecoration: 'none', border: '1.5px solid #e5e7eb', borderRadius: 8, textAlign: 'center' }}>Log in</Link>
@@ -180,7 +180,7 @@ export default function LandingPage() {
         </div>
         <div className="sk-cat-grid">
           {CATEGORIES.map(cat => (
-            <Link key={cat.label} href={'/courses?subject='+cat.label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: cat.bg, borderRadius: 10, textDecoration: 'none', border: '1px solid '+cat.color+'22' }}>
+            <Link key={cat.label} href={'/courses?subject='+cat.label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: cat.bg, borderRadius: 10, textDecoration: 'none', border: '1px solid '+cat.color+'22', color: 'inherit' }}>
               <div style={{ width: 36, height: 36, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={cat.color} strokeWidth="1.8"><path d={cat.icon}/></svg>
               </div>
@@ -276,7 +276,7 @@ export default function LandingPage() {
           </div>
           {[
             { title: 'Learn',   links: [['Primary','/courses?level=primary'],['Secondary','/courses?level=secondary'],['High School','/courses?level=highschool'],['University','/courses?level=undergraduate']] },
-            { title: 'Skolr',   links: [['All Courses','/courses'],['Teach on Skolr','/instructor'],['Free Trial','/register'],['Pricing','/settings']] },
+            { title: 'Skolr',   links: [['All Courses','/courses'],['Teach on Skolr','/login'],['Free Trial','/register'],['Pricing','/settings']] },
             { title: 'Support', links: [['Help','#'],['Contact','#'],['Privacy','#'],['Terms','#']] },
           ].map(col => (
             <div key={col.title}>
