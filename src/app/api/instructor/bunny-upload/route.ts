@@ -12,12 +12,16 @@ const BUNNY_STREAM_LIBRARY_ID = process.env.BUNNY_STREAM_LIBRARY_ID;
 const BUNNY_STREAM_PULL_ZONE = process.env.BUNNY_STREAM_PULL_ZONE;
 const BUNNY_STREAM_COLLECTION_ID = process.env.BUNNY_STREAM_COLLECTION_ID;
 
+function getMissingConfig() {
+  return [
+    BUNNY_STREAM_API_KEY ? null : 'BUNNY_STREAM_API_KEY',
+    BUNNY_STREAM_LIBRARY_ID ? null : 'BUNNY_STREAM_LIBRARY_ID',
+    BUNNY_STREAM_PULL_ZONE ? null : 'BUNNY_STREAM_PULL_ZONE',
+  ].filter(Boolean);
+}
+
 function isConfigured() {
-  return !!(
-    BUNNY_STREAM_API_KEY &&
-    BUNNY_STREAM_LIBRARY_ID &&
-    BUNNY_STREAM_PULL_ZONE
-  );
+  return getMissingConfig().length === 0;
 }
 
 export async function POST(request: NextRequest) {
@@ -33,10 +37,11 @@ export async function POST(request: NextRequest) {
   }
 
   if (!isConfigured()) {
+    const missing = getMissingConfig();
     return NextResponse.json(
       {
         success: false,
-        error: 'Bunny Stream is not configured. Set BUNNY_STREAM_API_KEY, BUNNY_STREAM_LIBRARY_ID, and BUNNY_STREAM_PULL_ZONE.',
+        error: `Bunny Stream is not configured. Missing: ${missing.join(', ')}.`,
       },
       { status: 500 }
     );
