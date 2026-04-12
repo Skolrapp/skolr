@@ -99,8 +99,25 @@ export default function LandingPage() {
       </header>
 
       {/* HERO */}
-      <section style={{ background: 'linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 60%,#0d2818 100%)', minHeight: 520, display: 'flex', alignItems: 'center' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 24px', width: '100%' }}>
+      <section style={{ position: 'relative', minHeight: 520, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+        {/* Banner background — replace backgroundImage URL with a real photo when ready */}
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 0,
+          backgroundImage: 'url(/banner.jpg)',
+          backgroundSize: 'cover', backgroundPosition: 'center',
+          backgroundColor: '#0a0a0a',
+        }} />
+        {/* Dark overlay for text readability */}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(135deg, rgba(10,10,10,0.88) 0%, rgba(26,26,46,0.82) 50%, rgba(13,40,24,0.88) 100%)' }} />
+        {/* SVG abstract shapes as placeholder art */}
+        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, opacity: 0.15 }} viewBox="0 0 1280 520" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="900" cy="100" r="300" fill="#10B981" />
+          <circle cx="1100" cy="400" r="200" fill="#3b82f6" />
+          <circle cx="800" cy="350" r="150" fill="#8b5cf6" />
+          <rect x="600" y="50" width="200" height="200" rx="40" fill="#f59e0b" transform="rotate(20 700 150)" />
+          <circle cx="1050" cy="150" r="80" fill="#10B981" />
+        </svg>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 24px', width: '100%', position: 'relative', zIndex: 2 }}>
           <div className="sk-hero-grid">
             <div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 999, padding: '5px 14px', marginBottom: 20 }}>
