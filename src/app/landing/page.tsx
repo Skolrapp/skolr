@@ -276,7 +276,7 @@ export default function LandingPage() {
           </div>
           {[
             { title: 'Learn',   links: [['Primary','/courses?level=primary'],['Secondary','/courses?level=secondary'],['High School','/courses?level=highschool'],['University','/courses?level=undergraduate']] },
-            { title: 'Skolr',   links: [['All Courses','/courses'],['Teach on Skolr','/login'],['Free Trial','/register'],['Pricing','/settings']] },
+            { title: 'Skolr',   links: [['All Courses','/courses'],['Teach on Skolr','/login'],['Free Trial','/register'],['Pricing','/pricing']] },
             { title: 'Support', links: [['Help','#'],['Contact','#'],['Privacy','#'],['Terms','#']] },
           ].map(col => (
             <div key={col.title}>
