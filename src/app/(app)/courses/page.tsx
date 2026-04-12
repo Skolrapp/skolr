@@ -63,7 +63,7 @@ function CoursesContent(){
   const totalPages=Math.ceil(total/PER);
   const homeHref=user?(user.role==='instructor'?'/instructor':'/dashboard'):'/';
 
-  if(!user)return null;
+  // guests can browse freely
 
   return(
     <div style={{background:'#fff',minHeight:'100vh',fontFamily:"'Inter',-apple-system,sans-serif",color:'#0a0a0a'}}>
