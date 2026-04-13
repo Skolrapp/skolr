@@ -7,7 +7,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import TopHeader from '@/components/layout/TopHeader';
 
 const G = '#10B981';
-type Tab = 'reviews' | 'tracker' | 'cloning' | 'support';
+type Tab = 'reviews' | 'tracker' | 'cloning' | 'payments' | 'support';
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -32,6 +32,10 @@ export default function AdminPage() {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [studentDetail, setStudentDetail] = useState<any>(null);
   const [studentDetailLoading, setStudentDetailLoading] = useState(false);
+  const [paymentQuery, setPaymentQuery] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState('');
+  const [paymentsLoading, setPaymentsLoading] = useState(true);
+  const [paymentsData, setPaymentsData] = useState<any>(null);
   const [templates, setTemplates] = useState<any[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(true);
   const [cloneForm, setCloneForm] = useState({ sourceCourseId: '', targetSubjects: '', targetSubCategory: '' });
@@ -41,7 +45,7 @@ export default function AdminPage() {
 
     const syncTabFromUrl = () => {
       const requestedTab = new URLSearchParams(window.location.search).get('tab');
-      if (requestedTab === 'reviews' || requestedTab === 'tracker' || requestedTab === 'cloning' || requestedTab === 'support') {
+      if (requestedTab === 'reviews' || requestedTab === 'tracker' || requestedTab === 'cloning' || requestedTab === 'payments' || requestedTab === 'support') {
         setTab(requestedTab);
       } else {
         setTab('reviews');
@@ -85,6 +89,22 @@ export default function AdminPage() {
 
   useEffect(() => {
     loadStudents();
+  }, []);
+
+  const loadPayments = (search = paymentQuery, status = paymentStatus) => {
+    setPaymentsLoading(true);
+    const params = new URLSearchParams();
+    if (search.trim()) params.set('q', search.trim());
+    if (status) params.set('status', status);
+    fetch(`/api/admin/payments?${params.toString()}`, { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setPaymentsData(d.data); })
+      .finally(() => setPaymentsLoading(false));
+  };
+
+  useEffect(() => {
+    loadPayments('', '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadStudentDetail = (studentId: string) => {
@@ -226,6 +246,7 @@ export default function AdminPage() {
             ['reviews', 'Review queue'],
             ['tracker', 'Scholar tracker'],
             ['cloning', 'Course cloning'],
+            ['payments', 'Payments'],
             ['support', 'User support'],
           ] as Array<[Tab, string]>).map(([id, label]) => (
             <button
@@ -521,6 +542,90 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {tab === 'payments' && (
+          <div className="space-y-4">
+            <div className="card">
+              <div className="flex gap-2 flex-wrap">
+                <input
+                  className="inp"
+                  placeholder="Search by learner, phone, or transaction ref"
+                  value={paymentQuery}
+                  onChange={(e) => setPaymentQuery(e.target.value)}
+                />
+                <select className="sel w-auto min-w-[150px]" value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)}>
+                  <option value="">All statuses</option>
+                  <option value="success">Success</option>
+                  <option value="pending">Pending</option>
+                  <option value="failed">Failed</option>
+                  <option value="refunded">Refunded</option>
+                </select>
+                <button className="btn-primary w-auto px-4 text-sm" onClick={() => loadPayments(paymentQuery, paymentStatus)}>Search</button>
+              </div>
+              <p className="text-xs mt-2" style={{ color: '#737373' }}>
+                Monitor mobile money and card transactions, then use the status and provider reference to troubleshoot payment problems quickly.
+              </p>
+            </div>
+
+            {paymentsLoading ? (
+              <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="skel h-24 rounded-2xl" />)}</div>
+            ) : paymentsData ? (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    ['Transactions', paymentsData.summary.total_count],
+                    ['Total amount (TZS)', paymentsData.summary.total_amount.toLocaleString('en-TZ')],
+                    ['Successful', paymentsData.summary.success_count],
+                    ['Pending / Failed', `${paymentsData.summary.pending_count} / ${paymentsData.summary.failed_count}`],
+                  ].map(([label, value]) => (
+                    <div key={label} className="card">
+                      <p className="text-xs" style={{ color: '#737373' }}>{label}</p>
+                      <p className="text-xl font-bold mt-2" style={{ color: '#fff' }}>{value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-3">
+                  {paymentsData.transactions.length === 0 ? (
+                    <div className="card">
+                      <p className="text-sm font-semibold" style={{ color: '#fff' }}>No transactions found.</p>
+                    </div>
+                  ) : paymentsData.transactions.map((entry: any) => (
+                    <div key={entry.id} className="card">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold" style={{ color: '#fff' }}>{entry.users?.name || 'Unknown learner'}</p>
+                          <p className="text-xs mt-1" style={{ color: '#a3a3a3' }}>{entry.users?.phone || entry.msisdn || 'No phone'}</p>
+                          <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                            {entry.provider?.toUpperCase()} • {entry.subscription_tier} • {entry.billing_cycle}
+                          </p>
+                          <p className="text-xs mt-1 font-mono" style={{ color: '#a3a3a3' }}>
+                            Ref: {entry.provider_reference || 'N/A'}
+                          </p>
+                          <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                            Created {new Date(entry.created_at).toLocaleString('en-GB')}
+                            {entry.settled_at ? ` • Settled ${new Date(entry.settled_at).toLocaleString('en-GB')}` : ''}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold" style={{ color: '#fff' }}>TZS {entry.amount.toLocaleString('en-TZ')}</p>
+                          <p
+                            className="text-xs font-semibold mt-1"
+                            style={{
+                              color: entry.status === 'success' ? G : entry.status === 'pending' ? '#fbbf24' : entry.status === 'failed' ? '#f87171' : '#93c5fd',
+                            }}
+                          >
+                            {entry.status}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : null}
           </div>
         )}
 
