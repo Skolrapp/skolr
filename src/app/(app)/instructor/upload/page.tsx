@@ -307,12 +307,15 @@ export default function UploadPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2" style={{ borderBottom: '1px solid #1a1a1a' }}>
               <div className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0" style={{ background: 'rgba(251,191,36,0.15)', color: '#fbbf24' }}>3</div>
-              <p className="text-sm font-bold" style={{ color: '#fff' }}>Video & media</p>
+              <p className="text-sm font-bold" style={{ color: '#fff' }}>Intro video & media</p>
             </div>
 
             <div className="rounded-2xl p-4" style={{ background: '#171717', border: '1px solid #262626' }}>
-              <label className="lbl">Course video <span style={{ color: '#ef4444' }}>*</span></label>
+              <label className="lbl">Course intro video <span style={{ color: '#ef4444' }}>*</span></label>
               <input className="inp" type="file" accept="video/*" onChange={handleVideoChange} disabled={uploadingVideo || pending} />
+              <p className="text-xs mt-2" style={{ color: '#737373' }}>
+                This first video becomes the free introduction students can watch before subscription. Use it to welcome learners and explain what to expect in the full class.
+              </p>
               {uploadProgress && <p className="text-xs mt-2" style={{ color: uploadedVideo ? G : '#d4d4d8' }}>{uploadProgress}</p>}
               {uploadedVideo && (
                 <div className="mt-3 rounded-xl p-3" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>

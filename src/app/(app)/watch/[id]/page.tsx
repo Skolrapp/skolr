@@ -38,7 +38,6 @@ function WatchContent() {
   const [activeChapter, setActiveChapter] = useState<Chapter | null>(null);
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [locked, setLocked] = useState(false);
   const [tab, setTab] = useState<Tab>('overview');
   const [resources, setResources] = useState<any[]>([]);
   const [resLoading, setResLoading] = useState(false);
@@ -46,12 +45,8 @@ function WatchContent() {
   const [resForm, setResForm] = useState({ title: '', type: 'note', url: '', description: '' });
   const [resError, setResError] = useState('');
   const [resPending, startResTransition] = useTransition();
-  const [previewPromptOpen, setPreviewPromptOpen] = useState(false);
+  const [accessPromptOpen, setAccessPromptOpen] = useState(false);
   const [instructorProfile, setInstructorProfile] = useState<any>(null);
-
-  useEffect(() => {
-    setPreviewPromptOpen(!user);
-  }, [user]);
 
   useEffect(() => {
     fetch('/api/courses/' + id, { credentials: 'include' })
@@ -62,7 +57,7 @@ function WatchContent() {
         setProgress(d.data.progress_seconds || 0);
         const cr = await fetch('/api/courses/' + id + '/chapters', { credentials: 'include' });
         const cd = await cr.json();
-        if (cd.success && cd.data.length > 0) { setChapters(cd.data); setActiveChapter(cd.data[0]); }
+        if (cd.success && cd.data.length > 0) { setChapters(cd.data); }
         if (d.data.course?.instructor_id) {
           fetch('/api/instructors/' + d.data.course.instructor_id, { credentials: 'include' })
             .then(r => r.json())
@@ -71,17 +66,6 @@ function WatchContent() {
       })
       .finally(() => setLoading(false));
   }, [id, router]);
-
-  useEffect(() => {
-    if (!user || !course) return;
-    const canManageCourse = user.role === 'admin' || course.instructor_id === user.id;
-    if (canManageCourse) {
-      setLocked(false);
-      return;
-    }
-    const active = isSubscriptionActive(user.subscription_expires_at);
-    setLocked(!active || !canAccessLevel(user.subscription_tier, course.category));
-  }, [user, course]);
 
   useEffect(() => {
     if (tab !== 'resources') return;
@@ -120,21 +104,19 @@ function WatchContent() {
 
   if (!course) return null;
 
-  if (locked) return (
-    <div style={{ background: '#fff', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center', fontFamily: "'Inter',-apple-system,sans-serif" }}>
-      <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0a0a0a', marginBottom: 8 }}>Subscription required</h2>
-      <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24 }}>This course requires a {course.category} plan.</p>
-      <Link href="/settings" style={{ padding: '11px 24px', fontSize: 14, fontWeight: 700, color: '#fff', background: G, textDecoration: 'none', borderRadius: 8 }}>View plans</Link>
-    </div>
-  );
-
   const col = LEVEL_COLORS[course.category] || LEVEL_COLORS.primary;
   const currentVideo = activeChapter?.video_hls_url || course.video_hls_url;
-  const currentTitle = activeChapter?.title || course.title;
+  const currentTitle = activeChapter?.title || `${course.title} · Introduction`;
   const totalDur = chapters.reduce((s, c) => s + c.duration_seconds, 0);
   const homeHref = !user ? '/' : user.role === 'admin' ? '/admin' : user.role === 'instructor' ? '/instructor' : '/dashboard';
   const canManageCourse = !!user && (user.role === 'admin' || course.instructor_id === user.id);
   const isGuestPreview = !user;
+  const hasPaidAccess = !!user && isSubscriptionActive(user.subscription_expires_at) && canAccessLevel(user.subscription_tier, course.category);
+  const hasCourseAccess = canManageCourse || hasPaidAccess;
+  const accessPromptTitle = isGuestPreview ? 'Sign up free to continue' : 'Upgrade to continue learning';
+  const accessPromptBody = isGuestPreview
+    ? 'This introduction is free to watch. Create a free account to unlock the lesson chapters and continue deeper into the class.'
+    : `Your intro is unlocked. Upgrade your ${course.category} access to open the full lesson chapters for this class.`;
   const TABS: { id: Tab; label: string }[] = [
     { id: 'overview', label: 'Overview' },
     { id: 'quiz', label: 'Quiz' },
@@ -178,30 +160,7 @@ function WatchContent() {
                 title={currentTitle}
                 startAt={activeChapter ? 0 : progress}
                 onProgress={handleProgress}
-                previewSeconds={isGuestPreview ? 45 : 0}
-                onPreviewLimit={() => setPreviewPromptOpen(true)}
               />
-              {isGuestPreview && (
-                <div className="watch-guest-pill" style={{ position: 'absolute', top: 16, right: 16, zIndex: 12, padding: '8px 12px', borderRadius: 999, background: 'rgba(17,24,39,0.82)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', fontSize: 12, fontWeight: 700 }}>
-                  Free preview: 45 seconds
-                </div>
-              )}
-              {isGuestPreview && previewPromptOpen && (
-                <div className="watch-preview-overlay" style={{ position: 'absolute', right: 18, bottom: 18, zIndex: 14, width: 320, maxWidth: 'calc(100% - 36px)', borderRadius: 18, background: 'rgba(255,255,255,0.96)', boxShadow: '0 18px 40px rgba(0,0,0,0.28)', padding: 18 }}>
-                  <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, color: G, textTransform: 'uppercase', marginBottom: 8 }}>Keep learning on Skolr</p>
-                  <h3 style={{ fontSize: 20, fontWeight: 900, color: '#0a0a0a', lineHeight: 1.15, marginBottom: 8 }}>Sign up free to proceed.</h3>
-                  <p style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.6, marginBottom: 14 }}>
-                    Preview this lesson, browse the chapters, and meet the instructor. Create a free account to keep watching the full class.
-                  </p>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    <Link href="/register" style={{ padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free</Link>
-                    <Link href="/login" style={{ padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 999, textDecoration: 'none' }}>Log in</Link>
-                  </div>
-                  <button onClick={() => setPreviewPromptOpen(false)} style={{ marginTop: 10, fontSize: 11, fontWeight: 700, color: '#6b7280', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', minHeight: 0, minWidth: 0 }}>
-                    Hide for now
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 
@@ -213,21 +172,13 @@ function WatchContent() {
               <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 5, background: '#f3f4f6', color: '#6b7280' }}>{course.subject}</span>
               {activeChapter?.duration_seconds ? <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 5, background: '#f3f4f6', color: '#6b7280' }}>{fmtDur(activeChapter.duration_seconds)}</span> : null}
             </div>
-            {isGuestPreview && (
+            {!activeChapter && (
               <div style={{ marginTop: 14, padding: 14, borderRadius: 14, background: '#f8fafc', border: '1px solid #e5e7eb' }}>
-                <p style={{ fontSize: 12, fontWeight: 800, color: G, marginBottom: 5 }}>Guest preview mode</p>
+                <p style={{ fontSize: 12, fontWeight: 800, color: G, marginBottom: 5 }}>Free course introduction</p>
                 <p style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.6, marginBottom: 10 }}>
-                  Explore this class freely: skim the course outline, see who teaches it, and watch a short preview before you create a free account.
+                  This first video is the teacher’s briefing and course introduction. Students can watch it free, then unlock the chapter lessons to continue with the full class.
                 </p>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <Link href="/register" style={{ padding: '8px 12px', fontSize: 12, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free to continue</Link>
-                  <Link href={`/courses?level=${course.category}${course.sub_category ? `&sub=${encodeURIComponent(course.sub_category)}` : ''}`} style={{ padding: '8px 12px', fontSize: 12, fontWeight: 700, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 999, textDecoration: 'none' }}>See more in this class</Link>
-                  {!previewPromptOpen && (
-                    <button onClick={() => setPreviewPromptOpen(true)} style={{ padding: '8px 12px', fontSize: 12, fontWeight: 700, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 999, cursor: 'pointer' }}>
-                      Show signup box
-                    </button>
-                  )}
-                </div>
+                {course.description && <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.7 }}>{course.description}</p>}
               </div>
             )}
             {canManageCourse && (
@@ -262,13 +213,19 @@ function WatchContent() {
                   return (
                     <button
                       key={chapter.id}
-                      onClick={() => setActiveChapter(chapter)}
+                      onClick={() => {
+                        if (!hasCourseAccess) {
+                          setAccessPromptOpen(true);
+                          return;
+                        }
+                        setActiveChapter(chapter);
+                      }}
                       style={{
                         minWidth: 220,
                         padding: '12px 14px',
                         borderRadius: 14,
-                        border: '1px solid ' + (isCurrent ? '#10B981' : '#e5e7eb'),
-                        background: isCurrent ? '#ecfdf5' : '#fff',
+                        border: '1px solid ' + (isCurrent ? '#10B981' : !hasCourseAccess ? '#fde68a' : '#e5e7eb'),
+                        background: isCurrent ? '#ecfdf5' : !hasCourseAccess ? '#fffbeb' : '#fff',
                         textAlign: 'left',
                         cursor: 'pointer',
                         flexShrink: 0,
@@ -277,6 +234,7 @@ function WatchContent() {
                       <p style={{ fontSize: 11, fontWeight: 700, color: isCurrent ? '#059669' : '#9ca3af', marginBottom: 6 }}>Chapter {index + 1}</p>
                       <p style={{ fontSize: 13, fontWeight: 700, color: '#0a0a0a', lineHeight: 1.45, marginBottom: 6 }}>{chapter.title}</p>
                       {chapter.duration_seconds > 0 && <p style={{ fontSize: 11, color: '#6b7280' }}>{fmtDur(chapter.duration_seconds)}</p>}
+                      {!hasCourseAccess && <p style={{ fontSize: 11, color: '#b45309', marginTop: 6, fontWeight: 700 }}>Locked after intro</p>}
                     </button>
                   );
                 })}
@@ -287,7 +245,13 @@ function WatchContent() {
           <div className="watch-tabs" style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 60, zIndex: 10 }}>
             <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', maxWidth: 860 }}>
               {TABS.map(t => (
-                <button key={t.id} onClick={() => setTab(t.id)}
+                <button key={t.id} onClick={() => {
+                  if (!hasCourseAccess && (t.id === 'quiz' || t.id === 'qa')) {
+                    setAccessPromptOpen(true);
+                    return;
+                  }
+                  setTab(t.id);
+                }}
                   style={{ padding: '14px 18px', fontSize: 13, fontWeight: 600, border: 'none', background: 'transparent', color: tab === t.id ? '#0a0a0a' : '#9ca3af', cursor: 'pointer', borderBottom: '2px solid ' + (tab === t.id ? '#0a0a0a' : 'transparent'), whiteSpace: 'nowrap', flexShrink: 0 }}>
                   {t.label}
                 </button>
@@ -342,11 +306,13 @@ function WatchContent() {
             )}
 
             {tab === 'quiz' && (
-              isGuestPreview ? (
+              !hasCourseAccess ? (
                 <div style={{ padding: 24, borderRadius: 16, background: '#f9fafb', border: '1px solid #e5e7eb' }}>
-                  <p style={{ fontSize: 16, fontWeight: 800, color: '#0a0a0a', marginBottom: 8 }}>Quiz unlocks after signup</p>
-                  <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 14 }}>Create your free account to try the quiz, track your progress, and continue with the full class.</p>
-                  <Link href="/register" style={{ display: 'inline-block', padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Create free account</Link>
+                  <p style={{ fontSize: 16, fontWeight: 800, color: '#0a0a0a', marginBottom: 8 }}>Quiz unlocks when you proceed</p>
+                  <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 14 }}>{accessPromptBody}</p>
+                  <button onClick={() => setAccessPromptOpen(true)} style={{ display: 'inline-block', padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, border: 'none', borderRadius: 999, cursor: 'pointer' }}>
+                    {isGuestPreview ? 'Sign up free' : 'View plans'}
+                  </button>
                 </div>
               ) : <ZealQuiz course={{ ...course, title: currentTitle }} />
             )}
@@ -354,13 +320,23 @@ function WatchContent() {
             {tab === 'reviews' && <Reviews courseId={id} userId={user?.id} />}
 
             {tab === 'qa' && (
-              <div style={{ textAlign: 'center', padding: '48px 0' }}>
-                <div style={{ width: 52, height: 52, borderRadius: 12, background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              !hasCourseAccess ? (
+                <div style={{ padding: 24, borderRadius: 16, background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+                  <p style={{ fontSize: 16, fontWeight: 800, color: '#0a0a0a', marginBottom: 8 }}>Q&A opens after you proceed</p>
+                  <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 14 }}>{accessPromptBody}</p>
+                  <button onClick={() => setAccessPromptOpen(true)} style={{ display: 'inline-block', padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, border: 'none', borderRadius: 999, cursor: 'pointer' }}>
+                    {isGuestPreview ? 'Sign up free' : 'View plans'}
+                  </button>
                 </div>
-                <p style={{ fontSize: 15, fontWeight: 700, color: '#0a0a0a', marginBottom: 6 }}>Q&A coming soon</p>
-                <p style={{ fontSize: 13, color: '#9ca3af' }}>Ask your instructor questions about this lesson</p>
-              </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '48px 0' }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 12, background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                  </div>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: '#0a0a0a', marginBottom: 6 }}>Q&A coming soon</p>
+                  <p style={{ fontSize: 13, color: '#9ca3af' }}>Ask your instructor questions about this lesson</p>
+                </div>
+              )
             )}
 
             {tab === 'resources' && (
@@ -368,7 +344,7 @@ function WatchContent() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                   <div>
                     <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0a0a0a', marginBottom: 4 }}>Course Resources</h3>
-                    <p style={{ fontSize: 13, color: '#9ca3af' }}>{isGuestPreview ? 'Guests can preview the resource list before signing up.' : 'Notes, links and materials from the instructor'}</p>
+                    <p style={{ fontSize: 13, color: '#9ca3af' }}>{!hasCourseAccess ? 'You can browse the resource list during the free intro.' : 'Notes, links and materials from the instructor'}</p>
                   </div>
                   {user?.role === 'instructor' && (
                     <button onClick={() => setShowAddRes(s => !s)} style={{ padding: '8px 16px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, border: 'none', borderRadius: 8, cursor: 'pointer' }}>+ Add resource</button>
@@ -430,16 +406,6 @@ function WatchContent() {
                     ))}
                   </div>
                 )}
-                {isGuestPreview && (
-                  <div style={{ marginTop: 16, padding: 16, borderRadius: 14, background: '#f8fafc', border: '1px solid #e5e7eb' }}>
-                    <p style={{ fontSize: 13, fontWeight: 800, color: '#0a0a0a', marginBottom: 6 }}>Want the full class experience?</p>
-                    <p style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.6, marginBottom: 12 }}>Create a free account to keep watching, track progress, and open every lesson resource smoothly.</p>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      <Link href="/register" style={{ display: 'inline-block', padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free</Link>
-                      <Link href="/login" style={{ display: 'inline-block', padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 999, textDecoration: 'none' }}>Log in</Link>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -447,11 +413,10 @@ function WatchContent() {
 
         {chapters.length > 0 && (
           <aside className="watch-sidebar" style={{ width: 300, flexShrink: 0, borderLeft: '1px solid #e5e7eb', background: '#fff', position: 'sticky', top: 60, height: 'calc(100vh - 60px)', overflowY: 'auto' }}>
-            {isGuestPreview && (
+            {!hasCourseAccess && (
               <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', background: '#f8fafc' }}>
-                <p style={{ fontSize: 12, fontWeight: 800, color: G, marginBottom: 6 }}>Preview unlocked</p>
-                <p style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.6, marginBottom: 10 }}>Browse the chapter outline now, then create a free account to continue the full lesson.</p>
-                <Link href="/register" style={{ display: 'inline-block', padding: '8px 12px', fontSize: 12, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free</Link>
+                <p style={{ fontSize: 12, fontWeight: 800, color: G, marginBottom: 6 }}>Chapter lessons locked after intro</p>
+                <p style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.6 }}>Use the free introduction above, then proceed when you are ready to unlock the full class.</p>
               </div>
             )}
             <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb' }}>
@@ -461,8 +426,14 @@ function WatchContent() {
             {chapters.map((chapter, index) => {
               const isActive = activeChapter?.id === chapter.id;
               return (
-                <button key={chapter.id} onClick={() => setActiveChapter(chapter)}
-                  style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', background: isActive ? '#f0fdf4' : 'transparent', border: 'none', borderLeft: '3px solid ' + (isActive ? G : 'transparent'), borderBottom: '1px solid #f3f4f6', cursor: 'pointer', textAlign: 'left' }}>
+                <button key={chapter.id} onClick={() => {
+                  if (!hasCourseAccess) {
+                    setAccessPromptOpen(true);
+                    return;
+                  }
+                  setActiveChapter(chapter);
+                }}
+                  style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', background: isActive ? '#f0fdf4' : !hasCourseAccess ? '#fffbeb' : 'transparent', border: 'none', borderLeft: '3px solid ' + (isActive ? G : 'transparent'), borderBottom: '1px solid #f3f4f6', cursor: 'pointer', textAlign: 'left' }}>
                   <div style={{ width: 26, height: 26, borderRadius: '50%', background: isActive ? G : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
                     {isActive
                       ? <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
@@ -471,6 +442,7 @@ function WatchContent() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: 12, fontWeight: isActive ? 700 : 500, color: isActive ? '#0a0a0a' : '#374151', lineHeight: 1.4, marginBottom: 3 }}>{chapter.title}</p>
                     {chapter.duration_seconds > 0 && <p style={{ fontSize: 11, color: '#9ca3af' }}>{fmtDur(chapter.duration_seconds)}</p>}
+                    {!hasCourseAccess && <p style={{ fontSize: 11, color: '#b45309', marginTop: 4, fontWeight: 700 }}>Proceed to unlock</p>}
                   </div>
                 </button>
               );
@@ -478,6 +450,30 @@ function WatchContent() {
           </aside>
         )}
       </div>
+
+      {accessPromptOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <button onClick={() => setAccessPromptOpen(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(17,24,39,0.62)', border: 'none', cursor: 'pointer' }} />
+          <div style={{ position: 'relative', width: '100%', maxWidth: 420, borderRadius: 22, background: '#fff', boxShadow: '0 24px 60px rgba(0,0,0,0.26)', padding: 24 }}>
+            <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, color: G, textTransform: 'uppercase', marginBottom: 8 }}>Proceed To Full Class</p>
+            <h3 style={{ fontSize: 24, fontWeight: 900, lineHeight: 1.1, color: '#0a0a0a', marginBottom: 10 }}>{accessPromptTitle}</h3>
+            <p style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.7, marginBottom: 18 }}>{accessPromptBody}</p>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {isGuestPreview ? (
+                <>
+                  <Link href="/register" style={{ padding: '11px 16px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free</Link>
+                  <Link href="/login" style={{ padding: '11px 16px', fontSize: 13, fontWeight: 700, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 999, textDecoration: 'none' }}>Log in</Link>
+                </>
+              ) : (
+                <Link href="/settings" style={{ padding: '11px 16px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>View plans</Link>
+              )}
+              <button onClick={() => setAccessPromptOpen(false)} style={{ padding: '11px 16px', fontSize: 13, fontWeight: 700, color: '#6b7280', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 999, cursor: 'pointer' }}>
+                Not now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <footer style={{ background: '#0a0a0a', color: '#fff', padding: '28px 24px', marginTop: 40 }}>
         <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
@@ -510,8 +506,6 @@ function WatchContent() {
           .watch-header{padding:0 16px!important;gap:10px!important;}
           .watch-home-link,.watch-user-chip{display:none!important;}
           .watch-tab-panel{padding:18px 14px 100px!important;}
-          .watch-preview-overlay{left:14px!important;right:14px!important;bottom:14px!important;width:auto!important;max-width:none!important;}
-          .watch-guest-pill{left:14px!important;right:auto!important;top:14px!important;}
         }
       `}</style>
     </div>
