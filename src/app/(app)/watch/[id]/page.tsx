@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useCallback, Suspense, useTransition } from 'react';
+import { useEffect, useState, useCallback, Suspense, useTransition, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import VideoPlayer from '@/components/player/VideoPlayer';
 import ZealQuiz from '@/components/ai/ZealQuiz';
@@ -55,6 +55,7 @@ function WatchContent() {
   const [accessPromptOpen, setAccessPromptOpen] = useState(false);
   const [instructorProfile, setInstructorProfile] = useState<any>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch('/api/courses/' + id, { credentials: 'include' })
@@ -82,6 +83,25 @@ function WatchContent() {
       .then(r => r.json()).then(d => { if (d.success) setResources(d.data); })
       .finally(() => setResLoading(false));
   }, [tab, id]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node | null;
+      if (!menuRef.current?.contains(target)) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+    };
+  }, [menuOpen]);
 
   const handleProgress = useCallback(async (seconds: number) => {
     setProgress(seconds);
@@ -189,7 +209,7 @@ function WatchContent() {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             Home
           </Link>
-          <div style={{ position: 'relative', flexShrink: 0 }}>
+          <div ref={menuRef} style={{ position: 'relative', flexShrink: 0 }}>
             <button
               onClick={() => setMenuOpen((open) => !open)}
               style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', border: '2px solid ' + (menuOpen ? G : '#e5e7eb'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, minHeight: 0, minWidth: 0, cursor: 'pointer' }}

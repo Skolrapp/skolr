@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import SearchBar from '@/components/ui/SearchBar';
@@ -12,6 +12,7 @@ export default function TopHeader() {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const homeHref = user?.role === 'admin' ? '/admin' : user?.role === 'instructor' ? '/instructor' : '/dashboard';
   const initial  = user?.name?.charAt(0).toUpperCase() || '?';
@@ -21,6 +22,25 @@ export default function TopHeader() {
     await fetch('/api/admin/impersonation/stop', { method: 'POST', credentials: 'include' });
     window.location.href = '/admin';
   };
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node | null;
+      if (!menuRef.current?.contains(target)) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+    };
+  }, [menuOpen]);
+
   const menuItems = user?.role === 'admin'
     ? [
         { label: 'Control center', href: '/admin?tab=reviews' },
@@ -59,7 +79,7 @@ export default function TopHeader() {
           <SearchBar placeholder="Search courses, instructors..." />
         </div>
         <div className="top-header-spacer" style={{ flex: 1 }} />
-        <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div ref={menuRef} style={{ position: 'relative', flexShrink: 0 }}>
           <button onClick={() => setMenuOpen(m => !m)}
             style={{ width: 34, height: 34, borderRadius: '50%', background: hasPhoto ? 'transparent' : 'rgba(16,185,129,0.12)', border: '2px solid ' + (menuOpen ? G : '#e5e7eb'), display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', minHeight: 0, minWidth: 0, overflow: 'hidden', padding: 0 }}>
             {hasPhoto ? (
