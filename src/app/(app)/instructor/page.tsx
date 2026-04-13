@@ -11,6 +11,7 @@ type Period = 'month' | 'quarter' | 'year';
 const PROVIDERS: Record<string, string> = { mpesa: 'M-Pesa', tigopesa: 'Tigo Pesa', airtelmoney: 'Airtel Money', card: 'Card' };
 const fmt = (n: number) => n.toLocaleString('en-TZ');
 const fmtDate = (s: string) => new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+const fmtReviewDate = (s: string) => new Date(s).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
 export default function InstructorPage() {
   const { user, logout } = useAuth();
@@ -125,10 +126,24 @@ export default function InstructorPage() {
                       <p className="text-xs mt-1" style={{ color: course.is_published ? G : course.review_status === 'pending' ? '#fbbf24' : course.review_status === 'rejected' ? '#f87171' : '#fbbf24' }}>
                         {course.is_published ? 'Published' : course.review_status === 'pending' ? 'Pending admin review' : course.review_status === 'rejected' ? 'Changes requested' : 'Draft'}
                       </p>
-                      {course.admin_notes && (
-                        <p className="text-xs mt-1" style={{ color: '#a3a3a3' }}>
-                          Admin note: {course.admin_notes}
-                        </p>
+                      {course.review_status === 'rejected' && (
+                        <div className="mt-3 rounded-xl p-3" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)' }}>
+                          <p className="text-xs font-semibold" style={{ color: '#fca5a5' }}>Admin feedback</p>
+                          <p className="text-xs mt-1" style={{ color: '#e5e7eb', lineHeight: 1.55 }}>
+                            {course.admin_notes || 'Changes were requested, but no written note was attached.'}
+                          </p>
+                          {course.reviewed_at && (
+                            <p className="text-[11px] mt-2" style={{ color: '#a3a3a3' }}>
+                              Reviewed on {fmtReviewDate(course.reviewed_at)}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      {course.review_status === 'approved' && course.admin_notes && (
+                        <div className="mt-3 rounded-xl p-3" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.18)' }}>
+                          <p className="text-xs font-semibold" style={{ color: '#6ee7b7' }}>Admin note</p>
+                          <p className="text-xs mt-1" style={{ color: '#e5e7eb', lineHeight: 1.55 }}>{course.admin_notes}</p>
+                        </div>
                       )}
                       <div className="flex gap-3 mt-3">
                         <Link href={`/instructor/courses/${course.id}/chapters`} className="text-xs font-semibold" style={{ color: G }}>

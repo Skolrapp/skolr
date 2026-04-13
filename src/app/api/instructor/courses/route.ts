@@ -47,16 +47,20 @@ export async function GET(request: NextRequest) {
   const { data: reviews, error: reviewError } = await supabase
     .from('course_review_requests')
     .select('course_id, status, admin_notes, reviewed_at')
-    .in('course_id', courseIds.length > 0 ? courseIds : ['00000000-0000-0000-0000-000000000000']);
+    .in('course_id', courseIds.length > 0 ? courseIds : ['00000000-0000-0000-0000-000000000000'])
+    .order('reviewed_at', { ascending: false, nullsFirst: false })
+    .order('submitted_at', { ascending: false });
 
   if (reviewError && !reviewError.message.includes('course_review_requests')) {
     return NextResponse.json({ success: false, error: reviewError.message }, { status: 500 });
   }
 
-  const reviewByCourseId = new Map<string, { status: string | null; admin_notes: string | null; reviewed_at: string | null }>(
-    ((reviews || []) as Array<{ course_id: string; status: string | null; admin_notes: string | null; reviewed_at: string | null }>)
-      .map((review) => [review.course_id, review])
-  );
+  const reviewByCourseId = new Map<string, { status: string | null; admin_notes: string | null; reviewed_at: string | null }>();
+  ((reviews || []) as Array<{ course_id: string; status: string | null; admin_notes: string | null; reviewed_at: string | null }>).forEach((review) => {
+    if (!reviewByCourseId.has(review.course_id)) {
+      reviewByCourseId.set(review.course_id, review);
+    }
+  });
 
   const enriched = items.map((course) => {
     const review = reviewByCourseId.get(course.id);
