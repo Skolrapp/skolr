@@ -42,12 +42,24 @@ export async function GET(
     await supabase.from('courses').update({ view_count: (course.view_count || 0) + 1 }).eq('id', id);
   }
 
+  const { data: review } = await supabase
+    .from('course_review_requests')
+    .select('status, admin_notes, reviewed_at')
+    .eq('course_id', id)
+    .order('reviewed_at', { ascending: false, nullsFirst: false })
+    .order('submitted_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   return NextResponse.json({
     success: true,
     data: {
       course: {
         ...course,
         instructor_name: (course.users as { name: string } | null)?.name || 'Unknown',
+        review_status: review?.status || null,
+        admin_notes: review?.admin_notes || null,
+        reviewed_at: review?.reviewed_at || null,
         users: undefined,
       },
       progress_seconds: enrollment?.progress_seconds ?? 0,

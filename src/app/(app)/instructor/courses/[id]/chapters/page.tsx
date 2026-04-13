@@ -53,7 +53,7 @@ export default function ChaptersPage() {
   const [editVideoError, setEditVideoError] = useState('');
   const [editUploadedVideo, setEditUploadedVideo] = useState<UploadedVideo | null>(null);
   const [uploadingEditVideo, setUploadingEditVideo] = useState(false);
-  const canDeleteVideos = user?.role === 'admin';
+  const canManageVideos = user?.role === 'admin' || (!!course && !course.is_published);
 
   useEffect(() => {
     fetch(`/api/courses/${id}`, { credentials: 'include' })
@@ -138,9 +138,9 @@ export default function ChaptersPage() {
   };
 
   const deleteChapter = (chapterId: string, title: string) => {
-    if (!canDeleteVideos) {
+    if (!canManageVideos) {
       setSuccess('');
-      setFormErr('Video deletion requires admin approval. Ask an admin to remove this chapter.');
+      setFormErr('Published course videos can only be changed or removed by an admin.');
       return;
     }
     if (!confirm(`Delete "${title}"?`)) return;
@@ -245,9 +245,9 @@ export default function ChaptersPage() {
           <p className="text-xs mt-1" style={{ color: '#a3a3a3' }}>
             Add as many chapter videos as you need. Each chapter uploads straight to Bunny and plays in sequence inside the course.
           </p>
-          {!canDeleteVideos && (
+          {!canManageVideos && (
             <p className="text-xs mt-2" style={{ color: '#fbbf24' }}>
-              Instructors can edit videos, but deletion is locked until an admin approves and removes the chapter.
+              This course is published. Video edits and deletions are locked until an admin steps in.
             </p>
           )}
         </div>
@@ -274,7 +274,7 @@ export default function ChaptersPage() {
                     <div><label className="lbl">Description</label><input className="inp" value={editForm.description} onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))} /></div>
                     <div>
                       <label className="lbl">Replace chapter video</label>
-                      <input className="inp" type="file" accept="video/*" onChange={handleEditVideoChange} disabled={uploadingEditVideo || pending} />
+                      <input className="inp" type="file" accept="video/*" onChange={handleEditVideoChange} disabled={uploadingEditVideo || pending || !canManageVideos} />
                       {editUploadProgress && <p className="text-xs mt-2" style={{ color: editUploadedVideo ? G : '#d4d4d8' }}>{editUploadProgress}</p>}
                       {editUploadedVideo && <p className="text-xs mt-1" style={{ color: '#a3a3a3' }}>{editUploadedVideo.fileName}</p>}
                       {editVideoError && <p className="text-xs mt-2" style={{ color: '#f87171' }}>{editVideoError}</p>}
@@ -283,7 +283,7 @@ export default function ChaptersPage() {
                     <div><label className="lbl">Duration (seconds)</label><input className="inp" type="number" value={editForm.duration_seconds} onChange={(e) => setEditForm((f) => ({ ...f, duration_seconds: e.target.value }))} /></div>
                     <div><label className="lbl">Release date - optional</label><input className="inp" type="datetime-local" value={editForm.release_at} onChange={(e) => setEditForm((f) => ({ ...f, release_at: e.target.value }))} /></div>
                     <div className="flex gap-2">
-                      <button className="btn-primary text-sm py-2 flex-1" onClick={() => saveEdit(chapter.id)} disabled={pending || uploadingEditVideo}>{pending ? 'Saving...' : 'Save'}</button>
+                      <button className="btn-primary text-sm py-2 flex-1" onClick={() => saveEdit(chapter.id)} disabled={pending || uploadingEditVideo || !canManageVideos}>{pending ? 'Saving...' : 'Save'}</button>
                       <button
                         className="btn-secondary text-sm py-2 w-auto px-4"
                         onClick={() => {
@@ -310,6 +310,10 @@ export default function ChaptersPage() {
                     <div className="flex gap-2 flex-shrink-0">
                       <button
                         onClick={() => {
+                          if (!canManageVideos) {
+                            setFormErr('Published course videos can only be changed or removed by an admin.');
+                            return;
+                          }
                           setEditId(chapter.id);
                           setEditForm({
                             title: chapter.title,
@@ -323,16 +327,18 @@ export default function ChaptersPage() {
                           setEditUploadedVideo(null);
                         }}
                         className="!min-h-0 !min-w-0 p-1.5 rounded-lg"
-                        style={{ background: '#222', color: '#a3a3a3' }}
+                        disabled={!canManageVideos}
+                        title={canManageVideos ? 'Edit chapter' : 'Admin required for published videos'}
+                        style={{ background: canManageVideos ? '#222' : 'rgba(115,115,115,0.12)', color: '#a3a3a3', cursor: canManageVideos ? 'pointer' : 'not-allowed' }}
                       >
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                       </button>
                       <button
                         onClick={() => deleteChapter(chapter.id, chapter.title)}
                         className="!min-h-0 !min-w-0 p-1.5 rounded-lg"
-                        disabled={!canDeleteVideos}
-                        title={canDeleteVideos ? 'Delete chapter' : 'Admin approval required to delete'}
-                        style={{ background: canDeleteVideos ? 'rgba(239,68,68,0.1)' : 'rgba(115,115,115,0.12)', color: canDeleteVideos ? '#ef4444' : '#737373', cursor: canDeleteVideos ? 'pointer' : 'not-allowed' }}
+                        disabled={!canManageVideos}
+                        title={canManageVideos ? 'Delete chapter' : 'Admin required for published videos'}
+                        style={{ background: canManageVideos ? 'rgba(239,68,68,0.1)' : 'rgba(115,115,115,0.12)', color: canManageVideos ? '#ef4444' : '#737373', cursor: canManageVideos ? 'pointer' : 'not-allowed' }}
                       >
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" /></svg>
                       </button>
