@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, type KeyboardEvent } from 'react';
 import Hls from 'hls.js';
 
 interface Props {
@@ -174,6 +174,15 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
     if (v.paused) { v.play(); setPlaying(true); } else { v.pause(); setPlaying(false); }
     activity();
   };
+  const handleWrapperKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement | null;
+    const tagName = target?.tagName;
+    if (tagName === 'INPUT' || tagName === 'BUTTON') return;
+    if (event.key === ' ' || event.code === 'Space') {
+      event.preventDefault();
+      togglePlay();
+    }
+  };
 
   const setLevel = (l: number) => { if (hlsRef.current) hlsRef.current.currentLevel = l; setCurLevel(l); setShowQ(false); };
   const setCaptionTrack = (track: number) => {
@@ -242,10 +251,14 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
   );
 
   return (
-    <div ref={wrapperRef} className="relative rounded-2xl overflow-hidden aspect-video select-none"
+    <div ref={wrapperRef} className="relative rounded-2xl overflow-hidden aspect-video select-none focus:outline-none focus:ring-2 focus:ring-emerald-400/70"
       style={{ background: 'linear-gradient(180deg,#0f172a,#111827)' }}
-      onMouseMove={activity} onTouchStart={activity}>
-      <video ref={vRef} className="w-full h-full object-cover" poster={posterUrl} playsInline muted={muted}
+      onMouseMove={activity} onTouchStart={activity} onKeyDown={handleWrapperKeyDown} tabIndex={0}>
+      <video ref={vRef} className="w-full h-full object-cover cursor-pointer" poster={posterUrl} playsInline muted={muted}
+        onClick={(e) => {
+          e.stopPropagation();
+          togglePlay();
+        }}
         onWaiting={() => setBuffering(true)}
         onPlaying={() => { setBuffering(false); setPlaying(true); }}
         onPause={() => setPlaying(false)}
@@ -303,12 +316,12 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <button className="text-white !min-h-0 !min-w-0 p-1" onClick={togglePlay}>
+              <button className="text-white !min-h-0 !min-w-0 p-1" onClick={(e) => { e.stopPropagation(); togglePlay(); }}>
                 {playing
                   ? <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
                   : <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>}
               </button>
-              <button className="text-white !min-h-0 !min-w-0 p-1" onClick={() => {
+              <button className="text-white !min-h-0 !min-w-0 p-1" onClick={(e) => { e.stopPropagation();
                 const nextMuted = !muted;
                 if (!nextMuted && volume === 0) setVolume(0.8);
                 setMuted(nextMuted);
@@ -328,23 +341,24 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
                 step={0.05}
                 value={muted ? 0 : volume}
                 onChange={(e) => handleVolume(Number(e.target.value))}
+                onClick={(e) => e.stopPropagation()}
                 className="hidden sm:block w-24 accent-emerald-500 cursor-pointer"
                 aria-label="Volume"
               />
               <div className="flex-1" />
               <div className="relative">
-                <button className="text-white text-xs bg-white/20 rounded px-2 py-0.5 !min-h-0 !min-w-0" onClick={() => setShowCaptions((open) => !open)}>
+                <button className="text-white text-xs bg-white/20 rounded px-2 py-0.5 !min-h-0 !min-w-0" onClick={(e) => { e.stopPropagation(); setShowCaptions((open) => !open); }}>
                   {subtitleTracks.length ? `CC ${subtitleTrack >= 0 ? 'On' : 'Off'}` : 'CC Off'}
                 </button>
                 {showCaptions && (
                   <div className="absolute bottom-8 right-0 rounded-xl overflow-hidden min-w-[120px] z-10" style={{ background: '#0a0a0a', border: '1px solid #2a2a2a' }}>
-                    <button className={`w-full text-left px-3 py-2 text-xs text-white hover:bg-white/10 ${subtitleTrack === -1 ? 'font-bold' : ''}`} style={subtitleTrack === -1 ? { color: '#10B981' } : {}} onClick={() => setCaptionTrack(-1)}>
+                    <button className={`w-full text-left px-3 py-2 text-xs text-white hover:bg-white/10 ${subtitleTrack === -1 ? 'font-bold' : ''}`} style={subtitleTrack === -1 ? { color: '#10B981' } : {}} onClick={(e) => { e.stopPropagation(); setCaptionTrack(-1); }}>
                       Off
                     </button>
                     {subtitleTracks.length === 0 ? (
                       <div className="px-3 py-2 text-xs text-white/60">No captions</div>
                     ) : subtitleTracks.map(track => (
-                      <button key={track.index} className={`w-full text-left px-3 py-2 text-xs text-white hover:bg-white/10 ${subtitleTrack === track.index ? 'font-bold' : ''}`} style={subtitleTrack === track.index ? { color: '#10B981' } : {}} onClick={() => setCaptionTrack(track.index)}>
+                      <button key={track.index} className={`w-full text-left px-3 py-2 text-xs text-white hover:bg-white/10 ${subtitleTrack === track.index ? 'font-bold' : ''}`} style={subtitleTrack === track.index ? { color: '#10B981' } : {}} onClick={(e) => { e.stopPropagation(); setCaptionTrack(track.index); }}>
                         {track.label}
                       </button>
                     ))}
@@ -352,17 +366,17 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
                 )}
               </div>
               <div className="relative">
-                <button className="text-white text-xs bg-white/20 rounded px-2 py-0.5 !min-h-0 !min-w-0 font-mono" onClick={() => setShowQ(q => !q)}>{qlabel}</button>
+                <button className="text-white text-xs bg-white/20 rounded px-2 py-0.5 !min-h-0 !min-w-0 font-mono" onClick={(e) => { e.stopPropagation(); setShowQ(q => !q); }}>{qlabel}</button>
                 {showQ && (
                   <div className="absolute bottom-8 right-0 rounded-xl overflow-hidden min-w-[90px] z-10" style={{ background: '#0a0a0a', border: '1px solid #2a2a2a' }}>
-                    <button className={`w-full text-left px-3 py-2 text-xs text-white hover:bg-white/10 ${curLevel === -1 ? 'font-bold' : ''}`} style={curLevel === -1 ? { color: '#10B981' } : {}} onClick={() => setLevel(-1)}>Auto (ABR)</button>
+                    <button className={`w-full text-left px-3 py-2 text-xs text-white hover:bg-white/10 ${curLevel === -1 ? 'font-bold' : ''}`} style={curLevel === -1 ? { color: '#10B981' } : {}} onClick={(e) => { e.stopPropagation(); setLevel(-1); }}>Auto (ABR)</button>
                     {[...levels].reverse().map(l => (
-                      <button key={l.index} className={`w-full text-left px-3 py-2 text-xs text-white hover:bg-white/10 ${curLevel === l.index ? 'font-bold' : ''}`} style={curLevel === l.index ? { color: '#10B981' } : {}} onClick={() => setLevel(l.index)}>{l.label}</button>
+                      <button key={l.index} className={`w-full text-left px-3 py-2 text-xs text-white hover:bg-white/10 ${curLevel === l.index ? 'font-bold' : ''}`} style={curLevel === l.index ? { color: '#10B981' } : {}} onClick={(e) => { e.stopPropagation(); setLevel(l.index); }}>{l.label}</button>
                     ))}
                   </div>
                 )}
               </div>
-              <button className="text-white !min-h-0 !min-w-0 p-1" onClick={toggleFullscreen} aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
+              <button className="text-white !min-h-0 !min-w-0 p-1" onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }} aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
                 {isFullscreen ? (
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
                 ) : (
