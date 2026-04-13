@@ -53,6 +53,7 @@ export default function ChaptersPage() {
   const [editVideoError, setEditVideoError] = useState('');
   const [editUploadedVideo, setEditUploadedVideo] = useState<UploadedVideo | null>(null);
   const [uploadingEditVideo, setUploadingEditVideo] = useState(false);
+  const canDeleteVideos = user?.role === 'admin';
 
   useEffect(() => {
     fetch(`/api/courses/${id}`, { credentials: 'include' })
@@ -137,6 +138,11 @@ export default function ChaptersPage() {
   };
 
   const deleteChapter = (chapterId: string, title: string) => {
+    if (!canDeleteVideos) {
+      setSuccess('');
+      setFormErr('Video deletion requires admin approval. Ask an admin to remove this chapter.');
+      return;
+    }
     if (!confirm(`Delete "${title}"?`)) return;
     startTransition(async () => {
       const res = await fetch(`/api/chapters/${chapterId}`, { method: 'DELETE', credentials: 'include' });
@@ -145,6 +151,8 @@ export default function ChaptersPage() {
         setChapters((c) => c.filter((ch) => ch.id !== chapterId));
         setSuccess('Deleted.');
         setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setFormErr(data.error || 'Delete failed.');
       }
     });
   };
@@ -237,8 +245,14 @@ export default function ChaptersPage() {
           <p className="text-xs mt-1" style={{ color: '#a3a3a3' }}>
             Add as many chapter videos as you need. Each chapter uploads straight to Bunny and plays in sequence inside the course.
           </p>
+          {!canDeleteVideos && (
+            <p className="text-xs mt-2" style={{ color: '#fbbf24' }}>
+              Instructors can edit videos, but deletion is locked until an admin approves and removes the chapter.
+            </p>
+          )}
         </div>
 
+        {formErr && <div className="rounded-xl p-3 mb-4 text-sm" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5' }}>{formErr}</div>}
         {success && <div className="rounded-xl p-3 mb-4 text-sm" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', color: '#34d399' }}>{success}</div>}
 
         {loading ? (
@@ -313,7 +327,13 @@ export default function ChaptersPage() {
                       >
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                       </button>
-                      <button onClick={() => deleteChapter(chapter.id, chapter.title)} className="!min-h-0 !min-w-0 p-1.5 rounded-lg" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>
+                      <button
+                        onClick={() => deleteChapter(chapter.id, chapter.title)}
+                        className="!min-h-0 !min-w-0 p-1.5 rounded-lg"
+                        disabled={!canDeleteVideos}
+                        title={canDeleteVideos ? 'Delete chapter' : 'Admin approval required to delete'}
+                        style={{ background: canDeleteVideos ? 'rgba(239,68,68,0.1)' : 'rgba(115,115,115,0.12)', color: canDeleteVideos ? '#ef4444' : '#737373', cursor: canDeleteVideos ? 'pointer' : 'not-allowed' }}
+                      >
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" /></svg>
                       </button>
                     </div>

@@ -41,6 +41,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   const token = request.cookies.get('sk_token')?.value;
   const session = token ? await validateSession(token) : null;
   if (!session) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  if (session.user.role !== 'admin') {
+    return NextResponse.json({ success: false, error: 'Only admins can delete course videos. Ask admin to approve removal.' }, { status: 403 });
+  }
   const { id } = await params;
   const supabase = createSupabaseAdmin();
   const { data: chapter } = await supabase.from('chapters').select('course_id, courses(instructor_id)').eq('id', id).single();
