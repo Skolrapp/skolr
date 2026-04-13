@@ -30,6 +30,8 @@ const adminNav = [
     icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg> },
   { href: '/admin?tab=tracker', tab: 'tracker', label: 'Tracker',
     icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 2 4-6"/></svg> },
+  { href: '/courses', tab: 'catalog', label: 'Catalog',
+    icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg> },
   { href: '/admin?tab=cloning', tab: 'cloning', label: 'Cloning',
     icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="2" y="2" width="13" height="13" rx="2"/></svg> },
   { href: '/admin?tab=support', tab: 'support', label: 'Support',
@@ -46,7 +48,9 @@ export default function BottomNav({ role = 'student', adminTab }: { role?: UserR
     <nav className="fixed bottom-0 left-0 right-0 z-50 bottom-nav">
       <div className="max-w-2xl mx-auto flex">
         {role === 'admin' ? adminNav.map(item => {
-          const active = pathname === '/admin' && item.tab === adminTab;
+          const active = item.tab === 'catalog'
+            ? pathname === '/courses'
+            : pathname === '/admin' && item.tab === adminTab;
           return (
             <Link key={item.href} href={item.href}
               className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium transition-colors"
