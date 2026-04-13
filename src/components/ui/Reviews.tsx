@@ -58,7 +58,16 @@ export default function Reviews({ courseId, userId }: { courseId: string; userId
           </div>
         </div>
       )}
-      {!submitted ? (
+      {!userId ? (
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+          <p className="text-sm font-bold" style={{ color: '#fff' }}>Join Skolr to rate this course</p>
+          <p className="text-sm" style={{ color: '#a3a3a3' }}>Guests can read reviews first. Create a free account to leave your own rating and keep learning.</p>
+          <div className="flex gap-2 flex-wrap">
+            <a href="/register" className="btn-primary text-sm py-2.5 px-4 no-underline">Sign up free</a>
+            <a href="/login" className="text-sm py-2.5 px-4 rounded-xl no-underline" style={{ color: '#fff', border: '1px solid #333' }}>Log in</a>
+          </div>
+        </div>
+      ) : !submitted ? (
         <div className="rounded-2xl p-4 space-y-3" style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}>
           <p className="text-sm font-bold" style={{ color: '#fff' }}>Rate this course</p>
           <Stars rating={rating} interactive onRate={setRating} />

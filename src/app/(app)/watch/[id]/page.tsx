@@ -365,18 +365,10 @@ function WatchContent() {
 
             {tab === 'resources' && (
               <div>
-                {isGuestPreview ? (
-                  <div style={{ padding: 24, borderRadius: 16, background: '#f9fafb', border: '1px solid #e5e7eb' }}>
-                    <p style={{ fontSize: 16, fontWeight: 800, color: '#0a0a0a', marginBottom: 8 }}>Resources preview</p>
-                    <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 14 }}>Students with an account can open notes, links, and practice resources attached to this class.</p>
-                    <Link href="/register" style={{ display: 'inline-block', padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free</Link>
-                  </div>
-                ) : (
-                  <>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                   <div>
                     <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0a0a0a', marginBottom: 4 }}>Course Resources</h3>
-                    <p style={{ fontSize: 13, color: '#9ca3af' }}>Notes, links and materials from the instructor</p>
+                    <p style={{ fontSize: 13, color: '#9ca3af' }}>{isGuestPreview ? 'Guests can preview the resource list before signing up.' : 'Notes, links and materials from the instructor'}</p>
                   </div>
                   {user?.role === 'instructor' && (
                     <button onClick={() => setShowAddRes(s => !s)} style={{ padding: '8px 16px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, border: 'none', borderRadius: 8, cursor: 'pointer' }}>+ Add resource</button>
@@ -438,7 +430,15 @@ function WatchContent() {
                     ))}
                   </div>
                 )}
-                  </>
+                {isGuestPreview && (
+                  <div style={{ marginTop: 16, padding: 16, borderRadius: 14, background: '#f8fafc', border: '1px solid #e5e7eb' }}>
+                    <p style={{ fontSize: 13, fontWeight: 800, color: '#0a0a0a', marginBottom: 6 }}>Want the full class experience?</p>
+                    <p style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.6, marginBottom: 12 }}>Create a free account to keep watching, track progress, and open every lesson resource smoothly.</p>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <Link href="/register" style={{ display: 'inline-block', padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free</Link>
+                      <Link href="/login" style={{ display: 'inline-block', padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 999, textDecoration: 'none' }}>Log in</Link>
+                    </div>
+                  </div>
                 )}
               </div>
             )}

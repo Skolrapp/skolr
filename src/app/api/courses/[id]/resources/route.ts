@@ -4,8 +4,6 @@ import { createSupabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const token = request.cookies.get('sk_token')?.value;
-  const session = token ? await validateSession(token) : null;
-  if (!session) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const supabase = createSupabaseAdmin();
   const { data } = await supabase.from('course_resources').select('*').eq('course_id', id).order('created_at', { ascending: true });
