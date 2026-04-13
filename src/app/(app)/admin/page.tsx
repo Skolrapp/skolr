@@ -29,6 +29,9 @@ export default function AdminPage() {
   const [studentQuery, setStudentQuery] = useState('');
   const [students, setStudents] = useState<any[]>([]);
   const [studentsLoading, setStudentsLoading] = useState(true);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [studentDetail, setStudentDetail] = useState<any>(null);
+  const [studentDetailLoading, setStudentDetailLoading] = useState(false);
   const [templates, setTemplates] = useState<any[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(true);
   const [cloneForm, setCloneForm] = useState({ sourceCourseId: '', targetSubjects: '', targetSubCategory: '' });
@@ -83,6 +86,15 @@ export default function AdminPage() {
   useEffect(() => {
     loadStudents();
   }, []);
+
+  const loadStudentDetail = (studentId: string) => {
+    setSelectedStudentId(studentId);
+    setStudentDetailLoading(true);
+    fetch(`/api/admin/students/${studentId}`, { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setStudentDetail(d.data); })
+      .finally(() => setStudentDetailLoading(false));
+  };
 
   useEffect(() => {
     setTemplatesLoading(true);
@@ -323,6 +335,14 @@ export default function AdminPage() {
                         </div>
                       ))}
                     </div>
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        className="btn-secondary w-auto px-4 text-sm"
+                        onClick={() => loadStudentDetail(student.id)}
+                      >
+                        {selectedStudentId === student.id ? 'Refresh learner details' : 'View learner details'}
+                      </button>
+                    </div>
                   </div>
                 ))}
                 {students.length === 0 && (
@@ -330,6 +350,116 @@ export default function AdminPage() {
                     <p className="text-sm font-semibold" style={{ color: '#fff' }}>No students found.</p>
                   </div>
                 )}
+              </div>
+            )}
+
+            {(studentDetailLoading || studentDetail) && (
+              <div className="card">
+                {studentDetailLoading ? (
+                  <div className="space-y-3">
+                    <div className="skel h-8 rounded-xl" />
+                    <div className="skel h-32 rounded-2xl" />
+                    <div className="skel h-40 rounded-2xl" />
+                  </div>
+                ) : studentDetail ? (
+                  <div className="space-y-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-lg font-bold" style={{ color: '#fff' }}>{studentDetail.name}</p>
+                        <p className="text-xs mt-1" style={{ color: '#a3a3a3' }}>{studentDetail.phone}</p>
+                        <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                          Joined {new Date(studentDetail.created_at).toLocaleDateString('en-GB')} • Tier {studentDetail.subscription_tier}
+                        </p>
+                      </div>
+                      <button
+                        className="btn-secondary w-auto px-4 text-sm"
+                        onClick={() => {
+                          setSelectedStudentId(null);
+                          setStudentDetail(null);
+                        }}
+                      >
+                        Close
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        ['Enrollments', studentDetail.total_enrollments],
+                        ['Completed courses', studentDetail.completed_courses],
+                        ['Subjects tracked', studentDetail.progress_by_subject.length],
+                        ['Last seen', studentDetail.last_seen_at ? new Date(studentDetail.last_seen_at).toLocaleString('en-GB') : 'No session'],
+                      ].map(([label, value]) => (
+                        <div key={label} className="rounded-2xl p-3" style={{ background: '#1a1a1a', border: '1px solid #222' }}>
+                          <p className="text-xs" style={{ color: '#737373' }}>{label}</p>
+                          <p className="text-sm font-semibold mt-2" style={{ color: '#fff' }}>{value}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-bold mb-3" style={{ color: '#fff' }}>Subject progress snapshot</h3>
+                      <div className="space-y-2">
+                        {studentDetail.progress_by_subject.length === 0 ? (
+                          <p className="text-xs" style={{ color: '#737373' }}>No subject progress yet.</p>
+                        ) : studentDetail.progress_by_subject.map((subject: any) => (
+                          <div key={subject.subject} className="rounded-xl p-3" style={{ background: '#1a1a1a', border: '1px solid #222' }}>
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="text-sm font-semibold" style={{ color: '#fff' }}>{subject.subject}</p>
+                              <p className="text-xs font-semibold" style={{ color: G }}>{subject.completion_percent}%</p>
+                            </div>
+                            <div className="mt-2 h-2 rounded-full" style={{ background: '#262626' }}>
+                              <div className="h-2 rounded-full" style={{ width: `${subject.completion_percent}%`, background: G }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-bold mb-3" style={{ color: '#fff' }}>Recent course activity</h3>
+                      <div className="space-y-2">
+                        {studentDetail.recent_courses.length === 0 ? (
+                          <p className="text-xs" style={{ color: '#737373' }}>No course activity yet.</p>
+                        ) : studentDetail.recent_courses.map((entry: any) => (
+                          <div key={`${entry.course_id}-${entry.enrolled_at}`} className="rounded-xl p-3" style={{ background: '#1a1a1a', border: '1px solid #222' }}>
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold" style={{ color: '#fff' }}>{entry.title}</p>
+                                <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                                  {entry.subject} • {entry.category}{entry.sub_category ? ` • ${entry.sub_category}` : ''}
+                                </p>
+                                <p className="text-xs mt-1" style={{ color: '#a3a3a3' }}>
+                                  Enrolled {new Date(entry.enrolled_at).toLocaleDateString('en-GB')}
+                                  {entry.completed_at ? ` • Completed ${new Date(entry.completed_at).toLocaleDateString('en-GB')}` : ''}
+                                </p>
+                              </div>
+                              <p className="text-xs font-semibold" style={{ color: entry.completed ? G : '#fbbf24' }}>
+                                {entry.completed ? 'Completed' : `${entry.completion_percent}% done`}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-bold mb-3" style={{ color: '#fff' }}>Recent learner activity</h3>
+                      <div className="space-y-2">
+                        {studentDetail.recent_activity.length === 0 ? (
+                          <p className="text-xs" style={{ color: '#737373' }}>No recent activity.</p>
+                        ) : studentDetail.recent_activity.map((item: any, index: number) => (
+                          <div key={`${item.type}-${index}`} className="flex items-start gap-3 rounded-xl p-3" style={{ background: '#1a1a1a', border: '1px solid #222' }}>
+                            <div className="w-2 h-2 rounded-full mt-1.5" style={{ background: item.type === 'completion' ? G : item.type === 'login' ? '#60a5fa' : '#fbbf24' }} />
+                            <div>
+                              <p className="text-sm" style={{ color: '#fff' }}>{item.label}</p>
+                              <p className="text-xs mt-1" style={{ color: '#737373' }}>{new Date(item.timestamp).toLocaleString('en-GB')}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             )}
           </div>
