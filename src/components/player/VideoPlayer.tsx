@@ -27,6 +27,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
   const progRef  = useRef<ReturnType<typeof setInterval> | null>(null);
   const ctrlRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewTriggeredRef = useRef(false);
+  const startAtRef = useRef(startAt);
 
   const [ready,    setReady]    = useState(false);
   const [playing,  setPlaying]  = useState(false);
@@ -64,6 +65,10 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
   }, []);
 
   useEffect(() => {
+    startAtRef.current = startAt;
+  }, [hlsUrl, startAt]);
+
+  useEffect(() => {
     const video = vRef.current;
     if (!video) return;
     if (Hls.isSupported()) {
@@ -74,7 +79,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
         setLevels(d.levels.map((l, i) => ({ index: i, label: l.height ? `${l.height}p` : `${Math.round(l.bitrate/1000)}k` })));
         setSubtitleTracks((d.subtitleTracks || []).map((track, index) => ({ index, label: track.name || track.lang || `Track ${index + 1}` })));
         setReady(true);
-        if (startAt > 0) video.currentTime = startAt;
+        if (startAtRef.current > 0) video.currentTime = startAtRef.current;
       });
       hls.on(Hls.Events.LEVEL_SWITCHED, (_, d) => setCurLevel(d.level));
       hls.on(Hls.Events.SUBTITLE_TRACK_SWITCH, (_, d) => setSubtitleTrack(d.id));
@@ -89,7 +94,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
       hlsRef.current = hls;
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = hlsUrl;
-      video.addEventListener('loadedmetadata', () => { setReady(true); if (startAt > 0) video.currentTime = startAt; });
+      video.addEventListener('loadedmetadata', () => { setReady(true); if (startAtRef.current > 0) video.currentTime = startAtRef.current; });
     } else {
       setError('Your browser does not support video playback.');
     }
@@ -116,7 +121,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
       video.removeEventListener('volumechange', syncVolume);
       if (progRef.current) clearInterval(progRef.current);
     };
-  }, [hlsUrl, startAt, onProgress]);
+  }, [hlsUrl, onProgress]);
 
   useEffect(() => {
     const video = vRef.current;
