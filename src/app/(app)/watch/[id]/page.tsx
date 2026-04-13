@@ -263,11 +263,11 @@ function WatchContent() {
         </div>
       </header>
 
-      <div className="watch-layout" style={{ display: 'flex', alignItems: 'flex-start', maxWidth: 1440, margin: '0 auto' }}>
+      <div className="watch-layout" style={{ display: 'flex', alignItems: 'flex-start', gap: 24, maxWidth: 1500, margin: '0 auto', padding: '18px 24px 0' }}>
 
         <div className="watch-main" style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ padding: '16px 24px 0', background: '#fff' }}>
-            <div className="watch-player-shell" style={{ maxWidth: 860, marginLeft: 0, position: 'relative' }}>
+          <div style={{ padding: 0, background: '#fff' }}>
+            <div className="watch-player-shell" style={{ maxWidth: 1080, marginLeft: 0, position: 'relative' }}>
               <VideoPlayer
                 hlsUrl={currentVideo}
                 posterUrl={course.thumbnail_url}
@@ -279,7 +279,7 @@ function WatchContent() {
           </div>
 
           {chapters.length > 0 && (
-            <div className="watch-mobile-content" style={{ background: '#fff', padding: '8px 24px 0' }}>
+            <div className="watch-mobile-content" style={{ background: '#fff', padding: '10px 0 0' }}>
               <div style={{ border: '1px solid #e5e7eb', borderRadius: 18, overflow: 'hidden', background: '#fcfcfd', boxShadow: '0 10px 24px rgba(15,23,42,0.05)' }}>
                 <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid #e5e7eb', background: 'linear-gradient(180deg,#ffffff,#f8fafc)' }}>
                   <p style={{ fontSize: 14, fontWeight: 800, color: '#0a0a0a', marginBottom: 4 }}>Lessons in this class</p>
@@ -326,7 +326,7 @@ function WatchContent() {
             </div>
           )}
 
-          <div className="watch-meta" style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '16px 24px', maxWidth: 860 }}>
+          <div className="watch-meta" style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '18px 0 16px', maxWidth: 1080 }}>
             <h1 style={{ fontSize: 18, fontWeight: 800, color: '#0a0a0a', marginBottom: 10 }}>{currentTitle}</h1>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 5, background: col.bg, color: col.color }}>{course.category}</span>
@@ -355,7 +355,7 @@ function WatchContent() {
           </div>
 
           <div className="watch-tabs" style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 60, zIndex: 10 }}>
-            <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', maxWidth: 860 }}>
+            <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', maxWidth: 1080 }}>
               {TABS.map(t => (
                 <button key={t.id} onClick={() => {
                   if (!hasCourseAccess && (t.id === 'quiz' || t.id === 'qa')) {
@@ -371,41 +371,36 @@ function WatchContent() {
             </div>
           </div>
 
-          <div className="watch-tab-panel" style={{ padding: '28px 24px 60px', background: '#fff', minHeight: 400, maxWidth: 860 }}>
+          <div className="watch-tab-panel" style={{ padding: '24px 0 60px', background: '#fff', minHeight: 400, maxWidth: 1080 }}>
             {tab === 'overview' && (
               <div>
                 <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>About this course</h3>
                 <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.7, marginBottom: 24 }}>{course.description || 'No description available.'}</p>
-                <Link
-                  href={`/instructors/${course.instructor_id}`}
-                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: 16, background: '#f9fafb', borderRadius: 12, border: '1px solid #e5e7eb', marginBottom: 20, textDecoration: 'none' }}
-                >
-                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(16,185,129,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ fontSize: 18, fontWeight: 800, color: G }}>{(course.instructor_name || 'I').charAt(0)}</span>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 12, color: '#9ca3af' }}>Instructor</p>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: '#0a0a0a' }}>{course.instructor_name}</p>
-                  </div>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: G }}>View profile</span>
-                </Link>
                 {instructorProfile?.instructor && (
-                  <Link href={`/instructors/${course.instructor_id}`} style={{ display: 'block', padding: 18, background: '#fff', borderRadius: 14, border: '1px solid #e5e7eb', marginBottom: 20, textDecoration: 'none' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
-                      <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                  <Link href={`/instructors/${course.instructor_id}`} style={{ display: 'block', padding: 22, background: 'linear-gradient(135deg,#ffffff,#f8fafc)', borderRadius: 22, border: '1px solid #e5e7eb', marginBottom: 24, textDecoration: 'none', boxShadow: '0 14px 36px rgba(15,23,42,0.06)' }}>
+                    <div className="watch-instructor-card" style={{ display: 'grid', gridTemplateColumns: '112px minmax(0,1fr) auto', alignItems: 'center', gap: 18 }}>
+                      <div style={{ width: 112, height: 112, borderRadius: 28, background: 'linear-gradient(135deg,#ecfdf5,#dbeafe)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, border: '1px solid #d1fae5' }}>
                         {instructorProfile.instructor.avatar_url
                           ? <img src={instructorProfile.instructor.avatar_url} alt={instructorProfile.instructor.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          : <span style={{ fontSize: 20, fontWeight: 800, color: G }}>{instructorProfile.instructor.name?.charAt(0)}</span>}
+                          : <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                              <div style={{ width: 46, height: 46, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 20px rgba(15,23,42,0.08)' }}>
+                                <span style={{ fontSize: 22, fontWeight: 900, color: G }}>{instructorProfile.instructor.name?.charAt(0)}</span>
+                              </div>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: '#059669', letterSpacing: 0.4, textTransform: 'uppercase' }}>Profile photo</span>
+                            </div>}
                       </div>
-                      <div>
-                        <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 3 }}>Instructor profile</p>
-                        <p style={{ fontSize: 16, fontWeight: 800, color: '#0a0a0a' }}>{instructorProfile.instructor.name}</p>
-                        <p style={{ fontSize: 13, color: '#6b7280' }}>{instructorProfile.stats?.total_courses || 0} published courses · {(instructorProfile.stats?.total_views || 0).toLocaleString()} views</p>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontSize: 12, color: '#10B981', marginBottom: 6, fontWeight: 800, letterSpacing: 0.5, textTransform: 'uppercase' }}>Meet your instructor</p>
+                        <p style={{ fontSize: 22, fontWeight: 900, color: '#0a0a0a', marginBottom: 6 }}>{instructorProfile.instructor.name}</p>
+                        <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 10 }}>{instructorProfile.stats?.total_courses || 0} published classes · {(instructorProfile.stats?.total_views || 0).toLocaleString()} views</p>
+                        <p style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.8 }}>
+                          {instructorProfile.instructor.bio || 'Experienced Skolr instructor helping learners move chapter by chapter with focused lessons.'}
+                        </p>
+                      </div>
+                      <div style={{ alignSelf: 'stretch', display: 'flex', alignItems: 'center' }}>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: G, whiteSpace: 'nowrap' }}>View profile</span>
                       </div>
                     </div>
-                    <p style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.7 }}>
-                      {instructorProfile.instructor.bio || 'Experienced Skolr instructor helping learners move chapter by chapter with focused lessons.'}
-                    </p>
                   </Link>
                 )}
                 {chapters.length > 0 && (
@@ -528,13 +523,7 @@ function WatchContent() {
         </div>
 
         {chapters.length > 0 && (
-          <aside className="watch-sidebar" style={{ width: 300, flexShrink: 0, borderLeft: '1px solid #e5e7eb', background: '#fff', position: 'sticky', top: 60, height: 'calc(100vh - 60px)', overflowY: 'auto' }}>
-            {!hasCourseAccess && (
-              <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', background: '#f8fafc' }}>
-                <p style={{ fontSize: 12, fontWeight: 800, color: G, marginBottom: 6 }}>Chapter lessons locked after intro</p>
-                <p style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.6 }}>Use the free introduction above, then proceed when you are ready to unlock the full class.</p>
-              </div>
-            )}
+          <aside className="watch-sidebar" style={{ width: 356, flexShrink: 0, background: '#fff', position: 'sticky', top: 78, maxHeight: 'calc(100vh - 96px)', overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: 24, boxShadow: '0 18px 40px rgba(15,23,42,0.06)' }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb' }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 2 }}>Lessons in this class</p>
               <p style={{ fontSize: 12, color: '#9ca3af' }}>{totalLessons} lessons{totalDur ? ' · ' + fmtDur(totalDur) : ''}</p>
@@ -615,7 +604,7 @@ function WatchContent() {
       <style>{`
         .watch-mobile-content{display:none;}
         @media(max-width:900px){
-          .watch-layout{display:block!important;}
+          .watch-layout{display:block!important;padding:0!important;}
           .watch-sidebar{display:none!important;}
           .watch-main{width:100%!important;}
           .watch-player-shell{max-width:none!important;}
@@ -623,17 +612,21 @@ function WatchContent() {
           .watch-page{background:#fff!important;}
           .watch-tab-panel{padding:20px 16px 100px!important;}
           .watch-meta{padding:16px!important;}
-          .watch-mobile-content{display:block!important;}
+          .watch-mobile-content{display:block!important;padding:10px 16px 0!important;}
           .watch-tabs{top:60px!important;}
           .watch-overview-grid{grid-template-columns:1fr!important;}
           .watch-resource-form-grid{grid-template-columns:1fr!important;}
+          .watch-instructor-card{grid-template-columns:84px minmax(0,1fr)!important;}
+          .watch-instructor-card > :last-child{grid-column:1 / -1;justify-content:flex-start!important;padding-left:102px;}
         }
         @media(max-width:640px){
           .watch-header{padding:0 16px!important;gap:10px!important;}
           .watch-player-shell{margin:0 -16px!important;border-radius:0!important;}
-          .watch-mobile-content{padding:8px 16px 0!important;}
+          .watch-mobile-content{padding:10px 16px 0!important;}
           .watch-home-link,.watch-user-chip{display:none!important;}
           .watch-tab-panel{padding:18px 14px 100px!important;}
+          .watch-instructor-card{grid-template-columns:1fr!important;}
+          .watch-instructor-card > :last-child{padding-left:0!important;}
         }
       `}</style>
     </div>
