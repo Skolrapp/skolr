@@ -50,6 +50,10 @@ function WatchContent() {
   const [instructorProfile, setInstructorProfile] = useState<any>(null);
 
   useEffect(() => {
+    setPreviewPromptOpen(!user);
+  }, [user]);
+
+  useEffect(() => {
     fetch('/api/courses/' + id, { credentials: 'include' })
       .then(r => r.json())
       .then(async d => {
@@ -185,14 +189,17 @@ function WatchContent() {
               {isGuestPreview && previewPromptOpen && (
                 <div className="watch-preview-overlay" style={{ position: 'absolute', right: 18, bottom: 18, zIndex: 14, width: 320, maxWidth: 'calc(100% - 36px)', borderRadius: 18, background: 'rgba(255,255,255,0.96)', boxShadow: '0 18px 40px rgba(0,0,0,0.28)', padding: 18 }}>
                   <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, color: G, textTransform: 'uppercase', marginBottom: 8 }}>Keep learning on Skolr</p>
-                  <h3 style={{ fontSize: 20, fontWeight: 900, color: '#0a0a0a', lineHeight: 1.15, marginBottom: 8 }}>Create your free account to continue watching.</h3>
+                  <h3 style={{ fontSize: 20, fontWeight: 900, color: '#0a0a0a', lineHeight: 1.15, marginBottom: 8 }}>Sign up free to proceed.</h3>
                   <p style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.6, marginBottom: 14 }}>
-                    You can already explore the chapters, instructor profile, and course overview. Sign up to unlock the full lesson and the rest of the class.
+                    Preview this lesson, browse the chapters, and meet the instructor. Create a free account to keep watching the full class.
                   </p>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <Link href="/register" style={{ padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free</Link>
                     <Link href="/login" style={{ padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 999, textDecoration: 'none' }}>Log in</Link>
                   </div>
+                  <button onClick={() => setPreviewPromptOpen(false)} style={{ marginTop: 10, fontSize: 11, fontWeight: 700, color: '#6b7280', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', minHeight: 0, minWidth: 0 }}>
+                    Hide for now
+                  </button>
                 </div>
               )}
             </div>
@@ -215,6 +222,11 @@ function WatchContent() {
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <Link href="/register" style={{ padding: '8px 12px', fontSize: 12, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free to continue</Link>
                   <Link href={`/courses?level=${course.category}${course.sub_category ? `&sub=${encodeURIComponent(course.sub_category)}` : ''}`} style={{ padding: '8px 12px', fontSize: 12, fontWeight: 700, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 999, textDecoration: 'none' }}>See more in this class</Link>
+                  {!previewPromptOpen && (
+                    <button onClick={() => setPreviewPromptOpen(true)} style={{ padding: '8px 12px', fontSize: 12, fontWeight: 700, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 999, cursor: 'pointer' }}>
+                      Show signup box
+                    </button>
+                  )}
                 </div>
               </div>
             )}

@@ -200,25 +200,40 @@ function CoursesContent(){
               <div className="courses-sub-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:10}}>
                 {levelMeta.sub_categories.map((option) => {
                   const active = sub === option;
+                  const href = `/courses?level=${levelMeta.key}&sub=${encodeURIComponent(option)}`;
                   return (
-                    <button
+                    <Link
                       key={option}
+                      href={href}
                       onClick={() => { setSub(option as SubCategory); setPage(1); }}
                       style={{
+                        display:'block',
                         padding:'14px 12px',
                         borderRadius:14,
                         border:'1px solid ' + (active ? '#10B981' : '#e5e7eb'),
                         background:active ? '#ecfdf5' : '#fff',
                         textAlign:'left',
-                        cursor:'pointer'
+                        cursor:'pointer',
+                        textDecoration:'none'
                       }}
                     >
                       <p style={{fontSize:13,fontWeight:800,color:active ? '#047857' : '#0a0a0a',marginBottom:4}}>{option}</p>
-                      <p style={{fontSize:11,color:active ? '#059669' : '#9ca3af'}}>Preview lessons</p>
-                    </button>
+                      <p style={{fontSize:11,color:active ? '#059669' : '#9ca3af'}}>Open {option} classes</p>
+                    </Link>
                   );
                 })}
               </div>
+            </div>
+          )}
+          {sub && !fetching && (
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',marginBottom:16,padding:'14px 16px',border:'1px solid #e5e7eb',borderRadius:14,background:'#fff'}}>
+              <div>
+                <p style={{fontSize:15,fontWeight:800,color:'#0a0a0a',marginBottom:4}}>{sub} classes</p>
+                <p style={{fontSize:13,color:'#6b7280'}}>Guests can open any class here and watch a short preview before signing up.</p>
+              </div>
+              {!user && (
+                <Link href="/register" style={{padding:'9px 14px',fontSize:12,fontWeight:700,color:'#fff',background:G,borderRadius:999,textDecoration:'none'}}>Sign up free</Link>
+              )}
             </div>
           )}
           <p style={{fontSize:13,color:'#9ca3af',marginBottom:16}}>
