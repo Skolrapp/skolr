@@ -63,6 +63,11 @@ function WatchContent() {
 
   useEffect(() => {
     if (!user || !course) return;
+    const canManageCourse = user.role === 'admin' || course.instructor_id === user.id;
+    if (canManageCourse) {
+      setLocked(false);
+      return;
+    }
     const active = isSubscriptionActive(user.subscription_expires_at);
     setLocked(!active || !canAccessLevel(user.subscription_tier, course.category));
   }, [user, course]);
@@ -116,6 +121,7 @@ function WatchContent() {
   const currentTitle = activeChapter?.title || course.title;
   const totalDur = chapters.reduce((s, c) => s + c.duration_seconds, 0);
   const homeHref = user?.role === 'admin' ? '/admin' : user?.role === 'instructor' ? '/instructor' : '/dashboard';
+  const canManageCourse = !!user && (user.role === 'admin' || course.instructor_id === user.id);
   const TABS: { id: Tab; label: string }[] = [
     { id: 'overview', label: 'Overview' },
     { id: 'quiz', label: 'Quiz' },
@@ -165,6 +171,24 @@ function WatchContent() {
               <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 5, background: '#f3f4f6', color: '#6b7280' }}>{course.subject}</span>
               {activeChapter?.duration_seconds ? <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 5, background: '#f3f4f6', color: '#6b7280' }}>{fmtDur(activeChapter.duration_seconds)}</span> : null}
             </div>
+            {canManageCourse && (
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 }}>
+                <Link
+                  href={user?.role === 'admin' ? `/admin?tab=reviews` : `/instructor/courses/${course.id}/chapters`}
+                  style={{ padding: '8px 14px', fontSize: 12, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}
+                >
+                  {user?.role === 'admin' ? 'Back to review queue' : 'Manage chapters'}
+                </Link>
+                {user?.role !== 'admin' && (
+                  <Link
+                    href="/instructor"
+                    style={{ padding: '8px 14px', fontSize: 12, fontWeight: 700, color: '#374151', background: '#f3f4f6', borderRadius: 999, textDecoration: 'none' }}
+                  >
+                    Return to instructor dashboard
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
 
           {chapters.length > 0 && (
