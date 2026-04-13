@@ -22,6 +22,7 @@ function bwToQ(bps: number): Quality {
 }
 
 export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onProgress, previewSeconds = 0, onPreviewLimit }: Props) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const vRef     = useRef<HTMLVideoElement>(null);
   const hlsRef   = useRef<Hls | null>(null);
   const progRef  = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -46,6 +47,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
   const [quality,  setQuality]  = useState<Quality>('good');
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const formatTime = (seconds: number) => {
     if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
@@ -67,6 +69,22 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
   useEffect(() => {
     startAtRef.current = startAt;
   }, [hlsUrl, startAt]);
+
+  useEffect(() => {
+    const syncFullscreen = () => {
+      const doc = document as Document & { webkitFullscreenElement?: Element | null };
+      const fullscreenElement = doc.fullscreenElement ?? doc.webkitFullscreenElement ?? null;
+      setIsFullscreen(fullscreenElement === wrapperRef.current);
+    };
+
+    document.addEventListener('fullscreenchange', syncFullscreen);
+    document.addEventListener('webkitfullscreenchange', syncFullscreen as EventListener);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', syncFullscreen);
+      document.removeEventListener('webkitfullscreenchange', syncFullscreen as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     const video = vRef.current;
@@ -187,6 +205,30 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
     setMuted(value === 0);
     activity();
   };
+  const toggleFullscreen = async () => {
+    const wrapper = wrapperRef.current as (HTMLElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+    }) | null;
+    const doc = document as Document & {
+      webkitExitFullscreen?: () => Promise<void> | void;
+      webkitFullscreenElement?: Element | null;
+    };
+
+    if (!wrapper) return;
+
+    try {
+      if (doc.fullscreenElement === wrapper || doc.webkitFullscreenElement === wrapper) {
+        if (document.exitFullscreen) await document.exitFullscreen();
+        else await doc.webkitExitFullscreen?.();
+      } else if (wrapper.requestFullscreen) {
+        await wrapper.requestFullscreen();
+      } else {
+        await wrapper.webkitRequestFullscreen?.();
+      }
+    } catch {
+      setError('Fullscreen is not available right now.');
+    }
+  };
   const qlabel   = curLevel === -1 ? 'Auto' : (levels[curLevel]?.label ?? 'Auto');
   const bwKbps   = Math.round(bw / 1000);
 
@@ -200,7 +242,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
   );
 
   return (
-    <div className="relative rounded-2xl overflow-hidden aspect-video select-none"
+    <div ref={wrapperRef} className="relative rounded-2xl overflow-hidden aspect-video select-none"
       style={{ background: 'linear-gradient(180deg,#0f172a,#111827)' }}
       onMouseMove={activity} onTouchStart={activity}>
       <video ref={vRef} className="w-full h-full object-cover" poster={posterUrl} playsInline muted={muted}
@@ -320,8 +362,12 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
                   </div>
                 )}
               </div>
-              <button className="text-white !min-h-0 !min-w-0 p-1" onClick={() => { const el = vRef.current?.closest('.relative') as HTMLElement; el?.requestFullscreen?.(); }}>
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              <button className="text-white !min-h-0 !min-w-0 p-1" onClick={toggleFullscreen} aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
+                {isFullscreen ? (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                ) : (
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                )}
               </button>
             </div>
           </div>
