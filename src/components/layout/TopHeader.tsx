@@ -20,6 +20,21 @@ export default function TopHeader() {
     await fetch('/api/admin/impersonation/stop', { method: 'POST', credentials: 'include' });
     window.location.href = '/admin';
   };
+  const menuItems = user?.role === 'admin'
+    ? [
+        { label: 'Control center', href: '/admin?tab=reviews' },
+        { label: 'Scholar tracker', href: '/admin?tab=tracker' },
+        { label: 'Course cloning', href: '/admin?tab=cloning' },
+        { label: 'User support', href: '/admin?tab=support' },
+        { label: 'Course catalog', href: '/courses' },
+      ]
+    : [
+        { label: 'Home', href: homeHref },
+        { label: 'Browse courses', href: '/courses' },
+        { label: 'Subscription', href: '/settings' },
+        ...(user?.role === 'instructor' ? [{ label: 'My courses', href: '/instructor' }] : []),
+        { label: 'Edit profile', href: user?.role === 'instructor' ? '/instructors/' + user?.id : '/settings' },
+      ];
 
   return (
     <>
@@ -63,14 +78,7 @@ export default function TopHeader() {
                   <p style={{ fontSize: 11, color: '#9ca3af', textTransform: 'capitalize' }}>{user?.role}</p>
                 </div>
               </div>
-              {[
-                { label: 'Home', href: homeHref },
-                { label: 'Browse Courses', href: '/courses' },
-                ...(user?.role === 'admin' ? [{ label: 'Admin Review', href: '/admin' }] : []),
-                ...(user?.role !== 'admin' ? [{ label: 'Subscription', href: '/settings' }] : []),
-                ...(user?.role === 'instructor' ? [{ label: 'My Courses', href: '/instructor' }] : []),
-                { label: user?.role === 'admin' ? 'Account Tools' : 'Edit Profile', href: user?.role === 'instructor' ? '/instructors/' + user?.id : user?.role === 'admin' ? '/admin' : '/settings' },
-              ].map(item => (
+              {menuItems.map(item => (
                 <button key={item.label} onClick={() => { router.push(item.href); setMenuOpen(false); }}
                   style={{ display: 'block', width: '100%', padding: '9px 12px', fontSize: 13, color: '#374151', background: 'transparent', border: 'none', borderRadius: 7, cursor: 'pointer', textAlign: 'left', minHeight: 0, minWidth: 0 }}
                   onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')}

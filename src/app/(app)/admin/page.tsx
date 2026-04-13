@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
 import TopHeader from '@/components/layout/TopHeader';
@@ -10,6 +11,7 @@ type Tab = 'reviews' | 'tracker' | 'cloning' | 'support';
 
 export default function AdminPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>('reviews');
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,6 +32,28 @@ export default function AdminPage() {
   const [templates, setTemplates] = useState<any[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(true);
   const [cloneForm, setCloneForm] = useState({ sourceCourseId: '', targetSubjects: '', targetSubCategory: '' });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const syncTabFromUrl = () => {
+      const requestedTab = new URLSearchParams(window.location.search).get('tab');
+      if (requestedTab === 'reviews' || requestedTab === 'tracker' || requestedTab === 'cloning' || requestedTab === 'support') {
+        setTab(requestedTab);
+      } else {
+        setTab('reviews');
+      }
+    };
+
+    syncTabFromUrl();
+    window.addEventListener('popstate', syncTabFromUrl);
+    return () => window.removeEventListener('popstate', syncTabFromUrl);
+  }, []);
+
+  const selectTab = (nextTab: Tab) => {
+    setTab(nextTab);
+    router.replace(`/admin?tab=${nextTab}`);
+  };
 
   useEffect(() => {
     fetch('/api/admin/course-reviews', { credentials: 'include' })
@@ -185,7 +209,7 @@ export default function AdminPage() {
           ] as Array<[Tab, string]>).map(([id, label]) => (
             <button
               key={id}
-              onClick={() => setTab(id)}
+              onClick={() => selectTab(id)}
               className="flex-1 py-2 rounded-xl text-xs font-semibold border !min-h-0 !min-w-0 transition-all"
               style={tab === id ? { background: G, color: '#000', borderColor: G } : { background: '#1a1a1a', color: '#737373', borderColor: '#222' }}
             >
@@ -199,6 +223,13 @@ export default function AdminPage() {
             {message}
           </div>
         )}
+
+        <div className="card mb-4">
+          <p className="text-sm font-semibold" style={{ color: '#fff' }}>Where to find "View as user"</p>
+          <p className="text-xs mt-1" style={{ color: '#737373' }}>
+            Open <span style={{ color: '#fff' }}>User support</span>, search for the account, then use <span style={{ color: '#fff' }}>View as user</span> next to reset password.
+          </p>
+        </div>
 
         {tab === 'tracker' && (
           <div className="space-y-4">
@@ -531,7 +562,7 @@ export default function AdminPage() {
           </div>
         )}
       </div>
-      <BottomNav role="admin" />
+      <BottomNav role="admin" adminTab={tab} />
     </div>
   );
 }
