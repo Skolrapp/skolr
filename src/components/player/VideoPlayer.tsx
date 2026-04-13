@@ -8,6 +8,8 @@ interface Props {
   title?: string;
   startAt?: number;
   onProgress?: (seconds: number) => void;
+  previewSeconds?: number;
+  onPreviewLimit?: () => void;
 }
 
 type Quality = 'excellent' | 'good' | 'fair' | 'poor';
@@ -19,11 +21,12 @@ function bwToQ(bps: number): Quality {
   return 'poor';
 }
 
-export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onProgress }: Props) {
+export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onProgress, previewSeconds = 0, onPreviewLimit }: Props) {
   const vRef     = useRef<HTMLVideoElement>(null);
   const hlsRef   = useRef<Hls | null>(null);
   const progRef  = useRef<ReturnType<typeof setInterval> | null>(null);
   const ctrlRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previewTriggeredRef = useRef(false);
 
   const [ready,    setReady]    = useState(false);
   const [playing,  setPlaying]  = useState(false);
@@ -75,6 +78,26 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
     progRef.current = setInterval(() => { if (!video.paused && onProgress) onProgress(Math.floor(video.currentTime)); }, 5000);
     return () => { hlsRef.current?.destroy(); if (progRef.current) clearInterval(progRef.current); };
   }, [hlsUrl, startAt, onProgress]);
+
+  useEffect(() => {
+    previewTriggeredRef.current = false;
+  }, [hlsUrl, previewSeconds]);
+
+  useEffect(() => {
+    const video = vRef.current;
+    if (!video || !previewSeconds) return;
+
+    const handleTimeUpdate = () => {
+      if (previewTriggeredRef.current || video.currentTime < previewSeconds) return;
+      previewTriggeredRef.current = true;
+      video.pause();
+      setPlaying(false);
+      onPreviewLimit?.();
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    return () => video.removeEventListener('timeupdate', handleTimeUpdate);
+  }, [previewSeconds, onPreviewLimit]);
 
   const togglePlay = () => {
     const v = vRef.current;

@@ -1,14 +1,15 @@
 'use client';
 export const dynamic = 'force-dynamic';
 import { useState, Suspense, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import TopHeader from '@/components/layout/TopHeader';
 import BottomNav from '@/components/layout/BottomNav';
 import Footer from '@/components/layout/Footer';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
-import type { Course, EducationLevel } from '@/types';
+import { EDUCATION_LEVELS } from '@/lib/constants';
+import type { Course, EducationLevel, SubCategory } from '@/types';
 
 const G = '#10B981';
 const LEVELS = [
@@ -35,8 +36,10 @@ function Thumb({color,bg,title}:{color:string;bg:string;title:string}){
 
 function CoursesContent(){
   const {user}=useAuth();
+  const pathname = usePathname();
   const sp=useSearchParams();
   const [level,setLevel]=useState<EducationLevel|''>((sp.get('level') as EducationLevel)||'');
+  const [sub,setSub]=useState<SubCategory | ''>((sp.get('sub') as SubCategory) || '');
   const [subject,setSubject]=useState(sp.get('subject')||'');
   const [sort,setSort]=useState('popular');
   const [courses,setCourses]=useState<Course[]>([]);
@@ -49,6 +52,7 @@ function CoursesContent(){
     setFetching(true);
     const params=new URLSearchParams();
     if(level)params.set('level',level);
+    if(sub)params.set('sub',sub);
     if(subject)params.set('subject',subject);
     params.set('per_page',String(PER));
     params.set('page',String(page));
@@ -56,14 +60,29 @@ function CoursesContent(){
       .then(r=>r.json())
       .then(d=>{if(d.success){setCourses(d.data.items);setTotal(d.data.total||d.data.items.length);}})
       .finally(()=>setFetching(false));
-  },[level,subject,page]);
+  },[level,sub,subject,page]);
 
   useEffect(()=>{fetchCourses();},[fetchCourses]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (level) params.set('level', level);
+    if (sub) params.set('sub', sub);
+    if (subject) params.set('subject', subject);
+    if (page > 1) params.set('page', String(page));
+    const next = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    window.history.replaceState(null, '', next);
+  }, [pathname, level, sub, subject, page]);
 
   const currentLevel=LEVELS.find(l=>l.id===level)||LEVELS[0];
   const isActive=isSubscriptionActive(user?.subscription_expires_at);
   const totalPages=Math.ceil(total/PER);
   const sortLabel = SORT_OPTIONS.find((option) => option.id === sort)?.label || 'Most popular';
+  const levelMeta = level ? EDUCATION_LEVELS.find((entry) => entry.key === level) : null;
+  const guestNeedsClassChoice = !user && !!level && !sub;
+  const guestHeaderCopy = levelMeta
+    ? `Choose a class first, then preview real lessons before signing up.`
+    : 'Choose a level to explore classes, chapters, and preview lessons before signing up.';
 
   // guests can browse freely
 
@@ -78,6 +97,10 @@ function CoursesContent(){
               </div>
               <span style={{fontWeight:800,fontSize:18,color:'#0a0a0a'}}>Skolr</span>
             </Link>
+            <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:10}}>
+              <Link href="/login" style={{padding:'7px 14px',fontSize:13,fontWeight:700,color:'#0a0a0a',textDecoration:'none',border:'1px solid #e5e7eb',borderRadius:999}}>Log in</Link>
+              <Link href="/register" style={{padding:'7px 14px',fontSize:13,fontWeight:700,color:'#fff',background:G,textDecoration:'none',borderRadius:999}}>Sign up free</Link>
+            </div>
           </div>
         </header>
       )}
@@ -86,10 +109,12 @@ function CoursesContent(){
         <div className="courses-hero-inner" style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:16}}>
           <div>
             <h1 style={{fontSize:24,fontWeight:800,color:'#fff',marginBottom:6}}>{currentLevel.label==='All Levels'?'All Courses':currentLevel.label+' Courses'}</h1>
-            <p style={{fontSize:14,color:'rgba(255,255,255,0.65)',marginBottom:12}}>{(currentLevel as any).sub||'Browse all education levels'} · {total} courses</p>
+            <p style={{fontSize:14,color:'rgba(255,255,255,0.65)',marginBottom:12}}>
+              {!user ? guestHeaderCopy : `${(currentLevel as any).sub||'Browse all education levels'} · ${total} courses`}
+            </p>
             <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
               {LEVELS.slice(1).map(l=>(
-                <button key={l.id} onClick={()=>{setLevel(l.id as EducationLevel);setPage(1);}}
+                <button key={l.id} onClick={()=>{setLevel(l.id as EducationLevel);setSub('');setPage(1);}}
                   style={{padding:'4px 12px',fontSize:11,fontWeight:600,borderRadius:999,border:'none',background:level===l.id?'#fff':'rgba(255,255,255,0.18)',color:level===l.id?'#0a0a0a':'#fff',cursor:'pointer'}}>
                   {l.label}
                 </button>
@@ -133,6 +158,9 @@ function CoursesContent(){
         <div className="courses-main" style={{flex:1,paddingTop:24,paddingLeft:24,minWidth:0}}>
           <div className="courses-mobile-toolbar" style={{display:'none',marginBottom:16}}>
             <div className="courses-mobile-pills" style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              <span style={{fontSize:11,fontWeight:700,padding:'6px 10px',borderRadius:999,background:'#eff6ff',color:'#2563eb'}}>
+                {sub || 'Choose class'}
+              </span>
               <span style={{fontSize:11,fontWeight:700,padding:'6px 10px',borderRadius:999,background:'#ecfdf5',color:'#059669'}}>
                 {subject || 'All subjects'}
               </span>
@@ -143,15 +171,82 @@ function CoursesContent(){
           </div>
           <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:4,marginBottom:16,scrollbarWidth:'none'}}>
             {LEVELS.map(l=>(
-              <button key={l.id} onClick={()=>{setLevel(l.id as EducationLevel);setPage(1);}}
+              <button key={l.id} onClick={()=>{setLevel(l.id as EducationLevel);setSub('');setPage(1);}}
                 style={{padding:'6px 14px',fontSize:11,fontWeight:600,borderRadius:999,border:'1.5px solid '+(level===l.id?'#0a0a0a':'#e5e7eb'),background:level===l.id?'#0a0a0a':'#fff',color:level===l.id?'#fff':'#6b7280',cursor:'pointer',whiteSpace:'nowrap',flexShrink:0}}>
                 {l.label}
               </button>
             ))}
           </div>
-          <p style={{fontSize:13,color:'#9ca3af',marginBottom:16}}>{fetching?'Loading...':total+' courses'+(subject?' in '+subject:'')+(level?' · '+currentLevel.label:'')}</p>
+          {levelMeta && (
+            <div style={{marginBottom:20,padding:'18px 18px 16px',background:guestNeedsClassChoice ? '#f8fafc' : '#fff',border:'1px solid #e5e7eb',borderRadius:16}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',marginBottom:12}}>
+                <div>
+                  <p style={{fontSize:15,fontWeight:800,color:'#0a0a0a',marginBottom:4}}>
+                    {guestNeedsClassChoice ? `Pick a ${levelMeta.key === 'primary' ? 'standard' : 'class'} to explore` : `Browsing ${sub || levelMeta.label}`}
+                  </p>
+                  <p style={{fontSize:13,color:'#6b7280'}}>
+                    {guestNeedsClassChoice
+                      ? 'Guests start here. Choose one class to see all its lessons, chapters, and a free video preview.'
+                      : 'Switch class anytime to compare lessons before signing up.'}
+                  </p>
+                </div>
+                {!user && (
+                  <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                    <Link href="/register" style={{padding:'9px 14px',fontSize:12,fontWeight:700,color:'#fff',background:G,textDecoration:'none',borderRadius:999}}>Create free account</Link>
+                    <Link href="/pricing" style={{padding:'9px 14px',fontSize:12,fontWeight:700,color:'#374151',background:'#fff',textDecoration:'none',border:'1px solid #e5e7eb',borderRadius:999}}>View plans</Link>
+                  </div>
+                )}
+              </div>
+              <div className="courses-sub-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:10}}>
+                {levelMeta.sub_categories.map((option) => {
+                  const active = sub === option;
+                  return (
+                    <button
+                      key={option}
+                      onClick={() => { setSub(option as SubCategory); setPage(1); }}
+                      style={{
+                        padding:'14px 12px',
+                        borderRadius:14,
+                        border:'1px solid ' + (active ? '#10B981' : '#e5e7eb'),
+                        background:active ? '#ecfdf5' : '#fff',
+                        textAlign:'left',
+                        cursor:'pointer'
+                      }}
+                    >
+                      <p style={{fontSize:13,fontWeight:800,color:active ? '#047857' : '#0a0a0a',marginBottom:4}}>{option}</p>
+                      <p style={{fontSize:11,color:active ? '#059669' : '#9ca3af'}}>Preview lessons</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          <p style={{fontSize:13,color:'#9ca3af',marginBottom:16}}>
+            {guestNeedsClassChoice
+              ? 'Choose a class to unlock the preview catalog.'
+              : fetching
+                ? 'Loading...'
+                : total+' courses'+(sub?' in '+sub:'')+(subject?' · '+subject:'')+(level?' · '+currentLevel.label:'')}
+          </p>
 
-          {fetching?(
+          {guestNeedsClassChoice ? (
+            <div style={{padding:'48px 24px',background:'linear-gradient(135deg,#f8fafc,#ecfeff)',borderRadius:20,border:'1px solid #e5e7eb'}}>
+              <div style={{maxWidth:680}}>
+                <p style={{fontSize:12,fontWeight:800,letterSpacing:1,color:G,textTransform:'uppercase',marginBottom:10}}>Guest Preview Path</p>
+                <h2 style={{fontSize:28,fontWeight:900,lineHeight:1.15,color:'#0a0a0a',marginBottom:12}}>Choose a class, then preview a real lesson before committing.</h2>
+                <p style={{fontSize:15,color:'#4b5563',lineHeight:1.7,marginBottom:22}}>
+                  Once you pick a class like {levelMeta?.sub_categories[0]}, Skolr will show only that class’s lessons. Open any lesson to see the instructor, chapters, and a short video preview with a free-signup prompt.
+                </p>
+                <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                  {levelMeta?.sub_categories.slice(0, 4).map((option) => (
+                    <button key={option} onClick={() => setSub(option as SubCategory)} style={{padding:'10px 14px',fontSize:13,fontWeight:700,color:'#0a0a0a',background:'#fff',border:'1px solid #d1d5db',borderRadius:999,cursor:'pointer'}}>
+                      Explore {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : fetching?(
             <div className="courses-grid" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20}}>
               {[1,2,3,4,5,6].map(i=>(
                 <div key={i} style={{borderRadius:12,overflow:'hidden',border:'1px solid #e5e7eb'}}>
@@ -164,7 +259,7 @@ function CoursesContent(){
             <div style={{textAlign:'center',padding:'60px 24px',background:'#f9fafb',borderRadius:12,border:'1px solid #e5e7eb'}}>
               <p style={{fontSize:16,fontWeight:700,marginBottom:8}}>No courses found</p>
               <p style={{fontSize:14,color:'#6b7280',marginBottom:16}}>Try a different level or subject.</p>
-              <button onClick={()=>{setLevel('');setSubject('');}} style={{padding:'10px 20px',fontSize:13,fontWeight:700,color:'#fff',background:G,border:'none',borderRadius:8,cursor:'pointer'}}>Clear filters</button>
+              <button onClick={()=>{setLevel('');setSub('');setSubject('');}} style={{padding:'10px 20px',fontSize:13,fontWeight:700,color:'#fff',background:G,border:'none',borderRadius:8,cursor:'pointer'}}>Clear filters</button>
             </div>
           ):(
             <div className="courses-grid" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20}}>
@@ -186,8 +281,14 @@ function CoursesContent(){
                       <p style={{fontSize:11,color:'#9ca3af',marginBottom:10}}>{c.instructor_name}</p>
                       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                         <span style={{fontSize:11,color:'#f59e0b'}}>★★★★★</span>
-                        <span style={{fontSize:11,fontWeight:700,color:access?'#0a0a0a':G}}>{!user?'Sign up to watch':access?'Watch now':'Free trial'}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:access?'#0a0a0a':G}}>{!user?'Preview lesson':'Watch now'}</span>
                       </div>
+                      {!user && (
+                        <div style={{marginTop:10,padding:'8px 10px',borderRadius:10,background:'#f8fafc',border:'1px solid #e5e7eb'}}>
+                          <p style={{fontSize:11,fontWeight:700,color:'#111827',marginBottom:3}}>Guest preview available</p>
+                          <p style={{fontSize:11,color:'#6b7280'}}>See chapters, instructor profile, and a short video preview before signup.</p>
+                        </div>
+                      )}
                     </div>
                   </Link>
                 );
@@ -230,6 +331,7 @@ function CoursesContent(){
         }
         @media(max-width:640px){
           .courses-grid{grid-template-columns:1fr!important;}
+          .courses-sub-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
           .courses-hero-stats{width:100%!important;justify-content:space-between!important;gap:12px!important;}
           .courses-hero h1{font-size:20px!important;}
         }

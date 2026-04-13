@@ -81,10 +81,10 @@ export default function LandingPage() {
                 </div>
               </div>
               <Link href="/courses" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Browse Courses</Link>
-              <Link href="/courses?level=primary" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Primary (Std 1-7)</Link>
-              <Link href="/courses?level=secondary" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Secondary (Form 1-4)</Link>
-              <Link href="/courses?level=highschool" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>High School (Form 5-6)</Link>
-              <Link href="/courses?level=undergraduate" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>University</Link>
+              <Link href="/courses?level=primary" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Primary (choose Std first)</Link>
+              <Link href="/courses?level=secondary" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Secondary (choose Form first)</Link>
+              <Link href="/courses?level=highschool" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>High School (choose Form first)</Link>
+              <Link href="/courses?level=undergraduate" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>University (choose Year first)</Link>
               <Link href="/pricing" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Pricing</Link>
               <Link href="/login" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Teach on Skolr</Link>
               <div style={{ margin: '12px 20px', borderTop: '1px solid #f3f4f6', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -117,7 +117,7 @@ export default function LandingPage() {
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 40 }}>
               <Link href="/register" style={{ padding: '14px 32px', fontSize: 15, fontWeight: 700, color: '#0a0a0a', background: '#fff', borderRadius: 10, textDecoration: 'none' }}>Start for free</Link>
-              <Link href="/courses" style={{ padding: '14px 32px', fontSize: 15, fontWeight: 700, color: '#fff', border: '2px solid rgba(255,255,255,0.3)', borderRadius: 10, textDecoration: 'none' }}>Explore courses</Link>
+              <Link href="/courses" style={{ padding: '14px 32px', fontSize: 15, fontWeight: 700, color: '#fff', border: '2px solid rgba(255,255,255,0.3)', borderRadius: 10, textDecoration: 'none' }}>Explore with preview</Link>
             </div>
             <div className="sk-banner-stats" style={{ display: 'flex', gap: 28 }}>
               {[['10K+','Students'],['500+','Lessons'],['50+','Instructors']].map(([n,l]) => (
@@ -142,8 +142,8 @@ export default function LandingPage() {
 
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 24px' }}>
         <div className="sk-section-header">
-          <div><h2 className="sk-section-title">Browse by level</h2><p className="sk-section-sub">Choose your education level and start learning today</p></div>
-          <Link href="/courses" className="sk-section-link">View all courses</Link>
+          <div><h2 className="sk-section-title">Browse by level</h2><p className="sk-section-sub">Choose your level, then pick a class before previewing lessons</p></div>
+          <Link href="/courses" className="sk-section-link">View guided catalog</Link>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
           {LEVELS.map(lv => (
@@ -155,7 +155,7 @@ export default function LandingPage() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: 15, fontWeight: 800, color: '#0a0a0a', marginBottom: 2 }}>{lv.label}</p>
                 <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 5 }}>{lv.sub}</p>
-                <span style={{ fontSize: 11, fontWeight: 700, color: lv.color }}>{lv.count}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: lv.color }}>{lv.level ? 'Choose class + preview' : lv.count}</span>
               </div>
               {lv.level && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={lv.color} strokeWidth="2.5" style={{ flexShrink: 0 }}><path d="M9 18l6-6-6-6"/></svg>}
             </Link>
@@ -190,7 +190,7 @@ export default function LandingPage() {
                       <span style={{ color: '#f59e0b', fontSize: 11 }}>{'★'.repeat(Math.floor(course.rating))}</span>
                       <span style={{ fontSize: 11, fontWeight: 700, color: '#92400e' }}>{course.rating}</span>
                     </div>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: G }}>Free trial</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: G }}>Preview first</span>
                   </div>
                 </div>
               </Link>

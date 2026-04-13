@@ -10,7 +10,6 @@ function isMissingReleaseAt(message?: string) {
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const token = request.cookies.get('sk_token')?.value;
   const session = token ? await validateSession(token) : null;
-  if (!session) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const supabase = createSupabaseAdmin();
   let query = supabase
@@ -20,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     .eq('is_published', true)
     .order('order_index', { ascending: true });
 
-  if (session.user.role === 'student') {
+  if (!session || session.user.role === 'student') {
     query = query.or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
   }
 

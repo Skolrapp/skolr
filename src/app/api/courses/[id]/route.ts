@@ -8,7 +8,6 @@ export async function GET(
 ) {
   const token = request.cookies.get('sk_token')?.value;
   const session = token ? await validateSession(token) : null;
-  if (!session) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
   const supabase = createSupabaseAdmin();
@@ -21,21 +20,26 @@ export async function GET(
 
   if (error || !course) return NextResponse.json({ success: false, error: 'Course not found.' }, { status: 404 });
 
-  const canViewDraft =
+  const canViewDraft = !!session && (
     session.user.role === 'admin' ||
-    course.instructor_id === session.user.id;
+    course.instructor_id === session.user.id
+  );
 
   if (!course.is_published && !canViewDraft) {
     return NextResponse.json({ success: false, error: 'Course not found.' }, { status: 404 });
   }
 
   // Get enrollment progress
-  const { data: enrollment } = await supabase
-    .from('enrollments')
-    .select('progress_seconds, completed')
-    .eq('user_id', session.user.id)
-    .eq('course_id', id)
-    .single();
+  let enrollment: { progress_seconds?: number; completed?: boolean } | null = null;
+  if (session) {
+    const enrollmentResult = await supabase
+      .from('enrollments')
+      .select('progress_seconds, completed')
+      .eq('user_id', session.user.id)
+      .eq('course_id', id)
+      .single();
+    enrollment = enrollmentResult.data;
+  }
 
   // Increment view count
   if (course.is_published) {
@@ -64,6 +68,7 @@ export async function GET(
       },
       progress_seconds: enrollment?.progress_seconds ?? 0,
       enrolled: !!enrollment,
+      guest_preview: !session,
     },
   });
 }

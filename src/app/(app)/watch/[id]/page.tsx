@@ -46,6 +46,8 @@ function WatchContent() {
   const [resForm, setResForm] = useState({ title: '', type: 'note', url: '', description: '' });
   const [resError, setResError] = useState('');
   const [resPending, startResTransition] = useTransition();
+  const [previewPromptOpen, setPreviewPromptOpen] = useState(false);
+  const [instructorProfile, setInstructorProfile] = useState<any>(null);
 
   useEffect(() => {
     fetch('/api/courses/' + id, { credentials: 'include' })
@@ -57,6 +59,11 @@ function WatchContent() {
         const cr = await fetch('/api/courses/' + id + '/chapters', { credentials: 'include' });
         const cd = await cr.json();
         if (cd.success && cd.data.length > 0) { setChapters(cd.data); setActiveChapter(cd.data[0]); }
+        if (d.data.course?.instructor_id) {
+          fetch('/api/instructors/' + d.data.course.instructor_id, { credentials: 'include' })
+            .then(r => r.json())
+            .then(profileData => { if (profileData.success) setInstructorProfile(profileData.data); });
+        }
       })
       .finally(() => setLoading(false));
   }, [id, router]);
@@ -82,8 +89,9 @@ function WatchContent() {
 
   const handleProgress = useCallback(async (seconds: number) => {
     setProgress(seconds);
+    if (!user) return;
     await saveProgressAction(id, seconds);
-  }, [id]);
+  }, [id, user]);
 
   const addResource = () => {
     setResError('');
@@ -120,8 +128,9 @@ function WatchContent() {
   const currentVideo = activeChapter?.video_hls_url || course.video_hls_url;
   const currentTitle = activeChapter?.title || course.title;
   const totalDur = chapters.reduce((s, c) => s + c.duration_seconds, 0);
-  const homeHref = user?.role === 'admin' ? '/admin' : user?.role === 'instructor' ? '/instructor' : '/dashboard';
+  const homeHref = !user ? '/' : user.role === 'admin' ? '/admin' : user.role === 'instructor' ? '/instructor' : '/dashboard';
   const canManageCourse = !!user && (user.role === 'admin' || course.instructor_id === user.id);
+  const isGuestPreview = !user;
   const TABS: { id: Tab; label: string }[] = [
     { id: 'overview', label: 'Overview' },
     { id: 'quiz', label: 'Quiz' },
@@ -158,8 +167,34 @@ function WatchContent() {
 
         <div className="watch-main" style={{ flex: 1, minWidth: 0 }}>
           <div style={{ background: '#000' }}>
-            <div className="watch-player-shell" style={{ maxWidth: 860, marginLeft: 0 }}>
-              <VideoPlayer hlsUrl={currentVideo} posterUrl={course.thumbnail_url} title={currentTitle} startAt={activeChapter ? 0 : progress} onProgress={handleProgress} />
+            <div className="watch-player-shell" style={{ maxWidth: 860, marginLeft: 0, position: 'relative' }}>
+              <VideoPlayer
+                hlsUrl={currentVideo}
+                posterUrl={course.thumbnail_url}
+                title={currentTitle}
+                startAt={activeChapter ? 0 : progress}
+                onProgress={handleProgress}
+                previewSeconds={isGuestPreview ? 45 : 0}
+                onPreviewLimit={() => setPreviewPromptOpen(true)}
+              />
+              {isGuestPreview && (
+                <div className="watch-guest-pill" style={{ position: 'absolute', top: 16, right: 16, zIndex: 12, padding: '8px 12px', borderRadius: 999, background: 'rgba(17,24,39,0.82)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', fontSize: 12, fontWeight: 700 }}>
+                  Free preview: 45 seconds
+                </div>
+              )}
+              {isGuestPreview && previewPromptOpen && (
+                <div className="watch-preview-overlay" style={{ position: 'absolute', right: 18, bottom: 18, zIndex: 14, width: 320, maxWidth: 'calc(100% - 36px)', borderRadius: 18, background: 'rgba(255,255,255,0.96)', boxShadow: '0 18px 40px rgba(0,0,0,0.28)', padding: 18 }}>
+                  <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, color: G, textTransform: 'uppercase', marginBottom: 8 }}>Keep learning on Skolr</p>
+                  <h3 style={{ fontSize: 20, fontWeight: 900, color: '#0a0a0a', lineHeight: 1.15, marginBottom: 8 }}>Create your free account to continue watching.</h3>
+                  <p style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.6, marginBottom: 14 }}>
+                    You can already explore the chapters, instructor profile, and course overview. Sign up to unlock the full lesson and the rest of the class.
+                  </p>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <Link href="/register" style={{ padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free</Link>
+                    <Link href="/login" style={{ padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 999, textDecoration: 'none' }}>Log in</Link>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -171,6 +206,18 @@ function WatchContent() {
               <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 5, background: '#f3f4f6', color: '#6b7280' }}>{course.subject}</span>
               {activeChapter?.duration_seconds ? <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 5, background: '#f3f4f6', color: '#6b7280' }}>{fmtDur(activeChapter.duration_seconds)}</span> : null}
             </div>
+            {isGuestPreview && (
+              <div style={{ marginTop: 14, padding: 14, borderRadius: 14, background: '#f8fafc', border: '1px solid #e5e7eb' }}>
+                <p style={{ fontSize: 12, fontWeight: 800, color: G, marginBottom: 5 }}>Guest preview mode</p>
+                <p style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.6, marginBottom: 10 }}>
+                  Explore this class freely: skim the course outline, see who teaches it, and watch a short preview before you create a free account.
+                </p>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <Link href="/register" style={{ padding: '8px 12px', fontSize: 12, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free to continue</Link>
+                  <Link href={`/courses?level=${course.category}${course.sub_category ? `&sub=${encodeURIComponent(course.sub_category)}` : ''}`} style={{ padding: '8px 12px', fontSize: 12, fontWeight: 700, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 999, textDecoration: 'none' }}>See more in this class</Link>
+                </div>
+              </div>
+            )}
             {canManageCourse && (
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 }}>
                 <Link
@@ -250,6 +297,25 @@ function WatchContent() {
                     <p style={{ fontSize: 15, fontWeight: 700, color: '#0a0a0a' }}>{course.instructor_name}</p>
                   </div>
                 </div>
+                {instructorProfile?.instructor && (
+                  <div style={{ padding: 18, background: '#fff', borderRadius: 14, border: '1px solid #e5e7eb', marginBottom: 20 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
+                      <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                        {instructorProfile.instructor.avatar_url
+                          ? <img src={instructorProfile.instructor.avatar_url} alt={instructorProfile.instructor.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <span style={{ fontSize: 20, fontWeight: 800, color: G }}>{instructorProfile.instructor.name?.charAt(0)}</span>}
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 3 }}>Instructor profile</p>
+                        <p style={{ fontSize: 16, fontWeight: 800, color: '#0a0a0a' }}>{instructorProfile.instructor.name}</p>
+                        <p style={{ fontSize: 13, color: '#6b7280' }}>{instructorProfile.stats?.total_courses || 0} published courses · {(instructorProfile.stats?.total_views || 0).toLocaleString()} views</p>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.7 }}>
+                      {instructorProfile.instructor.bio || 'Experienced Skolr instructor helping learners move chapter by chapter with focused lessons.'}
+                    </p>
+                  </div>
+                )}
                 {chapters.length > 0 && (
                   <div className="watch-overview-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
                     {[['Chapters', String(chapters.length)], ['Duration', fmtDur(totalDur) || 'N/A'], ['Language', course.language?.toUpperCase() || 'EN']].map(([lbl, val]) => (
@@ -263,7 +329,15 @@ function WatchContent() {
               </div>
             )}
 
-            {tab === 'quiz' && <ZealQuiz course={{ ...course, title: currentTitle }} />}
+            {tab === 'quiz' && (
+              isGuestPreview ? (
+                <div style={{ padding: 24, borderRadius: 16, background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+                  <p style={{ fontSize: 16, fontWeight: 800, color: '#0a0a0a', marginBottom: 8 }}>Quiz unlocks after signup</p>
+                  <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 14 }}>Create your free account to try the quiz, track your progress, and continue with the full class.</p>
+                  <Link href="/register" style={{ display: 'inline-block', padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Create free account</Link>
+                </div>
+              ) : <ZealQuiz course={{ ...course, title: currentTitle }} />
+            )}
 
             {tab === 'reviews' && <Reviews courseId={id} userId={user?.id} />}
 
@@ -279,6 +353,14 @@ function WatchContent() {
 
             {tab === 'resources' && (
               <div>
+                {isGuestPreview ? (
+                  <div style={{ padding: 24, borderRadius: 16, background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+                    <p style={{ fontSize: 16, fontWeight: 800, color: '#0a0a0a', marginBottom: 8 }}>Resources preview</p>
+                    <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 14 }}>Students with an account can open notes, links, and practice resources attached to this class.</p>
+                    <Link href="/register" style={{ display: 'inline-block', padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free</Link>
+                  </div>
+                ) : (
+                  <>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                   <div>
                     <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0a0a0a', marginBottom: 4 }}>Course Resources</h3>
@@ -344,6 +426,8 @@ function WatchContent() {
                     ))}
                   </div>
                 )}
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -351,6 +435,13 @@ function WatchContent() {
 
         {chapters.length > 0 && (
           <aside className="watch-sidebar" style={{ width: 300, flexShrink: 0, borderLeft: '1px solid #e5e7eb', background: '#fff', position: 'sticky', top: 60, height: 'calc(100vh - 60px)', overflowY: 'auto' }}>
+            {isGuestPreview && (
+              <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', background: '#f8fafc' }}>
+                <p style={{ fontSize: 12, fontWeight: 800, color: G, marginBottom: 6 }}>Preview unlocked</p>
+                <p style={{ fontSize: 12, color: '#4b5563', lineHeight: 1.6, marginBottom: 10 }}>Browse the chapter outline now, then create a free account to continue the full lesson.</p>
+                <Link href="/register" style={{ display: 'inline-block', padding: '8px 12px', fontSize: 12, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free</Link>
+              </div>
+            )}
             <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb' }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 2 }}>Course content</p>
               <p style={{ fontSize: 12, color: '#9ca3af' }}>{chapters.length} chapters{totalDur ? ' · ' + fmtDur(totalDur) : ''}</p>
@@ -407,6 +498,8 @@ function WatchContent() {
           .watch-header{padding:0 16px!important;gap:10px!important;}
           .watch-home-link,.watch-user-chip{display:none!important;}
           .watch-tab-panel{padding:18px 14px 100px!important;}
+          .watch-preview-overlay{left:14px!important;right:14px!important;bottom:14px!important;width:auto!important;max-width:none!important;}
+          .watch-guest-pill{left:14px!important;right:auto!important;top:14px!important;}
         }
       `}</style>
     </div>

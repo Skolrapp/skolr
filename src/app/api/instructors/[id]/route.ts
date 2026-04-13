@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const token = request.cookies.get('sk_token')?.value;
-  const session = token ? await validateSession(token) : null;
-  if (!session) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = createSupabaseAdmin();
   const { data: user } = await supabase.from('users').select('id, name, avatar_url, bio, created_at').eq('id', id).eq('role', 'instructor').eq('is_active', true).single();
