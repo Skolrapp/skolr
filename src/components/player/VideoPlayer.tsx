@@ -197,7 +197,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
   return (
     <div className="relative rounded-2xl overflow-hidden aspect-video select-none"
       style={{ background: 'linear-gradient(180deg,#0f172a,#111827)' }}
-      onClick={togglePlay} onMouseMove={activity} onTouchStart={activity}>
+      onMouseMove={activity} onTouchStart={activity}>
       <video ref={vRef} className="w-full h-full object-cover" poster={posterUrl} playsInline muted={muted}
         onWaiting={() => setBuffering(true)}
         onPlaying={() => { setBuffering(false); setPlaying(true); }}
@@ -211,11 +211,20 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
       )}
 
       {!playing && ready && !buffering && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: '#10B981' }}>
+        <button
+          type="button"
+          className="absolute inset-0 flex items-center justify-center"
+          onClick={(e) => {
+            e.stopPropagation();
+            togglePlay();
+          }}
+          aria-label="Play video"
+          style={{ background: 'transparent' }}
+        >
+          <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg" style={{ background: '#10B981' }}>
             <svg className="w-6 h-6 text-black ml-1" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </div>
-        </div>
+        </button>
       )}
 
       {showCtrl && (
