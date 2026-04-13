@@ -25,9 +25,20 @@ const instructorNav = [
     icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg> },
 ];
 
+const adminNav = [
+  { href: '/admin', label: 'Review',
+    icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg> },
+  { href: '/instructor/upload', label: 'Upload',
+    icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> },
+  { href: '/courses', label: 'Browse',
+    icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg> },
+  { href: '/admin', label: 'Support',
+    icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8a6 6 0 10-12 0v1H4v4h2v3a2 2 0 002 2h3"/><path d="M13 19h4"/></svg> },
+];
+
 export default function BottomNav({ role = 'student' }: { role?: UserRole }) {
   const pathname = usePathname();
-  const nav = role === 'instructor' || role === 'admin' ? instructorNav : studentNav;
+  const nav = role === 'admin' ? adminNav : role === 'instructor' ? instructorNav : studentNav;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bottom-nav">

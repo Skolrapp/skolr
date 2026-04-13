@@ -13,7 +13,7 @@ export default function TopHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
 
-  const homeHref = user?.role === 'instructor' ? '/instructor' : '/dashboard';
+  const homeHref = user?.role === 'admin' ? '/admin' : user?.role === 'instructor' ? '/instructor' : '/dashboard';
   const initial  = user?.name?.charAt(0).toUpperCase() || '?';
   const hasPhoto = !!(user as any)?.avatar_url && !imgError;
 
@@ -53,9 +53,10 @@ export default function TopHeader() {
               {[
                 { label: 'Home', href: homeHref },
                 { label: 'Browse Courses', href: '/courses' },
-                { label: 'Subscription', href: '/settings' },
+                ...(user?.role === 'admin' ? [{ label: 'Admin Review', href: '/admin' }] : []),
+                ...(user?.role !== 'admin' ? [{ label: 'Subscription', href: '/settings' }] : []),
                 ...(user?.role === 'instructor' ? [{ label: 'My Courses', href: '/instructor' }] : []),
-                { label: 'Edit Profile', href: user?.role === 'instructor' ? '/instructors/' + user?.id : '/settings' },
+                { label: user?.role === 'admin' ? 'Account Tools' : 'Edit Profile', href: user?.role === 'instructor' ? '/instructors/' + user?.id : user?.role === 'admin' ? '/admin' : '/settings' },
               ].map(item => (
                 <button key={item.label} onClick={() => { router.push(item.href); setMenuOpen(false); }}
                   style={{ display: 'block', width: '100%', padding: '9px 12px', fontSize: 13, color: '#374151', background: 'transparent', border: 'none', borderRadius: 7, cursor: 'pointer', textAlign: 'left', minHeight: 0, minWidth: 0 }}
