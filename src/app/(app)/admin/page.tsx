@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
@@ -674,17 +675,29 @@ export default function AdminPage() {
                     </div>
 
                     <div className="mt-4">
-                      <button
-                        className="text-xs font-semibold"
-                        style={{ color: G }}
-                        onClick={() => setActiveId(activeId === item.id ? null : item.id)}
-                      >
-                        {activeId === item.id ? 'Hide review notes' : 'Open review notes'}
-                      </button>
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <Link
+                          href={`/watch/${item.course_id}`}
+                          className="text-xs font-semibold"
+                          style={{ color: '#60a5fa', textDecoration: 'none' }}
+                        >
+                          Preview video
+                        </Link>
+                        <button
+                          className="text-xs font-semibold"
+                          style={{ color: G }}
+                          onClick={() => setActiveId(activeId === item.id ? null : item.id)}
+                        >
+                          {activeId === item.id ? 'Hide review notes' : 'Open review notes'}
+                        </button>
+                      </div>
                     </div>
 
                     {activeId === item.id && (
                       <div className="mt-4 space-y-3">
+                        <div className="rounded-xl p-3 text-xs" style={{ background: '#1a1a1a', border: '1px solid #222', color: '#a3a3a3' }}>
+                          Watch the instructor intro and chapter flow first, then leave feedback or publish from here.
+                        </div>
                         <textarea
                           className="inp resize-none"
                           rows={4}
