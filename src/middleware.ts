@@ -52,6 +52,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
+  if ((pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) && payload.role !== 'admin') {
+    if (pathname.startsWith('/api/')) return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    return NextResponse.redirect(new URL(payload.role === 'instructor' ? '/instructor' : '/dashboard', request.url));
+  }
+
   const headers = new Headers(request.headers);
   headers.set('x-user-id',    payload.userId);
   headers.set('x-user-role',  payload.role);

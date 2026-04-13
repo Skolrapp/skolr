@@ -1,6 +1,7 @@
 // ─── User & Auth ─────────────────────────────────────────────────────────────
 
 export type UserRole = 'student' | 'instructor' | 'admin';
+export type CourseReviewStatus = 'pending' | 'approved' | 'rejected';
 
 export type SubscriptionTier =
   | 'free'
@@ -81,6 +82,8 @@ export interface Course {
   is_published: boolean;
   language: 'en' | 'sw' | 'both';
   view_count: number;
+  review_status?: CourseReviewStatus | null;
+  admin_notes?: string | null;
   created_at: string;
 }
 

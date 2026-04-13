@@ -4,6 +4,9 @@ import LandingPage from "./landing/page";
 
 export default async function RootPage() {
   const user = await getCurrentUser();
-  if (user) redirect(user.role === "instructor" ? "/instructor" : "/dashboard");
+  if (user) {
+    if (user.role === "admin") redirect("/admin");
+    redirect(user.role === "instructor" ? "/instructor" : "/dashboard");
+  }
   return <LandingPage />;
 }

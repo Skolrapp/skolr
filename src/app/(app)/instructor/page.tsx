@@ -19,6 +19,7 @@ export default function InstructorPage() {
   const [period,  setPeriod]  = useState<Period>('month');
   const [loading, setLoading] = useState(true);
   const [coursesLoading, setCoursesLoading] = useState(true);
+  const [courseActionMessage, setCourseActionMessage] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -35,6 +36,25 @@ export default function InstructorPage() {
       .then(d => { if (d.success) setCourses(d.data); })
       .finally(() => setCoursesLoading(false));
   }, []);
+
+  const submitForReview = async (courseId: string) => {
+    const res = await fetch(`/api/instructor/courses/${courseId}/submit-review`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    const data = await res.json();
+    if (data.success) {
+      setCourses((current) => current.map((course) => (
+        course.id === courseId
+          ? { ...course, review_status: 'pending', is_published: false, admin_notes: null }
+          : course
+      )));
+      setCourseActionMessage(data.message || 'Course sent for review.');
+    } else {
+      setCourseActionMessage(data.error || 'Failed to submit course for review.');
+    }
+    setTimeout(() => setCourseActionMessage(''), 4000);
+  };
 
   if (!user) return null;
 
@@ -68,6 +88,11 @@ export default function InstructorPage() {
             <h2 className="sec-head !mb-0">Your courses</h2>
             <Link href="/instructor/upload" className="text-xs font-semibold" style={{ color: G }}>New course</Link>
           </div>
+          {courseActionMessage && (
+            <div className="rounded-xl p-3 mb-3 text-sm" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', color: '#34d399' }}>
+              {courseActionMessage}
+            </div>
+          )}
           {coursesLoading ? (
             <div className="space-y-2">{[1,2].map(i => <div key={i} className="skel h-20 rounded-2xl" />)}</div>
           ) : courses.length === 0 ? (
@@ -97,9 +122,14 @@ export default function InstructorPage() {
                       <p className="text-xs mt-1" style={{ color: '#737373' }}>
                         {course.subject} • {course.chapter_count} {course.chapter_count === 1 ? 'chapter' : 'chapters'}
                       </p>
-                      <p className="text-xs mt-1" style={{ color: course.is_published ? G : '#fbbf24' }}>
-                        {course.is_published ? 'Published' : 'Draft'}
+                      <p className="text-xs mt-1" style={{ color: course.is_published ? G : course.review_status === 'pending' ? '#fbbf24' : course.review_status === 'rejected' ? '#f87171' : '#fbbf24' }}>
+                        {course.is_published ? 'Published' : course.review_status === 'pending' ? 'Pending admin review' : course.review_status === 'rejected' ? 'Changes requested' : 'Draft'}
                       </p>
+                      {course.admin_notes && (
+                        <p className="text-xs mt-1" style={{ color: '#a3a3a3' }}>
+                          Admin note: {course.admin_notes}
+                        </p>
+                      )}
                       <div className="flex gap-3 mt-3">
                         <Link href={`/instructor/courses/${course.id}/chapters`} className="text-xs font-semibold" style={{ color: G }}>
                           Manage chapters
@@ -107,6 +137,15 @@ export default function InstructorPage() {
                         <Link href={`/watch/${course.id}`} className="text-xs font-semibold" style={{ color: '#60a5fa' }}>
                           Preview
                         </Link>
+                        {!course.is_published && course.review_status !== 'pending' && (
+                          <button
+                            onClick={() => submitForReview(course.id)}
+                            className="text-xs font-semibold !min-h-0 !min-w-0"
+                            style={{ color: '#fbbf24' }}
+                          >
+                            Submit for review
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

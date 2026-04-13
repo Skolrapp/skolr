@@ -44,5 +44,29 @@ export async function GET(request: NextRequest) {
     chapter_count: chapterCounts.get(course.id) || 0,
   }));
 
-  return NextResponse.json({ success: true, data: items });
+  const { data: reviews, error: reviewError } = await supabase
+    .from('course_review_requests')
+    .select('course_id, status, admin_notes, reviewed_at')
+    .in('course_id', courseIds.length > 0 ? courseIds : ['00000000-0000-0000-0000-000000000000']);
+
+  if (reviewError && !reviewError.message.includes('course_review_requests')) {
+    return NextResponse.json({ success: false, error: reviewError.message }, { status: 500 });
+  }
+
+  const reviewByCourseId = new Map<string, { status: string | null; admin_notes: string | null; reviewed_at: string | null }>(
+    ((reviews || []) as Array<{ course_id: string; status: string | null; admin_notes: string | null; reviewed_at: string | null }>)
+      .map((review) => [review.course_id, review])
+  );
+
+  const enriched = items.map((course) => {
+    const review = reviewByCourseId.get(course.id);
+    return {
+      ...course,
+      review_status: review?.status || null,
+      admin_notes: review?.admin_notes || null,
+      reviewed_at: review?.reviewed_at || null,
+    };
+  });
+
+  return NextResponse.json({ success: true, data: enriched });
 }

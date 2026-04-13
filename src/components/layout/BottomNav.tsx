@@ -27,7 +27,7 @@ const instructorNav = [
 
 export default function BottomNav({ role = 'student' }: { role?: UserRole }) {
   const pathname = usePathname();
-  const nav = role === 'instructor' ? instructorNav : studentNav;
+  const nav = role === 'instructor' || role === 'admin' ? instructorNav : studentNav;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bottom-nav">
