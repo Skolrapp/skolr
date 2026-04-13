@@ -39,7 +39,7 @@ function WatchContent() {
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [activeChapter, setActiveChapter] = useState<Chapter | null>(null);
@@ -54,6 +54,7 @@ function WatchContent() {
   const [resPending, startResTransition] = useTransition();
   const [accessPromptOpen, setAccessPromptOpen] = useState(false);
   const [instructorProfile, setInstructorProfile] = useState<any>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/courses/' + id, { credentials: 'include' })
@@ -133,6 +134,7 @@ function WatchContent() {
   ];
   const totalLessons = lessonItems.length;
   const homeHref = !user ? '/' : user.role === 'admin' ? '/admin' : user.role === 'instructor' ? '/instructor' : '/dashboard';
+  const roleLabel = !user ? 'Guest' : user.role === 'admin' ? 'Super Admin' : user.role === 'instructor' ? 'Instructor' : 'Student';
   const canManageCourse = !!user && (user.role === 'admin' || course.instructor_id === user.id);
   const isGuestPreview = !user;
   const hasPaidAccess = !!user && isSubscriptionActive(user.subscription_expires_at) && canAccessLevel(user.subscription_tier, course.category);
@@ -148,6 +150,26 @@ function WatchContent() {
     { id: 'qa', label: 'Q&A' },
     { id: 'resources', label: 'Resources' },
   ];
+  const menuItems = !user
+    ? [
+        { label: 'Browse courses', href: '/courses' },
+        { label: 'Sign in', href: '/login' },
+        { label: 'Create free account', href: '/register' },
+      ]
+    : user.role === 'admin'
+      ? [
+          { label: 'Control center', href: '/admin?tab=reviews' },
+          { label: 'Scholar tracker', href: '/admin?tab=tracker' },
+          { label: 'Course cloning', href: '/admin?tab=cloning' },
+          { label: 'User support', href: '/admin?tab=support' },
+          { label: 'Course catalog', href: '/courses' },
+        ]
+      : [
+          { label: 'Home', href: homeHref },
+          { label: 'Browse courses', href: '/courses' },
+          ...(user.role === 'instructor' ? [{ label: 'My courses', href: '/instructor' }] : []),
+          { label: 'Settings', href: '/settings' },
+        ];
 
   return (
     <div className="watch-page" style={{ background: '#fff', minHeight: '100vh', fontFamily: "'Inter',-apple-system,sans-serif", color: '#0a0a0a' }}>
@@ -167,8 +189,56 @@ function WatchContent() {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             Home
           </Link>
-          <div className="watch-user-chip" style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', border: '2px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: G }}>{user?.name?.charAt(0).toUpperCase()}</span>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <button
+              onClick={() => setMenuOpen((open) => !open)}
+              style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', border: '2px solid ' + (menuOpen ? G : '#e5e7eb'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, minHeight: 0, minWidth: 0, cursor: 'pointer' }}
+              aria-label="Open account menu"
+            >
+              <span style={{ fontSize: 11, fontWeight: 700, color: G }}>{(user?.name?.charAt(0) || 'G').toUpperCase()}</span>
+            </button>
+            {menuOpen && (
+              <div style={{ position: 'absolute', right: 0, top: 42, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: 6, minWidth: 200, zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
+                <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#ecfdf5', border: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: G }}>{(user?.name?.charAt(0) || 'G').toUpperCase()}</span>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#0a0a0a' }}>{user?.name || 'Guest viewer'}</p>
+                    <p style={{ fontSize: 11, color: '#9ca3af' }}>{roleLabel}</p>
+                  </div>
+                </div>
+                {menuItems.map((item) => (
+                  <button
+                    key={item.label}
+                    onClick={() => {
+                      router.push(item.href);
+                      setMenuOpen(false);
+                    }}
+                    style={{ display: 'block', width: '100%', padding: '9px 12px', fontSize: 13, color: '#374151', background: 'transparent', border: 'none', borderRadius: 7, cursor: 'pointer', textAlign: 'left', minHeight: 0, minWidth: 0 }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#f9fafb')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+                {user && (
+                  <div style={{ borderTop: '1px solid #f3f4f6', marginTop: 4 }}>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setMenuOpen(false);
+                      }}
+                      style={{ display: 'block', width: '100%', padding: '9px 12px', fontSize: 13, color: '#ef4444', background: 'transparent', border: 'none', borderRadius: 7, cursor: 'pointer', textAlign: 'left', minHeight: 0, minWidth: 0 }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = '#fef2f2')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </header>
