@@ -16,6 +16,7 @@ export default function TopHeader() {
   const homeHref = user?.role === 'admin' ? '/admin' : user?.role === 'instructor' ? '/instructor' : '/dashboard';
   const initial  = user?.name?.charAt(0).toUpperCase() || '?';
   const hasPhoto = !!(user as any)?.avatar_url && !imgError;
+  const roleLabel = user?.role === 'admin' ? 'Super Admin' : user?.role === 'instructor' ? 'Instructor' : 'Student';
   const stopImpersonation = async () => {
     await fetch('/api/admin/impersonation/stop', { method: 'POST', credentials: 'include' });
     window.location.href = '/admin';
@@ -75,7 +76,7 @@ export default function TopHeader() {
                 </div>
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 700, color: '#0a0a0a' }}>{user?.name}</p>
-                  <p style={{ fontSize: 11, color: '#9ca3af', textTransform: 'capitalize' }}>{user?.role}</p>
+                  <p style={{ fontSize: 11, color: '#9ca3af' }}>{roleLabel}</p>
                 </div>
               </div>
               {menuItems.map(item => (

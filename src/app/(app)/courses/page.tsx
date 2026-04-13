@@ -4,6 +4,8 @@ import { useState, Suspense, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import TopHeader from '@/components/layout/TopHeader';
+import BottomNav from '@/components/layout/BottomNav';
 import Footer from '@/components/layout/Footer';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
 import type { Course, EducationLevel } from '@/types';
@@ -61,35 +63,23 @@ function CoursesContent(){
   const currentLevel=LEVELS.find(l=>l.id===level)||LEVELS[0];
   const isActive=isSubscriptionActive(user?.subscription_expires_at);
   const totalPages=Math.ceil(total/PER);
-  const homeHref=user?(user.role==='instructor'?'/instructor':'/dashboard'):'/';
 
   // guests can browse freely
 
   return(
     <div style={{background:'#fff',minHeight:'100vh',fontFamily:"'Inter',-apple-system,sans-serif",color:'#0a0a0a'}}>
-
-      <header style={{background:'#fff',borderBottom:'1px solid #e5e7eb',position:'sticky',top:0,zIndex:50}}>
-        <div style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',gap:16,height:60,padding:'0 24px'}}>
-          <Link href={homeHref} style={{display:'flex',alignItems:'center',gap:8,textDecoration:'none',flexShrink:0}}>
-            <div style={{width:30,height:30,background:G,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            </div>
-            <span style={{fontWeight:800,fontSize:18,color:'#0a0a0a'}}>Skolr</span>
-          </Link>
-          <div style={{flex:1,maxWidth:400,display:'flex',alignItems:'center',gap:8,background:'#f9fafb',border:'1.5px solid #e5e7eb',borderRadius:999,padding:'7px 14px'}}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Search courses, subjects..." style={{background:'none',border:'none',outline:'none',fontSize:13,color:'#0a0a0a',width:'100%',fontFamily:'inherit'}}/>
+      {user ? <TopHeader /> : (
+        <header style={{background:'#fff',borderBottom:'1px solid #e5e7eb',position:'sticky',top:0,zIndex:50}}>
+          <div style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',gap:16,height:60,padding:'0 24px'}}>
+            <Link href="/" style={{display:'flex',alignItems:'center',gap:8,textDecoration:'none',flexShrink:0}}>
+              <div style={{width:30,height:30,background:G,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <span style={{fontWeight:800,fontSize:18,color:'#0a0a0a'}}>Skolr</span>
+            </Link>
           </div>
-          <div style={{flex:1}}/>
-          <Link href={homeHref} style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',fontSize:13,fontWeight:600,color:'#6b7280',textDecoration:'none',borderRadius:8,border:'1px solid #e5e7eb',flexShrink:0}}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Home
-          </Link>
-          <div style={{width:32,height:32,borderRadius:'50%',background:'rgba(16,185,129,0.12)',border:'2px solid #e5e7eb',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-            <span style={{fontSize:12,fontWeight:700,color:G}}>{user?.name?.charAt(0).toUpperCase()}</span>
-          </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <div style={{background:level?'linear-gradient(135deg,'+(currentLevel as any).color+'dd,'+(currentLevel as any).color+'aa)':'linear-gradient(135deg,#0a0a0a,#1a1a2e)',padding:'28px 24px'}}>
         <div style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:16}}>
@@ -216,6 +206,7 @@ function CoursesContent(){
       </div>
 
       <Footer/>
+      {user && <BottomNav role={user.role} adminTab={user.role === 'admin' ? 'reviews' : undefined} />}
       <style>{'@media(max-width:768px){aside{display:none!important;}}@media(max-width:640px){div[style*="repeat(3,1fr)"]{grid-template-columns:repeat(1,1fr)!important;}}@media(min-width:641px) and (max-width:900px){div[style*="repeat(3,1fr)"]{grid-template-columns:repeat(2,1fr)!important;}}'}</style>
     </div>
   );

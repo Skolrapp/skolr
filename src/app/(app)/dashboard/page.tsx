@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import Footer from '@/components/layout/Footer';
 import TopHeader from '@/components/layout/TopHeader';
@@ -30,11 +31,19 @@ function Thumb({ color, bg, title }: { color: string; bg: string; title: string 
 
 export default function HomePage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [courses,  setCourses]  = useState<Course[]>([]);
   const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
+    if (user?.role === 'admin') {
+      router.replace('/admin');
+    }
+  }, [router, user?.role]);
+
+  useEffect(() => {
     if (!user) return;
+    if (user.role === 'admin') return;
     fetch('/api/courses?per_page=6', { credentials: 'include' })
       .then(r => r.json())
       .then(d => { if (d.success) setCourses(d.data.items); })
@@ -42,6 +51,7 @@ export default function HomePage() {
   }, [user]);
 
   if (!user) return null;
+  if (user.role === 'admin') return null;
 
   const isActive  = isSubscriptionActive(user.subscription_expires_at);
   const firstName = user.name?.split(' ')[0] || 'there';
