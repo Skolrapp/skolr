@@ -16,8 +16,21 @@ export default function TopHeader() {
   const homeHref = user?.role === 'admin' ? '/admin' : user?.role === 'instructor' ? '/instructor' : '/dashboard';
   const initial  = user?.name?.charAt(0).toUpperCase() || '?';
   const hasPhoto = !!(user as any)?.avatar_url && !imgError;
+  const stopImpersonation = async () => {
+    await fetch('/api/admin/impersonation/stop', { method: 'POST', credentials: 'include' });
+    window.location.href = '/admin';
+  };
 
   return (
+    <>
+    {user?.is_impersonating && (
+      <div style={{ background: '#fbbf24', color: '#111827', padding: '8px 24px', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span>Impersonation mode: you are viewing Skolr as this user.</span>
+        <button onClick={stopImpersonation} style={{ background: '#111827', color: '#fff', border: 'none', borderRadius: 999, padding: '6px 12px', cursor: 'pointer', minHeight: 0, minWidth: 0 }}>
+          Exit impersonation
+        </button>
+      </div>
+    )}
     <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, zIndex: 50 }}>
       <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 16, height: 60, padding: '0 24px' }}>
         <Link href={homeHref} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
@@ -78,5 +91,6 @@ export default function TopHeader() {
         </div>
       </div>
     </header>
+    </>
   );
 }

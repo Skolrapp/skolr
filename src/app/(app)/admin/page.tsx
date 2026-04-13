@@ -496,6 +496,26 @@ export default function AdminPage() {
                         >
                           Reset password
                         </button>
+                        <button
+                          className="btn-secondary w-auto px-4 text-sm"
+                          onClick={async () => {
+                            const res = await fetch('/api/admin/impersonation/start', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              credentials: 'include',
+                              body: JSON.stringify({ userId: account.id }),
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                              window.location.href = '/dashboard';
+                            } else {
+                              setMessage(data.error || 'Could not start impersonation.');
+                              setTimeout(() => setMessage(''), 4000);
+                            }
+                          }}
+                        >
+                          View as user
+                        </button>
                       </div>
                     </div>
                   </div>

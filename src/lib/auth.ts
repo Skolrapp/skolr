@@ -12,9 +12,17 @@ const JWT_SECRET = new TextEncoder().encode(
 const SESSION_HOURS = 24 * 7; // 7 days
 const MAX_DEVICES   = 2;
 
+type SessionPayload = {
+  userId: string;
+  role: string;
+  sessionId: string;
+  impersonatedBy?: string;
+  adminSessionId?: string;
+};
+
 // ─── Token helpers ────────────────────────────────────────────────────────────
 
-export async function signToken(payload: { userId: string; role: string; sessionId: string }) {
+export async function signToken(payload: SessionPayload) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -25,7 +33,7 @@ export async function signToken(payload: { userId: string; role: string; session
 export async function verifyToken(token: string) {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload as { userId: string; role: string; sessionId: string };
+    return payload as SessionPayload;
   } catch { return null; }
 }
 
@@ -112,17 +120,30 @@ export async function validateSession(token: string): Promise<{ user: User } | n
   if (!payload) return null;
 
   const supabase = createSupabaseAdmin();
-  const tokenHash = hashToken(token);
+  if (payload.impersonatedBy && payload.adminSessionId) {
+    const { data: adminSession } = await supabase
+      .from('user_sessions')
+      .select('id')
+      .eq('id', payload.adminSessionId)
+      .eq('user_id', payload.impersonatedBy)
+      .eq('is_valid', true)
+      .gt('expires_at', new Date().toISOString())
+      .single();
 
-  const { data: session } = await supabase
-    .from('user_sessions')
-    .select('*')
-    .eq('token_hash', tokenHash)
-    .eq('is_valid', true)
-    .gt('expires_at', new Date().toISOString())
-    .single();
+    if (!adminSession) return null;
+  } else {
+    const tokenHash = hashToken(token);
 
-  if (!session) return null;
+    const { data: session } = await supabase
+      .from('user_sessions')
+      .select('*')
+      .eq('token_hash', tokenHash)
+      .eq('is_valid', true)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+
+    if (!session) return null;
+  }
 
   const { data: user } = await supabase
     .from('users')
@@ -132,7 +153,13 @@ export async function validateSession(token: string): Promise<{ user: User } | n
     .single();
 
   if (!user) return null;
-  return { user: user as User };
+  return {
+    user: {
+      ...(user as User),
+      is_impersonating: !!payload.impersonatedBy,
+      impersonated_by: payload.impersonatedBy || null,
+    },
+  };
 }
 
 export async function getCurrentUser(): Promise<User | null> {

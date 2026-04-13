@@ -19,6 +19,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (body.video_hls_url) updates.video_hls_url = body.video_hls_url;
   if (body.duration_seconds) updates.duration_seconds = body.duration_seconds;
   if (body.order_index !== undefined) updates.order_index = body.order_index;
+  if (body.release_at !== undefined) updates.release_at = body.release_at || null;
   const { data, error } = await supabase.from('chapters').update(updates).eq('id', id).select().single();
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, data });

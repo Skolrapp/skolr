@@ -11,5 +11,17 @@ export async function GET(request: NextRequest) {
     return res;
   }
   const { user } = result;
-  return NextResponse.json({ success: true, user: { id: user.id, name: user.name, phone: user.phone, role: user.role, subscription_tier: user.subscription_tier, subscription_expires_at: user.subscription_expires_at } });
+  return NextResponse.json({
+    success: true,
+    user: {
+      id: user.id,
+      name: user.name,
+      phone: user.phone,
+      role: user.role,
+      subscription_tier: user.subscription_tier,
+      subscription_expires_at: user.subscription_expires_at,
+      is_impersonating: user.is_impersonating || false,
+      impersonated_by: user.impersonated_by || null,
+    },
+  });
 }

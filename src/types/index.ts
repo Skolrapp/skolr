@@ -28,6 +28,8 @@ export interface User {
   subscription_tier: SubscriptionTier;
   subscription_expires_at?: string | null;
   avatar_url?: string;
+  is_impersonating?: boolean;
+  impersonated_by?: string | null;
   is_active: boolean;
   created_at: string;
 }
@@ -146,5 +148,6 @@ export interface Chapter {
   duration_seconds: number;
   order_index: number;
   is_published: boolean;
+  release_at?: string | null;
   created_at: string;
 }

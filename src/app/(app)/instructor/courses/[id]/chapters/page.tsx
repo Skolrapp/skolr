@@ -14,6 +14,7 @@ type ChapterForm = {
   description: string;
   video_hls_url: string;
   duration_seconds: string;
+  release_at: string;
 };
 
 const EMPTY_FORM: ChapterForm = {
@@ -21,6 +22,7 @@ const EMPTY_FORM: ChapterForm = {
   description: '',
   video_hls_url: '',
   duration_seconds: '',
+  release_at: '',
 };
 
 type UploadedVideo = {
@@ -86,6 +88,7 @@ export default function ChaptersPage() {
           description: form.description || undefined,
           video_hls_url: form.video_hls_url,
           duration_seconds: form.duration_seconds ? parseInt(form.duration_seconds) : 0,
+          release_at: form.release_at || null,
         }),
       });
       const data = await res.json();
@@ -115,6 +118,7 @@ export default function ChaptersPage() {
           description: editForm.description,
           video_hls_url: editForm.video_hls_url,
           duration_seconds: editForm.duration_seconds ? parseInt(editForm.duration_seconds) : 0,
+          release_at: editForm.release_at || null,
         }),
       });
       const data = await res.json();
@@ -263,6 +267,7 @@ export default function ChaptersPage() {
                     </div>
                     <div><label className="lbl">HLS URL</label><input className="inp font-mono text-sm" value={editForm.video_hls_url} onChange={(e) => setEditForm((f) => ({ ...f, video_hls_url: e.target.value }))} /></div>
                     <div><label className="lbl">Duration (seconds)</label><input className="inp" type="number" value={editForm.duration_seconds} onChange={(e) => setEditForm((f) => ({ ...f, duration_seconds: e.target.value }))} /></div>
+                    <div><label className="lbl">Release date - optional</label><input className="inp" type="datetime-local" value={editForm.release_at} onChange={(e) => setEditForm((f) => ({ ...f, release_at: e.target.value }))} /></div>
                     <div className="flex gap-2">
                       <button className="btn-primary text-sm py-2 flex-1" onClick={() => saveEdit(chapter.id)} disabled={pending || uploadingEditVideo}>{pending ? 'Saving...' : 'Save'}</button>
                       <button
@@ -286,6 +291,7 @@ export default function ChaptersPage() {
                       {chapter.description && <p className="text-xs mt-0.5 truncate" style={{ color: '#737373' }}>{chapter.description}</p>}
                       <p className="text-xs mt-0.5 font-mono truncate" style={{ color: '#525252' }}>{chapter.video_hls_url}</p>
                       {chapter.duration_seconds > 0 && <p className="text-xs mt-0.5" style={{ color: G }}>{Math.floor(chapter.duration_seconds / 60)} min</p>}
+                      {chapter.release_at && <p className="text-xs mt-0.5" style={{ color: '#fbbf24' }}>Releases {new Date(chapter.release_at).toLocaleString('en-GB')}</p>}
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                       <button
@@ -296,6 +302,7 @@ export default function ChaptersPage() {
                             description: chapter.description || '',
                             video_hls_url: chapter.video_hls_url,
                             duration_seconds: chapter.duration_seconds ? String(chapter.duration_seconds) : '',
+                            release_at: chapter.release_at ? new Date(chapter.release_at).toISOString().slice(0, 16) : '',
                           });
                           setEditUploadProgress('');
                           setEditVideoError('');
@@ -337,6 +344,7 @@ export default function ChaptersPage() {
             </div>
             <div><label className="lbl">HLS URL (.m3u8)</label><input className="inp font-mono text-sm" placeholder="Generated automatically after upload" value={form.video_hls_url} onChange={(e) => setForm((f) => ({ ...f, video_hls_url: e.target.value }))} /></div>
             <div><label className="lbl">Duration (seconds)</label><input className="inp" type="number" placeholder="e.g. 600 for 10 min" value={form.duration_seconds} onChange={(e) => setForm((f) => ({ ...f, duration_seconds: e.target.value }))} /></div>
+            <div><label className="lbl">Release date - optional</label><input className="inp" type="datetime-local" value={form.release_at} onChange={(e) => setForm((f) => ({ ...f, release_at: e.target.value }))} /></div>
             <div className="flex gap-2">
               <button className="btn-primary text-sm py-2.5 flex-1" onClick={addChapter} disabled={pending || uploadingAddVideo}>{pending ? 'Adding...' : 'Add chapter'}</button>
               <button
