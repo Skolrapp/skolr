@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 
+function isMissingReleaseAt(message?: string) {
+  return !!message && message.includes('release_at');
+}
+
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const token = request.cookies.get('sk_token')?.value;
   const session = token ? await validateSession(token) : null;
@@ -20,7 +24,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (body.duration_seconds) updates.duration_seconds = body.duration_seconds;
   if (body.order_index !== undefined) updates.order_index = body.order_index;
   if (body.release_at !== undefined) updates.release_at = body.release_at || null;
-  const { data, error } = await supabase.from('chapters').update(updates).eq('id', id).select().single();
+  let { data, error } = await supabase.from('chapters').update(updates).eq('id', id).select().single();
+
+  if (error && isMissingReleaseAt(error.message)) {
+    delete updates.release_at;
+    const fallback = await supabase.from('chapters').update(updates).eq('id', id).select().single();
+    data = fallback.data;
+    error = fallback.error;
+  }
+
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, data });
 }
