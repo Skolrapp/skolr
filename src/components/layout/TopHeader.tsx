@@ -48,17 +48,17 @@ export default function TopHeader() {
       </div>
     )}
     <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, zIndex: 50 }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 16, height: 60, padding: '0 24px' }}>
-        <Link href={homeHref} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
+      <div className="top-header-shell" style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 16, height: 60, padding: '0 24px' }}>
+        <Link href={homeHref} className="top-header-brand" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
           <div style={{ width: 30, height: 30, background: G, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           </div>
           <span style={{ fontWeight: 800, fontSize: 18, color: '#0a0a0a' }}>Skolr</span>
         </Link>
-        <div style={{ flex: 1, maxWidth: 440 }}>
+        <div className="top-header-search" style={{ flex: 1, maxWidth: 440 }}>
           <SearchBar placeholder="Search courses, instructors..." />
         </div>
-        <div style={{ flex: 1 }} />
+        <div className="top-header-spacer" style={{ flex: 1 }} />
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <button onClick={() => setMenuOpen(m => !m)}
             style={{ width: 34, height: 34, borderRadius: '50%', background: hasPhoto ? 'transparent' : 'rgba(16,185,129,0.12)', border: '2px solid ' + (menuOpen ? G : '#e5e7eb'), display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', minHeight: 0, minWidth: 0, overflow: 'hidden', padding: 0 }}>
@@ -100,6 +100,31 @@ export default function TopHeader() {
         </div>
       </div>
     </header>
+    <style jsx>{`
+      @media (max-width: 640px) {
+        .top-header-shell {
+          height: auto !important;
+          padding: 10px 14px !important;
+          gap: 10px !important;
+          flex-wrap: wrap;
+          align-items: center !important;
+        }
+
+        .top-header-brand {
+          min-width: 0;
+        }
+
+        .top-header-search {
+          order: 3;
+          flex: 1 1 100% !important;
+          max-width: none !important;
+        }
+
+        .top-header-spacer {
+          display: none;
+        }
+      }
+    `}</style>
     </>
   );
 }

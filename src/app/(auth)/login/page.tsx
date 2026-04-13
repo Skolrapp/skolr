@@ -43,10 +43,10 @@ function LoginContent() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(160deg, #0a0a0a 0%, #111111 50%, #0d1a14 100%)' }}>
-      <div className="fixed top-0 left-0 w-96 h-96 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%)', transform: 'translate(-30%, -30%)' }} />
+      <div className="login-orb fixed top-0 left-0 w-96 h-96 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%)', transform: 'translate(-30%, -30%)' }} />
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-sm animate-fade-in">
-          <div className="flex flex-col items-center mb-10">
+        <div className="login-card w-full max-w-sm animate-fade-in">
+          <div className="login-brand flex flex-col items-center mb-10">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)' }}>
               <svg className="w-8 h-8" style={{ color: G }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
@@ -98,6 +98,22 @@ function LoginContent() {
           <p className="text-center text-xs mt-8" style={{ color: '#333333' }}>Your pace, your space</p>
         </div>
       </div>
+      <style jsx>{`
+        @media (max-width: 640px) {
+          .login-card {
+            max-width: none;
+          }
+
+          .login-brand {
+            margin-bottom: 32px;
+          }
+
+          .login-orb {
+            width: 18rem;
+            height: 18rem;
+          }
+        }
+      `}</style>
     </div>
   );
 }

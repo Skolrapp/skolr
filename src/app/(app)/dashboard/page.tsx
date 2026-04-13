@@ -60,8 +60,8 @@ export default function HomePage() {
     <div style={{ background: '#fff', minHeight: '100vh', fontFamily: "'Inter',-apple-system,sans-serif", color: '#0a0a0a' }}>
       <TopHeader />
 
-      <div style={{ background: 'linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 60%,#0d2818 100%)', padding: '32px 24px' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+      <div className="dashboard-hero" style={{ background: 'linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 60%,#0d2818 100%)', padding: '32px 24px' }}>
+        <div className="dashboard-hero-inner" style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <div>
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>Welcome back,</p>
             <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fff', marginBottom: 6 }}>{firstName}</h1>
@@ -69,7 +69,7 @@ export default function HomePage() {
               {isActive ? 'Your subscription is active — keep learning!' : 'Start your free trial to access all courses.'}
             </p>
           </div>
-          <div style={{ display: 'flex', gap: 24 }}>
+          <div className="dashboard-hero-stats" style={{ display: 'flex', gap: 24 }}>
             {([['Plan', user.subscription_tier?.replace(/_/g, ' ') || 'Free', '#fff'], ['Access', isActive ? 'Active' : 'None', isActive ? G : '#ef4444']] as [string,string,string][]).map(([label, value, color]) => (
               <div key={label} style={{ textAlign: 'center' }}>
                 <p style={{ fontSize: 14, fontWeight: 800, color }}>{value}</p>
@@ -85,7 +85,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px' }}>
+      <div className="dashboard-shell" style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px' }}>
 
         <div style={{ marginBottom: 48 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 20 }}>
@@ -94,11 +94,12 @@ export default function HomePage() {
               <p style={{ fontSize: 14, color: '#6b7280' }}>Choose your education level to find the right courses</p>
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 14 }}>
+          <div className="level-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 14 }}>
             {LEVELS.map(level => {
               const hasAccess = isActive && canAccessLevel(user.subscription_tier, level.id as any);
               return (
                 <Link key={level.id} href={'/courses?level=' + level.id}
+                  className="level-card"
                   style={{ display: 'block', padding: '20px 16px', background: level.bg, borderRadius: 12, textDecoration: 'none', border: '1px solid ' + level.color + '22', position: 'relative' }}>
                   <div style={{ width: 44, height: 44, borderRadius: 10, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={level.color} strokeWidth="1.8"><path d={level.icon}/></svg>
@@ -121,7 +122,7 @@ export default function HomePage() {
             <Link href="/courses" style={{ fontSize: 13, fontWeight: 600, color: G, textDecoration: 'none' }}>View all</Link>
           </div>
           {fetching ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
+            <div className="course-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
               {[1,2,3].map(i => (
                 <div key={i} style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid #e5e7eb' }}>
                   <div style={{ height: 160, background: '#f3f4f6' }} />
@@ -137,9 +138,10 @@ export default function HomePage() {
               <p style={{ fontSize: 14, color: '#6b7280' }}>No courses yet. Check back soon.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
+            <div className="course-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
               {courses.map(c => (
                 <Link key={c.id} href={'/watch/' + c.id}
+                  className="course-card"
                   style={{ textDecoration: 'none', color: 'inherit', display: 'block', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden' }}>
                   <Thumb color="#3b82f6" bg="#eff6ff" title={c.title} />
                   <div style={{ padding: '14px 16px' }}>
@@ -174,6 +176,56 @@ export default function HomePage() {
       </div>
 
       <Footer />
+      <style jsx>{`
+        @media (max-width: 900px) {
+          .level-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          }
+
+          .course-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .dashboard-hero {
+            padding: 22px 16px !important;
+          }
+
+          .dashboard-hero-inner {
+            align-items: flex-start !important;
+          }
+
+          .dashboard-hero-stats {
+            width: 100%;
+            justify-content: flex-start;
+            gap: 18px !important;
+          }
+
+          .dashboard-shell {
+            padding: 24px 16px 104px !important;
+          }
+
+          .level-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 12px !important;
+          }
+
+          .level-card {
+            padding: 16px 12px !important;
+            min-width: 0;
+          }
+
+          .course-grid {
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 14px !important;
+          }
+
+          .course-card {
+            min-width: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }
