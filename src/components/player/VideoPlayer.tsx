@@ -31,14 +31,31 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
   const [ready,    setReady]    = useState(false);
   const [playing,  setPlaying]  = useState(false);
   const [muted,    setMuted]    = useState(false);
+  const [volume,   setVolume]   = useState(1);
   const [buffering,setBuffering]= useState(false);
   const [showCtrl, setShowCtrl] = useState(true);
   const [error,    setError]    = useState<string | null>(null);
   const [levels,   setLevels]   = useState<Array<{ index: number; label: string }>>([]);
   const [curLevel, setCurLevel] = useState(-1);
   const [showQ,    setShowQ]    = useState(false);
+  const [subtitleTracks, setSubtitleTracks] = useState<Array<{ index: number; label: string }>>([]);
+  const [subtitleTrack, setSubtitleTrack] = useState(-1);
+  const [showCaptions, setShowCaptions] = useState(false);
   const [bw,       setBw]       = useState(0);
   const [quality,  setQuality]  = useState<Quality>('good');
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+
+  const formatTime = (seconds: number) => {
+    if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+    const total = Math.floor(seconds);
+    const hrs = Math.floor(total / 3600);
+    const mins = Math.floor((total % 3600) / 60);
+    const secs = total % 60;
+    return hrs > 0
+      ? `${hrs}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+      : `${mins}:${String(secs).padStart(2, '0')}`;
+  };
 
   const activity = useCallback(() => {
     setShowCtrl(true);
@@ -55,10 +72,12 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, (_, d) => {
         setLevels(d.levels.map((l, i) => ({ index: i, label: l.height ? `${l.height}p` : `${Math.round(l.bitrate/1000)}k` })));
+        setSubtitleTracks((d.subtitleTracks || []).map((track, index) => ({ index, label: track.name || track.lang || `Track ${index + 1}` })));
         setReady(true);
         if (startAt > 0) video.currentTime = startAt;
       });
       hls.on(Hls.Events.LEVEL_SWITCHED, (_, d) => setCurLevel(d.level));
+      hls.on(Hls.Events.SUBTITLE_TRACK_SWITCH, (_, d) => setSubtitleTrack(d.id));
       hls.on(Hls.Events.FRAG_LOADED, () => { const b = hls.bandwidthEstimate; setBw(b); setQuality(bwToQ(b)); });
       hls.on(Hls.Events.ERROR, (_, d) => {
         if (d.fatal) {
@@ -75,9 +94,36 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
       setError('Your browser does not support video playback.');
     }
 
+    const syncMeta = () => {
+      setDuration(video.duration || 0);
+      setCurrentTime(video.currentTime || 0);
+    };
+    const syncVolume = () => {
+      setMuted(video.muted);
+      setVolume(video.volume);
+    };
+
+    video.addEventListener('loadedmetadata', syncMeta);
+    video.addEventListener('durationchange', syncMeta);
+    video.addEventListener('timeupdate', syncMeta);
+    video.addEventListener('volumechange', syncVolume);
     progRef.current = setInterval(() => { if (!video.paused && onProgress) onProgress(Math.floor(video.currentTime)); }, 5000);
-    return () => { hlsRef.current?.destroy(); if (progRef.current) clearInterval(progRef.current); };
+    return () => {
+      hlsRef.current?.destroy();
+      video.removeEventListener('loadedmetadata', syncMeta);
+      video.removeEventListener('durationchange', syncMeta);
+      video.removeEventListener('timeupdate', syncMeta);
+      video.removeEventListener('volumechange', syncVolume);
+      if (progRef.current) clearInterval(progRef.current);
+    };
   }, [hlsUrl, startAt, onProgress]);
+
+  useEffect(() => {
+    const video = vRef.current;
+    if (!video) return;
+    video.volume = volume;
+    video.muted = muted;
+  }, [volume, muted]);
 
   useEffect(() => {
     previewTriggeredRef.current = false;
@@ -107,6 +153,35 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
   };
 
   const setLevel = (l: number) => { if (hlsRef.current) hlsRef.current.currentLevel = l; setCurLevel(l); setShowQ(false); };
+  const setCaptionTrack = (track: number) => {
+    if (hlsRef.current) {
+      hlsRef.current.subtitleTrack = track;
+    }
+    const video = vRef.current;
+    if (video?.textTracks) {
+      Array.from(video.textTracks).forEach((textTrack, index) => {
+        textTrack.mode = track === index ? 'showing' : 'disabled';
+      });
+    }
+    setSubtitleTrack(track);
+    setShowCaptions(false);
+  };
+  const handleSeek = (value: number) => {
+    const video = vRef.current;
+    if (!video) return;
+    video.currentTime = value;
+    setCurrentTime(value);
+    activity();
+  };
+  const handleVolume = (value: number) => {
+    const video = vRef.current;
+    if (!video) return;
+    video.volume = value;
+    video.muted = value === 0;
+    setVolume(value);
+    setMuted(value === 0);
+    activity();
+  };
   const qlabel   = curLevel === -1 ? 'Auto' : (levels[curLevel]?.label ?? 'Auto');
   const bwKbps   = Math.round(bw / 1000);
 
@@ -155,18 +230,70 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
           </div>
 
           <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent" onClick={e => e.stopPropagation()}>
+            <div className="mb-3">
+              <input
+                type="range"
+                min={0}
+                max={duration || 0}
+                step={0.1}
+                value={Math.min(currentTime, duration || 0)}
+                onChange={(e) => handleSeek(Number(e.target.value))}
+                className="w-full accent-emerald-500 cursor-pointer"
+              />
+              <div className="mt-1 flex items-center justify-between text-[11px] font-medium text-white/80">
+                <span>{formatTime(currentTime)}</span>
+                <span>{previewSeconds ? `Preview ${formatTime(previewSeconds)}` : formatTime(duration)}</span>
+              </div>
+            </div>
             <div className="flex items-center gap-3">
               <button className="text-white !min-h-0 !min-w-0 p-1" onClick={togglePlay}>
                 {playing
                   ? <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
                   : <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>}
               </button>
-              <button className="text-white !min-h-0 !min-w-0 p-1" onClick={() => { setMuted(m => !m); if (vRef.current) vRef.current.muted = !muted; }}>
+              <button className="text-white !min-h-0 !min-w-0 p-1" onClick={() => {
+                const nextMuted = !muted;
+                if (!nextMuted && volume === 0) setVolume(0.8);
+                setMuted(nextMuted);
+                if (vRef.current) {
+                  vRef.current.muted = nextMuted;
+                  if (!nextMuted && vRef.current.volume === 0) vRef.current.volume = 0.8;
+                }
+              }}>
                 {muted
                   ? <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
                   : <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>}
               </button>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={muted ? 0 : volume}
+                onChange={(e) => handleVolume(Number(e.target.value))}
+                className="hidden sm:block w-24 accent-emerald-500 cursor-pointer"
+                aria-label="Volume"
+              />
               <div className="flex-1" />
+              <div className="relative">
+                <button className="text-white text-xs bg-white/20 rounded px-2 py-0.5 !min-h-0 !min-w-0" onClick={() => setShowCaptions((open) => !open)}>
+                  {subtitleTracks.length ? `CC ${subtitleTrack >= 0 ? 'On' : 'Off'}` : 'CC Off'}
+                </button>
+                {showCaptions && (
+                  <div className="absolute bottom-8 right-0 rounded-xl overflow-hidden min-w-[120px] z-10" style={{ background: '#0a0a0a', border: '1px solid #2a2a2a' }}>
+                    <button className={`w-full text-left px-3 py-2 text-xs text-white hover:bg-white/10 ${subtitleTrack === -1 ? 'font-bold' : ''}`} style={subtitleTrack === -1 ? { color: '#10B981' } : {}} onClick={() => setCaptionTrack(-1)}>
+                      Off
+                    </button>
+                    {subtitleTracks.length === 0 ? (
+                      <div className="px-3 py-2 text-xs text-white/60">No captions</div>
+                    ) : subtitleTracks.map(track => (
+                      <button key={track.index} className={`w-full text-left px-3 py-2 text-xs text-white hover:bg-white/10 ${subtitleTrack === track.index ? 'font-bold' : ''}`} style={subtitleTrack === track.index ? { color: '#10B981' } : {}} onClick={() => setCaptionTrack(track.index)}>
+                        {track.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="relative">
                 <button className="text-white text-xs bg-white/20 rounded px-2 py-0.5 !min-h-0 !min-w-0 font-mono" onClick={() => setShowQ(q => !q)}>{qlabel}</button>
                 {showQ && (
