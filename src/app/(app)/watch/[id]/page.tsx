@@ -334,15 +334,6 @@ function WatchContent() {
               <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 5, background: '#f3f4f6', color: '#6b7280' }}>{course.subject}</span>
               {activeChapter?.duration_seconds ? <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 5, background: '#f3f4f6', color: '#6b7280' }}>{fmtDur(activeChapter.duration_seconds)}</span> : null}
             </div>
-            {!activeChapter && (
-              <div style={{ marginTop: 14, padding: 14, borderRadius: 14, background: '#f8fafc', border: '1px solid #e5e7eb' }}>
-                <p style={{ fontSize: 12, fontWeight: 800, color: G, marginBottom: 5 }}>Free course introduction</p>
-                <p style={{ fontSize: 13, color: '#4b5563', lineHeight: 1.6, marginBottom: 10 }}>
-                  This first video is the teacher’s briefing and course introduction. Students can watch it free, then unlock the chapter lessons to continue with the full class.
-                </p>
-                {course.description && <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.7 }}>{course.description}</p>}
-              </div>
-            )}
             {canManageCourse && (
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 }}>
                 <Link
