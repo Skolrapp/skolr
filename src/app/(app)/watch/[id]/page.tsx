@@ -13,6 +13,13 @@ import type { Course, Chapter } from '@/types';
 
 const G = '#10B981';
 type Tab = 'overview' | 'quiz' | 'reviews' | 'qa' | 'resources';
+type LessonItem = {
+  kind: 'intro' | 'chapter';
+  id: string;
+  title: string;
+  duration_seconds: number;
+  chapter?: Chapter;
+};
 
 function fmtDur(s: number) {
   if (!s) return '';
@@ -107,7 +114,24 @@ function WatchContent() {
   const col = LEVEL_COLORS[course.category] || LEVEL_COLORS.primary;
   const currentVideo = activeChapter?.video_hls_url || course.video_hls_url;
   const currentTitle = activeChapter?.title || `${course.title} · Introduction`;
-  const totalDur = chapters.reduce((s, c) => s + c.duration_seconds, 0);
+  const introDuration = course.duration_seconds || 0;
+  const totalDur = introDuration + chapters.reduce((s, c) => s + c.duration_seconds, 0);
+  const lessonItems: LessonItem[] = [
+    {
+      kind: 'intro',
+      id: `intro-${course.id}`,
+      title: `${course.title} · Introduction`,
+      duration_seconds: introDuration,
+    },
+    ...chapters.map((chapter) => ({
+      kind: 'chapter' as const,
+      id: chapter.id,
+      title: chapter.title,
+      duration_seconds: chapter.duration_seconds,
+      chapter,
+    })),
+  ];
+  const totalLessons = lessonItems.length;
   const homeHref = !user ? '/' : user.role === 'admin' ? '/admin' : user.role === 'instructor' ? '/instructor' : '/dashboard';
   const canManageCourse = !!user && (user.role === 'admin' || course.instructor_id === user.id);
   const isGuestPreview = !user;
@@ -152,7 +176,7 @@ function WatchContent() {
       <div className="watch-layout" style={{ display: 'flex', alignItems: 'flex-start', maxWidth: 1440, margin: '0 auto' }}>
 
         <div className="watch-main" style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ background: '#000' }}>
+          <div style={{ padding: '16px 24px 0', background: '#fff' }}>
             <div className="watch-player-shell" style={{ maxWidth: 860, marginLeft: 0, position: 'relative' }}>
               <VideoPlayer
                 hlsUrl={currentVideo}
@@ -204,37 +228,42 @@ function WatchContent() {
           {chapters.length > 0 && (
             <div className="watch-mobile-content">
               <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid #e5e7eb', background: '#fff' }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 4 }}>Course content</p>
-                <p style={{ fontSize: 12, color: '#9ca3af' }}>{chapters.length} chapters{totalDur ? ' · ' + fmtDur(totalDur) : ''}</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 4 }}>Lessons in this class</p>
+                <p style={{ fontSize: 12, color: '#9ca3af' }}>{totalLessons} lessons{totalDur ? ' · ' + fmtDur(totalDur) : ''}</p>
               </div>
-              <div style={{ display: 'flex', overflowX: 'auto', gap: 10, padding: '12px 16px 16px', background: '#fff', scrollbarWidth: 'none' }}>
-                {chapters.map((chapter, index) => {
-                  const isCurrent = activeChapter?.id === chapter.id;
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 16px 16px', background: '#fff' }}>
+                {lessonItems.map((lesson, index) => {
+                  const isIntro = lesson.kind === 'intro';
+                  const isCurrent = isIntro ? !activeChapter : activeChapter?.id === lesson.chapter?.id;
                   return (
                     <button
-                      key={chapter.id}
+                      key={lesson.id}
                       onClick={() => {
+                        if (isIntro) {
+                          setActiveChapter(null);
+                          return;
+                        }
                         if (!hasCourseAccess) {
                           setAccessPromptOpen(true);
                           return;
                         }
-                        setActiveChapter(chapter);
+                        setActiveChapter(lesson.chapter || null);
                       }}
                       style={{
-                        minWidth: 220,
                         padding: '12px 14px',
                         borderRadius: 14,
-                        border: '1px solid ' + (isCurrent ? '#10B981' : !hasCourseAccess ? '#fde68a' : '#e5e7eb'),
-                        background: isCurrent ? '#ecfdf5' : !hasCourseAccess ? '#fffbeb' : '#fff',
+                        border: '1px solid ' + (isCurrent ? '#10B981' : !isIntro && !hasCourseAccess ? '#fde68a' : '#e5e7eb'),
+                        background: isCurrent ? '#ecfdf5' : !isIntro && !hasCourseAccess ? '#fffbeb' : '#fff',
                         textAlign: 'left',
                         cursor: 'pointer',
-                        flexShrink: 0,
                       }}
                     >
-                      <p style={{ fontSize: 11, fontWeight: 700, color: isCurrent ? '#059669' : '#9ca3af', marginBottom: 6 }}>Chapter {index + 1}</p>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: '#0a0a0a', lineHeight: 1.45, marginBottom: 6 }}>{chapter.title}</p>
-                      {chapter.duration_seconds > 0 && <p style={{ fontSize: 11, color: '#6b7280' }}>{fmtDur(chapter.duration_seconds)}</p>}
-                      {!hasCourseAccess && <p style={{ fontSize: 11, color: '#b45309', marginTop: 6, fontWeight: 700 }}>Locked after intro</p>}
+                      <p style={{ fontSize: 11, fontWeight: 700, color: isCurrent ? '#059669' : '#9ca3af', marginBottom: 6 }}>
+                        {isIntro ? 'Lesson 1 · Free intro' : `Lesson ${index + 1}`}
+                      </p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#0a0a0a', lineHeight: 1.45, marginBottom: 6 }}>{lesson.title}</p>
+                      {lesson.duration_seconds > 0 && <p style={{ fontSize: 11, color: '#6b7280' }}>{fmtDur(lesson.duration_seconds)}</p>}
+                      {!isIntro && !hasCourseAccess && <p style={{ fontSize: 11, color: '#b45309', marginTop: 6, fontWeight: 700 }}>Locked after intro</p>}
                     </button>
                   );
                 })}
@@ -294,7 +323,7 @@ function WatchContent() {
                 )}
                 {chapters.length > 0 && (
                   <div className="watch-overview-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
-                    {[['Chapters', String(chapters.length)], ['Duration', fmtDur(totalDur) || 'N/A'], ['Language', course.language?.toUpperCase() || 'EN']].map(([lbl, val]) => (
+                    {[['Lessons', String(totalLessons)], ['Duration', fmtDur(totalDur) || 'N/A'], ['Language', course.language?.toUpperCase() || 'EN']].map(([lbl, val]) => (
                       <div key={lbl} style={{ padding: 14, background: '#f9fafb', borderRadius: 10, border: '1px solid #e5e7eb', textAlign: 'center' }}>
                         <p style={{ fontSize: 18, fontWeight: 800, color: '#0a0a0a', marginBottom: 4 }}>{val}</p>
                         <p style={{ fontSize: 11, color: '#9ca3af' }}>{lbl}</p>
@@ -420,29 +449,37 @@ function WatchContent() {
               </div>
             )}
             <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb' }}>
-              <p style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 2 }}>Course content</p>
-              <p style={{ fontSize: 12, color: '#9ca3af' }}>{chapters.length} chapters{totalDur ? ' · ' + fmtDur(totalDur) : ''}</p>
+              <p style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 2 }}>Lessons in this class</p>
+              <p style={{ fontSize: 12, color: '#9ca3af' }}>{totalLessons} lessons{totalDur ? ' · ' + fmtDur(totalDur) : ''}</p>
             </div>
-            {chapters.map((chapter, index) => {
-              const isActive = activeChapter?.id === chapter.id;
+            {lessonItems.map((lesson, index) => {
+              const isIntro = lesson.kind === 'intro';
+              const isActive = isIntro ? !activeChapter : activeChapter?.id === lesson.chapter?.id;
               return (
-                <button key={chapter.id} onClick={() => {
+                <button key={lesson.id} onClick={() => {
+                  if (isIntro) {
+                    setActiveChapter(null);
+                    return;
+                  }
                   if (!hasCourseAccess) {
                     setAccessPromptOpen(true);
                     return;
                   }
-                  setActiveChapter(chapter);
+                  setActiveChapter(lesson.chapter || null);
                 }}
-                  style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', background: isActive ? '#f0fdf4' : !hasCourseAccess ? '#fffbeb' : 'transparent', border: 'none', borderLeft: '3px solid ' + (isActive ? G : 'transparent'), borderBottom: '1px solid #f3f4f6', cursor: 'pointer', textAlign: 'left' }}>
+                  style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', background: isActive ? '#f0fdf4' : !isIntro && !hasCourseAccess ? '#fffbeb' : 'transparent', border: 'none', borderLeft: '3px solid ' + (isActive ? G : 'transparent'), borderBottom: '1px solid #f3f4f6', cursor: 'pointer', textAlign: 'left' }}>
                   <div style={{ width: 26, height: 26, borderRadius: '50%', background: isActive ? G : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
                     {isActive
                       ? <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
                       : <span style={{ fontSize: 10, fontWeight: 700, color: '#6b7280' }}>{index + 1}</span>}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 12, fontWeight: isActive ? 700 : 500, color: isActive ? '#0a0a0a' : '#374151', lineHeight: 1.4, marginBottom: 3 }}>{chapter.title}</p>
-                    {chapter.duration_seconds > 0 && <p style={{ fontSize: 11, color: '#9ca3af' }}>{fmtDur(chapter.duration_seconds)}</p>}
-                    {!hasCourseAccess && <p style={{ fontSize: 11, color: '#b45309', marginTop: 4, fontWeight: 700 }}>Proceed to unlock</p>}
+                    <p style={{ fontSize: 12, fontWeight: isActive ? 700 : 500, color: isActive ? '#0a0a0a' : '#374151', lineHeight: 1.4, marginBottom: 3 }}>
+                      {lesson.title}
+                    </p>
+                    {lesson.duration_seconds > 0 && <p style={{ fontSize: 11, color: '#9ca3af' }}>{fmtDur(lesson.duration_seconds)}</p>}
+                    {isIntro && <p style={{ fontSize: 11, color: G, marginTop: 4, fontWeight: 700 }}>Free intro</p>}
+                    {!isIntro && !hasCourseAccess && <p style={{ fontSize: 11, color: '#b45309', marginTop: 4, fontWeight: 700 }}>Proceed to unlock</p>}
                   </div>
                 </button>
               );
@@ -494,7 +531,9 @@ function WatchContent() {
           .watch-layout{display:block!important;}
           .watch-sidebar{display:none!important;}
           .watch-main{width:100%!important;}
+          .watch-player-shell{max-width:none!important;}
           .watch-player-shell,.watch-meta,.watch-tabs > div,.watch-tab-panel{max-width:none!important;}
+          .watch-page{background:#fff!important;}
           .watch-tab-panel{padding:20px 16px 100px!important;}
           .watch-meta{padding:16px!important;}
           .watch-mobile-content{display:block!important;}
@@ -504,6 +543,7 @@ function WatchContent() {
         }
         @media(max-width:640px){
           .watch-header{padding:0 16px!important;gap:10px!important;}
+          .watch-player-shell{margin:0 -16px!important;border-radius:0!important;}
           .watch-home-link,.watch-user-chip{display:none!important;}
           .watch-tab-panel{padding:18px 14px 100px!important;}
         }

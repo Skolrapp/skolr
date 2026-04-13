@@ -195,9 +195,10 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
   );
 
   return (
-    <div className="relative bg-black rounded-2xl overflow-hidden aspect-video select-none"
+    <div className="relative rounded-2xl overflow-hidden aspect-video select-none"
+      style={{ background: 'linear-gradient(180deg,#0f172a,#111827)' }}
       onClick={togglePlay} onMouseMove={activity} onTouchStart={activity}>
-      <video ref={vRef} className="w-full h-full object-contain" poster={posterUrl} playsInline muted={muted}
+      <video ref={vRef} className="w-full h-full object-cover" poster={posterUrl} playsInline muted={muted}
         onWaiting={() => setBuffering(true)}
         onPlaying={() => { setBuffering(false); setPlaying(true); }}
         onPause={() => setPlaying(false)}
