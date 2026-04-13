@@ -115,7 +115,7 @@ function WatchContent() {
   const currentVideo = activeChapter?.video_hls_url || course.video_hls_url;
   const currentTitle = activeChapter?.title || course.title;
   const totalDur = chapters.reduce((s, c) => s + c.duration_seconds, 0);
-  const homeHref = user?.role === 'instructor' ? '/instructor' : '/dashboard';
+  const homeHref = user?.role === 'admin' ? '/admin' : user?.role === 'instructor' ? '/instructor' : '/dashboard';
   const TABS: { id: Tab; label: string }[] = [
     { id: 'overview', label: 'Overview' },
     { id: 'quiz', label: 'Quiz' },
@@ -125,10 +125,10 @@ function WatchContent() {
   ];
 
   return (
-    <div style={{ background: '#fff', minHeight: '100vh', fontFamily: "'Inter',-apple-system,sans-serif", color: '#0a0a0a' }}>
+    <div className="watch-page" style={{ background: '#fff', minHeight: '100vh', fontFamily: "'Inter',-apple-system,sans-serif", color: '#0a0a0a' }}>
 
       <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: 1440, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 16, height: 60, padding: '0 24px' }}>
+        <div className="watch-header" style={{ maxWidth: 1440, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 16, height: 60, padding: '0 24px' }}>
           <Link href={homeHref} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
             <div style={{ width: 28, height: 28, background: G, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
@@ -138,26 +138,26 @@ function WatchContent() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
           <p style={{ fontSize: 13, fontWeight: 600, color: '#374151', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{course.title}</p>
           <div style={{ flex: 1 }} />
-          <Link href={homeHref} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', fontSize: 13, fontWeight: 600, color: '#6b7280', textDecoration: 'none', borderRadius: 8, border: '1px solid #e5e7eb', flexShrink: 0 }}>
+          <Link className="watch-home-link" href={homeHref} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', fontSize: 13, fontWeight: 600, color: '#6b7280', textDecoration: 'none', borderRadius: 8, border: '1px solid #e5e7eb', flexShrink: 0 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             Home
           </Link>
-          <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', border: '2px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div className="watch-user-chip" style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', border: '2px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: G }}>{user?.name?.charAt(0).toUpperCase()}</span>
           </div>
         </div>
       </header>
 
-      <div style={{ display: 'flex', alignItems: 'flex-start', maxWidth: 1440, margin: '0 auto' }}>
+      <div className="watch-layout" style={{ display: 'flex', alignItems: 'flex-start', maxWidth: 1440, margin: '0 auto' }}>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="watch-main" style={{ flex: 1, minWidth: 0 }}>
           <div style={{ background: '#000' }}>
-            <div style={{ maxWidth: 860, marginLeft: 0 }}>
+            <div className="watch-player-shell" style={{ maxWidth: 860, marginLeft: 0 }}>
               <VideoPlayer hlsUrl={currentVideo} posterUrl={course.thumbnail_url} title={currentTitle} startAt={activeChapter ? 0 : progress} onProgress={handleProgress} />
             </div>
           </div>
 
-          <div style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '16px 24px', maxWidth: 860 }}>
+          <div className="watch-meta" style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '16px 24px', maxWidth: 860 }}>
             <h1 style={{ fontSize: 18, fontWeight: 800, color: '#0a0a0a', marginBottom: 10 }}>{currentTitle}</h1>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 5, background: col.bg, color: col.color }}>{course.category}</span>
@@ -167,7 +167,41 @@ function WatchContent() {
             </div>
           </div>
 
-          <div style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 60, zIndex: 10 }}>
+          {chapters.length > 0 && (
+            <div className="watch-mobile-content">
+              <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid #e5e7eb', background: '#fff' }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 4 }}>Course content</p>
+                <p style={{ fontSize: 12, color: '#9ca3af' }}>{chapters.length} chapters{totalDur ? ' · ' + fmtDur(totalDur) : ''}</p>
+              </div>
+              <div style={{ display: 'flex', overflowX: 'auto', gap: 10, padding: '12px 16px 16px', background: '#fff', scrollbarWidth: 'none' }}>
+                {chapters.map((chapter, index) => {
+                  const isCurrent = activeChapter?.id === chapter.id;
+                  return (
+                    <button
+                      key={chapter.id}
+                      onClick={() => setActiveChapter(chapter)}
+                      style={{
+                        minWidth: 220,
+                        padding: '12px 14px',
+                        borderRadius: 14,
+                        border: '1px solid ' + (isCurrent ? '#10B981' : '#e5e7eb'),
+                        background: isCurrent ? '#ecfdf5' : '#fff',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <p style={{ fontSize: 11, fontWeight: 700, color: isCurrent ? '#059669' : '#9ca3af', marginBottom: 6 }}>Chapter {index + 1}</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#0a0a0a', lineHeight: 1.45, marginBottom: 6 }}>{chapter.title}</p>
+                      {chapter.duration_seconds > 0 && <p style={{ fontSize: 11, color: '#6b7280' }}>{fmtDur(chapter.duration_seconds)}</p>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="watch-tabs" style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 60, zIndex: 10 }}>
             <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', maxWidth: 860 }}>
               {TABS.map(t => (
                 <button key={t.id} onClick={() => setTab(t.id)}
@@ -178,7 +212,7 @@ function WatchContent() {
             </div>
           </div>
 
-          <div style={{ padding: '28px 24px 60px', background: '#fff', minHeight: 400, maxWidth: 860 }}>
+          <div className="watch-tab-panel" style={{ padding: '28px 24px 60px', background: '#fff', minHeight: 400, maxWidth: 860 }}>
             {tab === 'overview' && (
               <div>
                 <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>About this course</h3>
@@ -193,7 +227,7 @@ function WatchContent() {
                   </div>
                 </div>
                 {chapters.length > 0 && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+                  <div className="watch-overview-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
                     {[['Chapters', String(chapters.length)], ['Duration', fmtDur(totalDur) || 'N/A'], ['Language', course.language?.toUpperCase() || 'EN']].map(([lbl, val]) => (
                       <div key={lbl} style={{ padding: 14, background: '#f9fafb', borderRadius: 10, border: '1px solid #e5e7eb', textAlign: 'center' }}>
                         <p style={{ fontSize: 18, fontWeight: 800, color: '#0a0a0a', marginBottom: 4 }}>{val}</p>
@@ -232,7 +266,7 @@ function WatchContent() {
                 </div>
                 {showAddRes && (
                   <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 12, padding: 20, marginBottom: 20 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                    <div className="watch-resource-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
                       <div>
                         <label style={{ fontSize: 11, fontWeight: 700, color: '#374151', display: 'block', marginBottom: 4 }}>Title *</label>
                         <input value={resForm.title} onChange={e => setResForm(f => ({ ...f, title: e.target.value }))} placeholder="e.g. Chapter notes" style={{ width: '100%', padding: '8px 12px', fontSize: 13, border: '1px solid #e5e7eb', borderRadius: 7, outline: 'none', background: '#fff', boxSizing: 'border-box' }} />
@@ -292,7 +326,7 @@ function WatchContent() {
         </div>
 
         {chapters.length > 0 && (
-          <aside style={{ width: 300, flexShrink: 0, borderLeft: '1px solid #e5e7eb', background: '#fff', position: 'sticky', top: 60, height: 'calc(100vh - 60px)', overflowY: 'auto' }}>
+          <aside className="watch-sidebar" style={{ width: 300, flexShrink: 0, borderLeft: '1px solid #e5e7eb', background: '#fff', position: 'sticky', top: 60, height: 'calc(100vh - 60px)', overflowY: 'auto' }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb' }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 2 }}>Course content</p>
               <p style={{ fontSize: 12, color: '#9ca3af' }}>{chapters.length} chapters{totalDur ? ' · ' + fmtDur(totalDur) : ''}</p>
@@ -331,7 +365,26 @@ function WatchContent() {
         </div>
       </footer>
 
-      <style>{'@media(max-width:900px){aside{display:none!important;}}'}</style>
+      <style>{`
+        .watch-mobile-content{display:none;}
+        @media(max-width:900px){
+          .watch-layout{display:block!important;}
+          .watch-sidebar{display:none!important;}
+          .watch-main{width:100%!important;}
+          .watch-player-shell,.watch-meta,.watch-tabs > div,.watch-tab-panel{max-width:none!important;}
+          .watch-tab-panel{padding:20px 16px 100px!important;}
+          .watch-meta{padding:16px!important;}
+          .watch-mobile-content{display:block!important;}
+          .watch-tabs{top:60px!important;}
+          .watch-overview-grid{grid-template-columns:1fr!important;}
+          .watch-resource-form-grid{grid-template-columns:1fr!important;}
+        }
+        @media(max-width:640px){
+          .watch-header{padding:0 16px!important;gap:10px!important;}
+          .watch-home-link,.watch-user-chip{display:none!important;}
+          .watch-tab-panel{padding:18px 14px 100px!important;}
+        }
+      `}</style>
     </div>
   );
 }

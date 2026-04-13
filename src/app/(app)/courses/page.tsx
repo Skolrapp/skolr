@@ -63,6 +63,7 @@ function CoursesContent(){
   const currentLevel=LEVELS.find(l=>l.id===level)||LEVELS[0];
   const isActive=isSubscriptionActive(user?.subscription_expires_at);
   const totalPages=Math.ceil(total/PER);
+  const sortLabel = SORT_OPTIONS.find((option) => option.id === sort)?.label || 'Most popular';
 
   // guests can browse freely
 
@@ -81,8 +82,8 @@ function CoursesContent(){
         </header>
       )}
 
-      <div style={{background:level?'linear-gradient(135deg,'+(currentLevel as any).color+'dd,'+(currentLevel as any).color+'aa)':'linear-gradient(135deg,#0a0a0a,#1a1a2e)',padding:'28px 24px'}}>
-        <div style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:16}}>
+      <div className="courses-hero" style={{background:level?'linear-gradient(135deg,'+(currentLevel as any).color+'dd,'+(currentLevel as any).color+'aa)':'linear-gradient(135deg,#0a0a0a,#1a1a2e)',padding:'28px 24px'}}>
+        <div className="courses-hero-inner" style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:16}}>
           <div>
             <h1 style={{fontSize:24,fontWeight:800,color:'#fff',marginBottom:6}}>{currentLevel.label==='All Levels'?'All Courses':currentLevel.label+' Courses'}</h1>
             <p style={{fontSize:14,color:'rgba(255,255,255,0.65)',marginBottom:12}}>{(currentLevel as any).sub||'Browse all education levels'} · {total} courses</p>
@@ -95,7 +96,7 @@ function CoursesContent(){
               ))}
             </div>
           </div>
-          <div style={{display:'flex',gap:20}}>
+          <div className="courses-hero-stats" style={{display:'flex',gap:20}}>
             {[['Courses',String(total)],['Subjects','12'],['Students','8.4K']].map(([lbl,val])=>(
               <div key={lbl} style={{textAlign:'center'}}>
                 <p style={{fontSize:20,fontWeight:800,color:'#fff'}}>{val}</p>
@@ -106,8 +107,8 @@ function CoursesContent(){
         </div>
       </div>
 
-      <div style={{maxWidth:1280,margin:'0 auto',display:'flex',gap:0,padding:'0 24px',alignItems:'flex-start'}}>
-        <aside style={{width:220,flexShrink:0,paddingTop:24,paddingRight:24,borderRight:'1px solid #e5e7eb',minHeight:600}}>
+      <div className="courses-shell" style={{maxWidth:1280,margin:'0 auto',display:'flex',gap:0,padding:'0 24px',alignItems:'flex-start'}}>
+        <aside className="courses-sidebar" style={{width:220,flexShrink:0,paddingTop:24,paddingRight:24,borderRight:'1px solid #e5e7eb',minHeight:600}}>
           <div style={{marginBottom:24}}>
             <p style={{fontSize:11,fontWeight:700,color:'#9ca3af',textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Subject</p>
             <button onClick={()=>setSubject('')} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'6px 8px',borderRadius:7,border:'none',background:!subject?'#ecfdf5':'transparent',color:!subject?'#059669':'#6b7280',fontSize:12,fontWeight:!subject?700:400,cursor:'pointer',textAlign:'left',marginBottom:2}}>
@@ -129,7 +130,17 @@ function CoursesContent(){
           </div>
         </aside>
 
-        <div style={{flex:1,paddingTop:24,paddingLeft:24,minWidth:0}}>
+        <div className="courses-main" style={{flex:1,paddingTop:24,paddingLeft:24,minWidth:0}}>
+          <div className="courses-mobile-toolbar" style={{display:'none',marginBottom:16}}>
+            <div className="courses-mobile-pills" style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              <span style={{fontSize:11,fontWeight:700,padding:'6px 10px',borderRadius:999,background:'#ecfdf5',color:'#059669'}}>
+                {subject || 'All subjects'}
+              </span>
+              <span style={{fontSize:11,fontWeight:700,padding:'6px 10px',borderRadius:999,background:'#f3f4f6',color:'#6b7280'}}>
+                {sortLabel}
+              </span>
+            </div>
+          </div>
           <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:4,marginBottom:16,scrollbarWidth:'none'}}>
             {LEVELS.map(l=>(
               <button key={l.id} onClick={()=>{setLevel(l.id as EducationLevel);setPage(1);}}
@@ -141,7 +152,7 @@ function CoursesContent(){
           <p style={{fontSize:13,color:'#9ca3af',marginBottom:16}}>{fetching?'Loading...':total+' courses'+(subject?' in '+subject:'')+(level?' · '+currentLevel.label:'')}</p>
 
           {fetching?(
-            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20}}>
+            <div className="courses-grid" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20}}>
               {[1,2,3,4,5,6].map(i=>(
                 <div key={i} style={{borderRadius:12,overflow:'hidden',border:'1px solid #e5e7eb'}}>
                   <div style={{height:150,background:'#f3f4f6'}}/>
@@ -156,7 +167,7 @@ function CoursesContent(){
               <button onClick={()=>{setLevel('');setSubject('');}} style={{padding:'10px 20px',fontSize:13,fontWeight:700,color:'#fff',background:G,border:'none',borderRadius:8,cursor:'pointer'}}>Clear filters</button>
             </div>
           ):(
-            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20}}>
+            <div className="courses-grid" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20}}>
               {courses.map(c=>{
                 const lvl=LEVELS.find(l=>l.id===c.category)||LEVELS[1];
                 const access=isActive&&canAccessLevel(user?.subscription_tier,c.category);
@@ -207,7 +218,22 @@ function CoursesContent(){
 
       <Footer/>
       {user && <BottomNav role={user.role} adminTab={user.role === 'admin' ? 'catalog' : undefined} />}
-      <style>{'@media(max-width:768px){aside{display:none!important;}}@media(max-width:640px){div[style*="repeat(3,1fr)"]{grid-template-columns:repeat(1,1fr)!important;}}@media(min-width:641px) and (max-width:900px){div[style*="repeat(3,1fr)"]{grid-template-columns:repeat(2,1fr)!important;}}'}</style>
+      <style>{`
+        @media(max-width:900px){
+          .courses-shell{padding:0 16px 90px!important;display:block!important;}
+          .courses-sidebar{display:none!important;}
+          .courses-main{padding-left:0!important;padding-top:16px!important;}
+          .courses-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important;}
+          .courses-mobile-toolbar{display:block!important;}
+          .courses-hero{padding:24px 16px!important;}
+          .courses-hero-inner{align-items:flex-start!important;}
+        }
+        @media(max-width:640px){
+          .courses-grid{grid-template-columns:1fr!important;}
+          .courses-hero-stats{width:100%!important;justify-content:space-between!important;gap:12px!important;}
+          .courses-hero h1{font-size:20px!important;}
+        }
+      `}</style>
     </div>
   );
 }
