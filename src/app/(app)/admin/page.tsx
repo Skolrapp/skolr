@@ -195,8 +195,17 @@ export default function AdminPage() {
             <h1 className="text-xl font-bold" style={{ color: '#fff' }}>Admin control center</h1>
             <p className="text-xs mt-1" style={{ color: '#737373' }}>Review submitted courses and handle account support from one place.</p>
           </div>
-          <div className="px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(16,185,129,0.12)', color: G }}>
-            Admin
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push('/courses')}
+              className="px-4 py-2 rounded-xl text-xs font-semibold border transition-all"
+              style={{ background: '#1a1a1a', color: '#fff', borderColor: '#222' }}
+            >
+              Open course catalog
+            </button>
+            <div className="px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(16,185,129,0.12)', color: G }}>
+              Admin
+            </div>
           </div>
         </div>
 
