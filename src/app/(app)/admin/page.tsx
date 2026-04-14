@@ -12,6 +12,8 @@ type Tab = 'reviews' | 'tracker' | 'cloning' | 'payments' | 'branding' | 'suppor
 const BANNER_SLOTS = [
   { key: 'hero-banner', label: 'Hero banner', size: '1600 x 900 px', ratio: '16:9', description: 'Top homepage hero background.' },
   { key: 'campaign-banner', label: 'Campaign banner', size: '1600 x 760 px', ratio: '21:10', description: 'Large promotional banner in the middle section.' },
+  { key: 'campaign-artwork-1', label: 'Campaign artwork 1', size: '1200 x 720 px', ratio: '5:3', description: 'Upper supporting artwork inside the campaign banner.' },
+  { key: 'campaign-artwork-2', label: 'Campaign artwork 2', size: '1200 x 720 px', ratio: '5:3', description: 'Lower supporting artwork inside the campaign banner.' },
   { key: 'message-placeholder-1', label: 'Message placeholder 1', size: '1200 x 720 px', ratio: '5:3', description: 'First message card near the lower homepage strip.' },
   { key: 'message-placeholder-2', label: 'Message placeholder 2', size: '1200 x 720 px', ratio: '5:3', description: 'Second message card near the lower homepage strip.' },
   { key: 'message-placeholder-3', label: 'Message placeholder 3', size: '1200 x 720 px', ratio: '5:3', description: 'Third message card near the lower homepage strip.' },

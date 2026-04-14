@@ -5,7 +5,7 @@ import { createSupabaseAdmin } from '@/lib/supabase/server';
 
 const BRANDING_BUCKET = process.env.SUPABASE_BRANDING_BUCKET || 'site-branding';
 const MAX_BANNER_SIZE = 8 * 1024 * 1024;
-const BANNER_SLOTS = ['hero-banner', 'campaign-banner', 'message-placeholder-1', 'message-placeholder-2', 'message-placeholder-3'] as const;
+const BANNER_SLOTS = ['hero-banner', 'campaign-banner', 'campaign-artwork-1', 'campaign-artwork-2', 'message-placeholder-1', 'message-placeholder-2', 'message-placeholder-3'] as const;
 
 async function ensureBrandingBucket() {
   const supabase = createSupabaseAdmin();

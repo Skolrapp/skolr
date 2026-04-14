@@ -108,22 +108,22 @@ export default function LandingPage() {
       </header>
 
       <section className="sk-hero-section" style={{ position: 'relative', minHeight: 600, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: banners['hero-banner'] ? `linear-gradient(135deg,rgba(8,17,14,0.38),rgba(16,23,37,0.52) 48%,rgba(13,42,29,0.5)), url(${banners['hero-banner']}) center/cover` : 'linear-gradient(135deg,#08110e,#101725 48%,#0d2a1d)' }} />
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))' }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: banners['hero-banner'] ? `linear-gradient(135deg,rgba(3,8,18,0.72),rgba(7,15,28,0.66) 42%,rgba(8,31,23,0.6)), url(${banners['hero-banner']}) center/cover` : 'linear-gradient(135deg,#08110e,#101725 48%,#0d2a1d)' }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(4,8,14,0.18),rgba(4,8,14,0.08) 28%,rgba(4,8,14,0.42) 100%)' }} />
         <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, opacity: 0.14 }} viewBox="0 0 1280 520" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
           <circle cx="900" cy="100" r="300" fill="#10B981"/><circle cx="1100" cy="400" r="200" fill="#3b82f6"/>
           <circle cx="800" cy="350" r="150" fill="#8b5cf6"/><circle cx="1050" cy="150" r="80" fill="#10B981"/>
         </svg>
         <div className="sk-shell sk-hero-shell" style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 24px', width: '100%', position: 'relative', zIndex: 2 }}>
-          <div style={{ maxWidth: 760 }}>
+          <div style={{ maxWidth: 760, background: 'linear-gradient(135deg,rgba(4,10,18,0.76),rgba(4,10,18,0.4))', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 24px 70px rgba(2,6,23,0.34)', backdropFilter: 'blur(10px)', borderRadius: 30, padding: '28px 28px 30px' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 999, padding: '5px 14px', marginBottom: 20 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: G }} />
               <span style={{ fontSize: 12, fontWeight: 600, color: G }}>Tanzania No.1 Learning Platform</span>
             </div>
-            <h1 className="sk-hero-h1" style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1, color: '#fff', marginBottom: 18 }}>
+            <h1 className="sk-hero-h1" style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1, color: '#fff', marginBottom: 18, textShadow: '0 10px 30px rgba(0,0,0,0.45)' }}>
               Learn at your <span style={{ color: G }}>pace</span>,<br />in your <span style={{ color: G }}>space</span>
             </h1>
-            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, marginBottom: 32, maxWidth: 560 }}>
+            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.82)', lineHeight: 1.7, marginBottom: 32, maxWidth: 560, textShadow: '0 8px 24px rgba(0,0,0,0.32)' }}>
               HD lessons for Primary through University, aligned to Tanzania NECTA curriculum.
             </p>
             <div className="sk-hero-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 40 }}>
@@ -234,7 +234,7 @@ export default function LandingPage() {
           <div className="sk-campaign-banner-grid" style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(280px,0.36fr)', gap: 18, padding: 24, minHeight: '100%', alignItems: 'stretch' }}>
             <div style={{ borderRadius: 24, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }} />
             <div style={{ display: 'grid', gap: 14 }}>
-              {['message-placeholder-1', 'message-placeholder-2'].map((slot) => (
+              {['campaign-artwork-1', 'campaign-artwork-2'].map((slot) => (
                 <div
                   key={slot}
                   style={{
@@ -384,6 +384,10 @@ export default function LandingPage() {
           .sk-hero-shell {
             padding-top: 28px !important;
             padding-bottom: 28px !important;
+          }
+          .sk-hero-shell > div:first-child {
+            padding: 22px 18px 24px !important;
+            border-radius: 24px !important;
           }
           .sk-hero-actions {
             display: grid !important;
