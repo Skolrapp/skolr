@@ -42,6 +42,8 @@ export default function AdminPage() {
   const [cloneForm, setCloneForm] = useState({ sourceCourseId: '', targetSubjects: '', targetSubCategory: '' });
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [bannerUploading, setBannerUploading] = useState(false);
+  const [bannerDraftUrl, setBannerDraftUrl] = useState<string | null>(null);
+  const [bannerDraftFile, setBannerDraftFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -228,9 +230,23 @@ export default function AdminPage() {
   };
 
   const uploadLandingBanner = async (file: File) => {
+    if (bannerDraftUrl) {
+      URL.revokeObjectURL(bannerDraftUrl);
+    }
+    setBannerDraftFile(file);
+    setBannerDraftUrl(URL.createObjectURL(file));
+  };
+
+  const publishLandingBanner = async () => {
+    if (!bannerDraftFile) {
+      setMessage('Choose a banner first.');
+      setTimeout(() => setMessage(''), 4000);
+      return;
+    }
+
     setBannerUploading(true);
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', bannerDraftFile);
 
     try {
       const res = await fetch('/api/admin/banner-upload', {
@@ -241,12 +257,15 @@ export default function AdminPage() {
       const data = await res.json();
       if (data.success) {
         setBannerPreview(data.data.banner_url);
-        setMessage('Landing banner updated.');
+        if (bannerDraftUrl) URL.revokeObjectURL(bannerDraftUrl);
+        setBannerDraftFile(null);
+        setBannerDraftUrl(null);
+        setMessage('Landing banner published.');
       } else {
-        setMessage(data.error || 'Banner upload failed.');
+        setMessage(data.error || 'Banner publish failed.');
       }
     } catch {
-      setMessage('Banner upload failed.');
+      setMessage('Banner publish failed.');
     } finally {
       setBannerUploading(false);
       setTimeout(() => setMessage(''), 4000);
@@ -767,35 +786,83 @@ export default function AdminPage() {
                 <div className="min-w-0">
                   <p className="text-sm font-bold" style={{ color: '#fff' }}>Landing banner</p>
                   <p className="text-xs mt-1" style={{ color: '#737373' }}>
-                    Upload one premium hero image for the landing page without using the terminal.
+                    Choose a banner, preview it here first, then publish it when it feels right.
                   </p>
                 </div>
-                <label
-                  className="btn-primary text-sm py-2.5 px-4 cursor-pointer"
-                  style={{ width: 'auto', opacity: bannerUploading ? 0.75 : 1 }}
-                >
-                  {bannerUploading ? 'Uploading...' : 'Upload banner'}
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/jpg,image/webp"
-                    className="hidden"
-                    disabled={bannerUploading}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) uploadLandingBanner(file);
-                      e.currentTarget.value = '';
-                    }}
-                  />
-                </label>
+                <div className="flex gap-2 flex-wrap">
+                  <label
+                    className="btn-secondary text-sm py-2.5 px-4 cursor-pointer"
+                    style={{ width: 'auto' }}
+                  >
+                    Choose banner
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp"
+                      className="hidden"
+                      disabled={bannerUploading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) uploadLandingBanner(file);
+                        e.currentTarget.value = '';
+                      }}
+                    />
+                  </label>
+                  <button
+                    className="btn-primary text-sm py-2.5 px-4"
+                    style={{ width: 'auto' }}
+                    disabled={bannerUploading || !bannerDraftFile}
+                    onClick={publishLandingBanner}
+                  >
+                    {bannerUploading ? 'Publishing...' : 'Publish banner'}
+                  </button>
+                </div>
               </div>
-              <div className="mt-4 rounded-2xl overflow-hidden" style={{ border: '1px solid #222', background: '#1a1a1a' }}>
-                {bannerPreview ? (
-                  <img src={bannerPreview} alt="Landing banner preview" className="w-full object-cover" style={{ maxHeight: 260 }} />
-                ) : (
-                  <div className="flex items-center justify-center text-sm" style={{ minHeight: 220, color: '#737373', background: 'linear-gradient(135deg,#101010,#1a1a2e)' }}>
-                    No banner uploaded yet. The landing page will keep the default fallback artwork.
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid #222', background: '#1a1a1a' }}>
+                  <div className="px-4 py-3 text-xs font-semibold" style={{ color: '#a3a3a3', borderBottom: '1px solid #222' }}>
+                    Draft preview
                   </div>
-                )}
+                  {bannerDraftUrl ? (
+                    <img src={bannerDraftUrl} alt="Draft banner preview" className="w-full object-cover" style={{ maxHeight: 260 }} />
+                  ) : (
+                    <div className="flex items-center justify-center text-sm" style={{ minHeight: 220, color: '#737373', background: 'linear-gradient(135deg,#101010,#1a1a2e)' }}>
+                      Select a new banner to preview it here before publishing.
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid #222', background: '#1a1a1a' }}>
+                  <div className="px-4 py-3 text-xs font-semibold" style={{ color: '#a3a3a3', borderBottom: '1px solid #222' }}>
+                    Live banner
+                  </div>
+                  {bannerPreview ? (
+                    <img src={bannerPreview} alt="Live landing banner preview" className="w-full object-cover" style={{ maxHeight: 260 }} />
+                  ) : (
+                    <div className="flex items-center justify-center text-sm" style={{ minHeight: 220, color: '#737373', background: 'linear-gradient(135deg,#101010,#1a1a2e)' }}>
+                      No live banner published yet.
+                    </div>
+                  )}
+                </div>
+              </div>
+              {bannerDraftFile && (
+                <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
+                  <p className="text-xs" style={{ color: '#737373' }}>
+                    Ready to publish: <span style={{ color: '#fff' }}>{bannerDraftFile.name}</span>
+                  </p>
+                  <button
+                    className="text-xs font-semibold"
+                    style={{ color: '#f87171' }}
+                    onClick={() => {
+                      if (bannerDraftUrl) URL.revokeObjectURL(bannerDraftUrl);
+                      setBannerDraftFile(null);
+                      setBannerDraftUrl(null);
+                    }}
+                  >
+                    Discard draft
+                  </button>
+                </div>
+              )}
+              <div className="mt-3 rounded-xl p-3 text-xs" style={{ background: '#171717', border: '1px solid #222', color: '#737373' }}>
+                The published banner appears in the dedicated campaign banner section on the landing page, not in the hero.
               </div>
             </div>
 
