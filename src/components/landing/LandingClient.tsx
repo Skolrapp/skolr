@@ -287,14 +287,14 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
             borderRadius: 30,
             overflow: 'hidden',
             position: 'relative',
-            background: banners['campaign-banner'] ? `linear-gradient(135deg,rgba(5,10,25,0.26),rgba(7,15,12,0.38)), url(${banners['campaign-banner']}) center/cover` : 'linear-gradient(135deg,#0b1324,#11253b 48%,#103d2b)',
+            background: banners['campaign-banner']
+              ? `url(${banners['campaign-banner']}) center/cover no-repeat`
+              : 'linear-gradient(135deg,#0b1324,#11253b 48%,#103d2b)',
             boxShadow: '0 30px 80px rgba(15,23,42,0.12)',
           }}
         >
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,rgba(7,10,20,0.8),rgba(7,10,20,0.42) 48%,rgba(8,27,19,0.72))' }} />
-          <div style={{ position: 'relative', zIndex: 1, padding: 24, minHeight: '100%', display: 'flex', alignItems: 'stretch' }}>
-            <div style={{ width: '100%', borderRadius: 24, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }} />
-          </div>
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,rgba(7,10,20,0.28),rgba(7,10,20,0.12) 48%,rgba(8,27,19,0.18))' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(7,10,20,0.16),rgba(7,10,20,0.08) 38%,rgba(8,27,19,0.24) 100%)' }} />
         </div>
       </div>
 
