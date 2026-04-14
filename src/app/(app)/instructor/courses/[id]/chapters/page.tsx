@@ -46,6 +46,20 @@ const EMPTY_RESOURCE_FORM: ResourceForm = {
   chapterId: '',
 };
 
+const RESOURCE_LIMITS: Record<string, { maxBytes: number; hint: string }> = {
+  pdf: { maxBytes: 10 * 1024 * 1024, hint: 'PDF only, up to 10MB' },
+  note: { maxBytes: 10 * 1024 * 1024, hint: 'PDF, DOC, DOCX or TXT, up to 10MB' },
+  exercise: { maxBytes: 15 * 1024 * 1024, hint: 'PDF, DOC, DOCX, XLS, XLSX or TXT, up to 15MB' },
+  link: { maxBytes: 5 * 1024 * 1024, hint: 'Image, PDF or TXT, up to 5MB' },
+  video: { maxBytes: 25 * 1024 * 1024, hint: 'Use only a small supporting file, up to 25MB' },
+};
+
+function formatBytes(bytes: number) {
+  if (!bytes) return '0 MB';
+  const mb = bytes / (1024 * 1024);
+  return mb >= 1024 ? `${(mb / 1024).toFixed(1)} GB` : `${mb.toFixed(mb >= 100 ? 0 : 1)} MB`;
+}
+
 export default function ChaptersPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -76,6 +90,14 @@ export default function ChaptersPage() {
   const [resourceErr, setResourceErr] = useState('');
   const [uploadingResource, setUploadingResource] = useState(false);
   const canManageVideos = user?.role === 'admin' || (!!course && !course.is_published);
+  const totalResourceBytes = resources.reduce((sum, resource) => sum + (resource.file_size_bytes || 0), 0);
+  const selectedResourceLimit = RESOURCE_LIMITS[resourceForm.type] || RESOURCE_LIMITS.note;
+  const storageTone = totalResourceBytes >= 150 * 1024 * 1024 ? '#fbbf24' : totalResourceBytes >= 75 * 1024 * 1024 ? '#f59e0b' : '#34d399';
+  const storageMessage = totalResourceBytes >= 150 * 1024 * 1024
+    ? 'This course is getting heavy. Keep big video files on Bunny and use Supabase only for notes and small downloads.'
+    : totalResourceBytes >= 75 * 1024 * 1024
+      ? 'Storage is growing. Prefer compact PDFs and notes where possible.'
+      : 'Keep notes and downloads lightweight for faster loading and lower storage cost.';
 
   useEffect(() => {
     fetch(`/api/courses/${id}`, { credentials: 'include' })
@@ -271,6 +293,11 @@ export default function ChaptersPage() {
       return;
     }
 
+    if (resourceFile.size > selectedResourceLimit.maxBytes) {
+      setResourceErr(`This file is too large. ${selectedResourceLimit.hint}.`);
+      return;
+    }
+
     setUploadingResource(true);
     try {
       const formData = new FormData();
@@ -462,6 +489,16 @@ export default function ChaptersPage() {
             )}
           </div>
 
+          <div className="rounded-2xl p-3 mb-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid #262626' }}>
+            <div className="flex flex-wrap items-center gap-3 justify-between">
+              <div>
+                <p className="text-xs font-semibold" style={{ color: '#fff' }}>Course resource usage</p>
+                <p className="text-xs mt-1" style={{ color: storageTone }}>{formatBytes(totalResourceBytes)} across {resources.length} file{resources.length === 1 ? '' : 's'}</p>
+              </div>
+              <p className="text-[11px]" style={{ color: '#a3a3a3', maxWidth: 360 }}>{storageMessage}</p>
+            </div>
+          </div>
+
           {showAddResource && (
             <div className="rounded-2xl p-4 mb-4 space-y-3" style={{ background: '#111111', border: '1px solid #262626' }}>
               <div><label className="lbl">Title *</label><input className="inp" placeholder="e.g. Motion revision notes" value={resourceForm.title} onChange={(e) => setResourceForm((current) => ({ ...current, title: e.target.value }))} /></div>
@@ -487,6 +524,7 @@ export default function ChaptersPage() {
                     <option value="link">Resource</option>
                     <option value="video">Extra video</option>
                   </select>
+                  <p className="text-[11px] mt-2" style={{ color: '#737373' }}>{selectedResourceLimit.hint}</p>
                 </div>
               </div>
               <div>
@@ -502,7 +540,7 @@ export default function ChaptersPage() {
                   }}
                   disabled={uploadingResource}
                 />
-                {resourceFile && <p className="text-xs mt-2" style={{ color: '#a3a3a3' }}>{resourceFile.name}</p>}
+                {resourceFile && <p className="text-xs mt-2" style={{ color: '#a3a3a3' }}>{resourceFile.name} · {formatBytes(resourceFile.size)}</p>}
                 {resourceErr && <p className="text-xs mt-2" style={{ color: '#f87171' }}>{resourceErr}</p>}
               </div>
               <div className="flex gap-2">

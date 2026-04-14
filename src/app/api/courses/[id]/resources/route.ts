@@ -6,6 +6,72 @@ import { createSupabaseAdmin } from '@/lib/supabase/server';
 
 const RESOURCE_BUCKET = process.env.SUPABASE_RESOURCE_BUCKET || 'course-resources';
 const MAX_RESOURCE_SIZE = 25 * 1024 * 1024;
+const RESOURCE_RULES: Record<string, { maxSize: number; mimePrefixes?: string[]; mimeTypes?: string[]; extensions?: string[]; label: string }> = {
+  pdf: {
+    maxSize: 10 * 1024 * 1024,
+    mimeTypes: ['application/pdf'],
+    extensions: ['.pdf'],
+    label: 'PDF',
+  },
+  note: {
+    maxSize: 10 * 1024 * 1024,
+    mimeTypes: [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+    ],
+    extensions: ['.pdf', '.doc', '.docx', '.txt'],
+    label: 'notes/document',
+  },
+  exercise: {
+    maxSize: 15 * 1024 * 1024,
+    mimeTypes: [
+      'application/pdf',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+    ],
+    extensions: ['.pdf', '.xls', '.xlsx', '.ppt', '.pptx', '.doc', '.docx', '.txt'],
+    label: 'exercise file',
+  },
+  link: {
+    maxSize: 5 * 1024 * 1024,
+    mimePrefixes: ['image/'],
+    mimeTypes: ['application/pdf', 'text/plain'],
+    extensions: ['.pdf', '.txt', '.jpg', '.jpeg', '.png', '.webp'],
+    label: 'resource file',
+  },
+  video: {
+    maxSize: 25 * 1024 * 1024,
+    mimeTypes: ['application/pdf'],
+    extensions: ['.pdf'],
+    label: 'supporting file',
+  },
+};
+
+function getResourceRule(type: string) {
+  return RESOURCE_RULES[type] || RESOURCE_RULES.note;
+}
+
+function fileMatchesRule(file: File, type: string) {
+  const rule = getResourceRule(type);
+  const extension = extname(file.name).toLowerCase();
+  const mimeType = file.type || 'application/octet-stream';
+  const extensionAllowed = rule.extensions?.includes(extension) ?? true;
+  const mimeAllowed = (rule.mimeTypes?.includes(mimeType) ?? false) || (rule.mimePrefixes?.some((prefix) => mimeType.startsWith(prefix)) ?? false);
+
+  return {
+    validSize: file.size <= rule.maxSize,
+    validType: extensionAllowed && mimeAllowed,
+    maxSize: rule.maxSize,
+    label: rule.label,
+  };
+}
 
 async function ensureResourceBucket() {
   const supabase = createSupabaseAdmin();
@@ -92,8 +158,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ success: false, error: 'Attach a file to upload.' }, { status: 400 });
     }
 
-    if (file.size > MAX_RESOURCE_SIZE) {
-      return NextResponse.json({ success: false, error: 'Resource must be 25MB or smaller.' }, { status: 400 });
+    const ruleCheck = fileMatchesRule(file, type);
+
+    if (!ruleCheck.validType) {
+      return NextResponse.json({ success: false, error: `This ${ruleCheck.label} format is not supported for ${type}.` }, { status: 400 });
+    }
+
+    if (!ruleCheck.validSize) {
+      return NextResponse.json({ success: false, error: `${ruleCheck.label} files must be ${(ruleCheck.maxSize / (1024 * 1024)).toFixed(0)}MB or smaller.` }, { status: 400 });
     }
 
     const storageClient = await ensureResourceBucket();
