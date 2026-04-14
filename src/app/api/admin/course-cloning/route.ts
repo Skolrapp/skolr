@@ -97,8 +97,12 @@ export async function POST(request: NextRequest) {
     }
 
     if ((chapters || []).length > 0) {
-      const clonedChapters = (chapters || []).map((chapter: any, index: number) => ({
-        id: uuidv4(),
+      const chapterIdMap: Record<string, string> = {};
+      const clonedChapters = (chapters || []).map((chapter: any, index: number) => {
+        const newChapterId = uuidv4();
+        chapterIdMap[chapter.id] = newChapterId;
+        return {
+        id: newChapterId,
         course_id: newCourseId,
         title: deriveTitle(chapter.title, sourceCourse.subject, subject),
         description: chapter.description,
@@ -106,21 +110,43 @@ export async function POST(request: NextRequest) {
         duration_seconds: chapter.duration_seconds,
         order_index: index,
         is_published: chapter.is_published,
-      }));
+      };});
       const { error: chaptersError } = await supabase.from('chapters').insert(clonedChapters);
       if (chaptersError) {
         return NextResponse.json({ success: false, error: chaptersError.message }, { status: 500 });
       }
-    }
-
-    if ((resources || []).length > 0) {
+      if ((resources || []).length > 0) {
+        const clonedResources = (resources || []).map((resource: any) => ({
+          course_id: newCourseId,
+          chapter_id: resource.chapter_id ? chapterIdMap[resource.chapter_id] || null : null,
+          title: deriveTitle(resource.title, sourceCourse.subject, subject),
+          type: resource.type,
+          url: resource.url,
+          description: resource.description,
+          created_by: session.user.id,
+          storage_bucket: resource.storage_bucket || null,
+          storage_path: resource.storage_path || null,
+          mime_type: resource.mime_type || null,
+          file_size_bytes: resource.file_size_bytes || null,
+        }));
+        const { error: resourcesError } = await supabase.from('course_resources').insert(clonedResources);
+        if (resourcesError) {
+          return NextResponse.json({ success: false, error: resourcesError.message }, { status: 500 });
+        }
+      }
+    } else if ((resources || []).length > 0) {
       const clonedResources = (resources || []).map((resource: any) => ({
         course_id: newCourseId,
+        chapter_id: null,
         title: deriveTitle(resource.title, sourceCourse.subject, subject),
         type: resource.type,
         url: resource.url,
         description: resource.description,
         created_by: session.user.id,
+        storage_bucket: resource.storage_bucket || null,
+        storage_path: resource.storage_path || null,
+        mime_type: resource.mime_type || null,
+        file_size_bytes: resource.file_size_bytes || null,
       }));
       const { error: resourcesError } = await supabase.from('course_resources').insert(clonedResources);
       if (resourcesError) {

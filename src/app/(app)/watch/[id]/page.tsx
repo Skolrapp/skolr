@@ -510,6 +510,7 @@ function WatchContent() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ fontSize: 13, fontWeight: 700, color: '#0a0a0a', marginBottom: 2 }}>{r.title}</p>
                           {r.description && <p style={{ fontSize: 12, color: '#9ca3af', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.description}</p>}
+                          {r.chapter_title && <p style={{ fontSize: 11, color: '#10B981', marginTop: 4, fontWeight: 700 }}>{r.chapter_title}</p>}
                         </div>
                         <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 4, background: '#ecfdf5', color: '#059669', textTransform: 'capitalize', flexShrink: 0 }}>{r.type}</span>
                         {r.url && <a href={r.url} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 12px', fontSize: 12, fontWeight: 600, color: G, border: '1px solid #d1fae5', borderRadius: 6, textDecoration: 'none', flexShrink: 0 }}>Open</a>}

@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
 import Link from 'next/link';
 import { uploadVideoToBunny } from '@/lib/bunny/client';
+import type { CourseResource } from '@/types';
 
 const G = '#10B981';
 
@@ -31,13 +32,29 @@ type UploadedVideo = {
   fileName: string;
 };
 
+type ResourceForm = {
+  title: string;
+  description: string;
+  type: string;
+  chapterId: string;
+};
+
+const EMPTY_RESOURCE_FORM: ResourceForm = {
+  title: '',
+  description: '',
+  type: 'pdf',
+  chapterId: '',
+};
+
 export default function ChaptersPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
   const [chapters, setChapters] = useState<any[]>([]);
+  const [resources, setResources] = useState<CourseResource[]>([]);
   const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [resourceLoading, setResourceLoading] = useState(true);
   const [pending, startTransition] = useTransition();
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState<ChapterForm>(EMPTY_FORM);
@@ -53,6 +70,11 @@ export default function ChaptersPage() {
   const [editVideoError, setEditVideoError] = useState('');
   const [editUploadedVideo, setEditUploadedVideo] = useState<UploadedVideo | null>(null);
   const [uploadingEditVideo, setUploadingEditVideo] = useState(false);
+  const [showAddResource, setShowAddResource] = useState(false);
+  const [resourceForm, setResourceForm] = useState<ResourceForm>(EMPTY_RESOURCE_FORM);
+  const [resourceFile, setResourceFile] = useState<File | null>(null);
+  const [resourceErr, setResourceErr] = useState('');
+  const [uploadingResource, setUploadingResource] = useState(false);
   const canManageVideos = user?.role === 'admin' || (!!course && !course.is_published);
 
   useEffect(() => {
@@ -67,7 +89,20 @@ export default function ChaptersPage() {
         if (d.success) setChapters(d.data);
       })
       .finally(() => setLoading(false));
+    fetch(`/api/courses/${id}/resources`, { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setResources(d.data);
+      })
+      .finally(() => setResourceLoading(false));
   }, [id]);
+
+  const resetResourceComposer = () => {
+    setShowAddResource(false);
+    setResourceForm(EMPTY_RESOURCE_FORM);
+    setResourceFile(null);
+    setResourceErr('');
+  };
 
   const addChapter = () => {
     setFormErr('');
@@ -225,6 +260,68 @@ export default function ChaptersPage() {
     await uploadEditVideo(file);
   };
 
+  const uploadResource = async () => {
+    setResourceErr('');
+    if (!resourceForm.title.trim()) {
+      setResourceErr('Title is required.');
+      return;
+    }
+    if (!resourceFile) {
+      setResourceErr('Choose a file to upload.');
+      return;
+    }
+
+    setUploadingResource(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', resourceFile);
+      formData.append('title', resourceForm.title.trim());
+      formData.append('type', resourceForm.type);
+      formData.append('description', resourceForm.description.trim());
+      if (resourceForm.chapterId) {
+        formData.append('chapter_id', resourceForm.chapterId);
+      }
+
+      const res = await fetch(`/api/courses/${id}/resources`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        const chapterTitle = resourceForm.chapterId
+          ? chapters.find((chapter) => chapter.id === resourceForm.chapterId)?.title || null
+          : null;
+        setResources((current) => [...current, { ...data.data, chapter_title: chapterTitle }]);
+        setSuccess('Resource uploaded.');
+        setTimeout(() => setSuccess(''), 3000);
+        resetResourceComposer();
+      } else {
+        setResourceErr(data.error || 'Upload failed.');
+      }
+    } catch (error) {
+      setResourceErr(error instanceof Error ? error.message : 'Upload failed.');
+    } finally {
+      setUploadingResource(false);
+    }
+  };
+
+  const deleteResource = async (resource: CourseResource) => {
+    if (!confirm(`Remove "${resource.title}"?`)) return;
+    const res = await fetch(`/api/courses/${id}/resources/${resource.id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    const data = await res.json();
+    if (data.success) {
+      setResources((current) => current.filter((item) => item.id !== resource.id));
+      setSuccess('Resource removed.');
+      setTimeout(() => setSuccess(''), 3000);
+    } else {
+      setResourceErr(data.error || 'Could not remove resource.');
+    }
+  };
+
   if (!user) return null;
 
   return (
@@ -349,6 +446,119 @@ export default function ChaptersPage() {
             ))}
           </div>
         )}
+
+        <div className="rounded-2xl p-4 mb-5" style={{ background: '#171717', border: '1px solid #262626' }}>
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div>
+              <p className="text-sm font-semibold" style={{ color: '#fff' }}>Resources & notes</p>
+              <p className="text-xs mt-1" style={{ color: '#a3a3a3' }}>
+                Upload one file for the entire class, or attach a file directly to a specific chapter.
+              </p>
+            </div>
+            {!showAddResource && (
+              <button className="btn-primary text-sm py-2 px-4 w-auto" onClick={() => setShowAddResource(true)}>
+                + Upload resource
+              </button>
+            )}
+          </div>
+
+          {showAddResource && (
+            <div className="rounded-2xl p-4 mb-4 space-y-3" style={{ background: '#111111', border: '1px solid #262626' }}>
+              <div><label className="lbl">Title *</label><input className="inp" placeholder="e.g. Motion revision notes" value={resourceForm.title} onChange={(e) => setResourceForm((current) => ({ ...current, title: e.target.value }))} /></div>
+              <div><label className="lbl">Description</label><input className="inp" placeholder="Short note for students" value={resourceForm.description} onChange={(e) => setResourceForm((current) => ({ ...current, description: e.target.value }))} /></div>
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <label className="lbl">Attach to</label>
+                  <select className="inp" value={resourceForm.chapterId} onChange={(e) => setResourceForm((current) => ({ ...current, chapterId: e.target.value }))}>
+                    <option value="">Entire class</option>
+                    {chapters.map((chapter, index) => (
+                      <option key={chapter.id} value={chapter.id}>
+                        {`Chapter ${index + 1} - ${chapter.title}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="lbl">Type</label>
+                  <select className="inp" value={resourceForm.type} onChange={(e) => setResourceForm((current) => ({ ...current, type: e.target.value }))}>
+                    <option value="pdf">PDF</option>
+                    <option value="note">Note</option>
+                    <option value="exercise">Exercise</option>
+                    <option value="link">Resource</option>
+                    <option value="video">Extra video</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="lbl">File *</label>
+                <input
+                  className="inp"
+                  type="file"
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setResourceFile(file);
+                    setResourceErr('');
+                  }}
+                  disabled={uploadingResource}
+                />
+                {resourceFile && <p className="text-xs mt-2" style={{ color: '#a3a3a3' }}>{resourceFile.name}</p>}
+                {resourceErr && <p className="text-xs mt-2" style={{ color: '#f87171' }}>{resourceErr}</p>}
+              </div>
+              <div className="flex gap-2">
+                <button className="btn-primary text-sm py-2.5 flex-1" onClick={uploadResource} disabled={uploadingResource}>
+                  {uploadingResource ? 'Uploading...' : 'Upload resource'}
+                </button>
+                <button className="btn-secondary text-sm py-2.5 w-auto px-4" onClick={resetResourceComposer}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {resourceLoading ? (
+            <div className="space-y-2">{[1, 2].map((i) => <div key={i} className="skel h-16 rounded-2xl" />)}</div>
+          ) : resources.length === 0 ? (
+            <div className="rounded-2xl p-5 text-center" style={{ background: '#111111', border: '1px dashed #262626' }}>
+              <p className="text-sm" style={{ color: '#e5e5e5' }}>No notes or files uploaded yet</p>
+              <p className="text-xs mt-1" style={{ color: '#737373' }}>Upload a course-wide resource or tie one to a chapter.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {resources.map((resource) => (
+                <div key={resource.id} className="rounded-2xl p-4 flex items-start gap-3" style={{ background: '#111111', border: '1px solid #262626' }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(16,185,129,0.14)', color: G }}>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <p className="text-sm font-semibold" style={{ color: '#fff' }}>{resource.title}</p>
+                      <span className="text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: 'rgba(16,185,129,0.12)', color: G }}>
+                        {resource.chapter_title ? resource.chapter_title : 'Entire class'}
+                      </span>
+                    </div>
+                    {resource.description && <p className="text-xs" style={{ color: '#a3a3a3' }}>{resource.description}</p>}
+                    <p className="text-[11px] mt-1" style={{ color: '#737373' }}>{resource.type.toUpperCase()}</p>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    {resource.url && (
+                      <a href={resource.url} target="_blank" rel="noopener noreferrer" className="!min-h-0 !min-w-0 px-3 py-2 rounded-lg text-xs font-semibold" style={{ background: '#222', color: '#fff', textDecoration: 'none' }}>
+                        Open
+                      </a>
+                    )}
+                    <button
+                      onClick={() => deleteResource(resource)}
+                      className="!min-h-0 !min-w-0 px-3 py-2 rounded-lg text-xs font-semibold"
+                      style={{ background: 'rgba(239,68,68,0.1)', color: '#f87171' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {showAdd ? (
           <div className="card space-y-4">

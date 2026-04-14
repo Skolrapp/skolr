@@ -151,3 +151,20 @@ export interface Chapter {
   release_at?: string | null;
   created_at: string;
 }
+
+export interface CourseResource {
+  id: string;
+  course_id: string;
+  chapter_id?: string | null;
+  chapter_title?: string | null;
+  title: string;
+  type: string;
+  url?: string | null;
+  description?: string | null;
+  created_by?: string | null;
+  storage_bucket?: string | null;
+  storage_path?: string | null;
+  mime_type?: string | null;
+  file_size_bytes?: number | null;
+  created_at: string;
+}
