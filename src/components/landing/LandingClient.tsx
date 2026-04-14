@@ -283,7 +283,8 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         <div
           className="sk-campaign-banner"
           style={{
-            minHeight: 360,
+            width: '100%',
+            aspectRatio: '1600 / 760',
             borderRadius: 30,
             overflow: 'hidden',
             position: 'relative',
@@ -451,7 +452,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
           }
           .sk-banner-stats > div,
           .sk-campaign-banner,
-          .sk-campaign-banner-grid > div:last-child > div,
           .sk-conviction-strip > div,
           .sk-course-grid > a,
           .sk-instructor-grid > div {
@@ -464,12 +464,8 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
             padding: 16px !important;
           }
           .sk-campaign-banner {
-            min-height: auto !important;
+            aspect-ratio: 1600 / 760 !important;
           }
-          .sk-campaign-banner-grid {
-            padding: 20px !important;
-          }
-          .sk-campaign-banner-grid > div:last-child > div,
           .sk-conviction-strip > div {
             min-height: auto !important;
             padding: 18px !important;
