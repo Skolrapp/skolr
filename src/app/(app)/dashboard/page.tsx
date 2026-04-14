@@ -18,13 +18,19 @@ const LEVELS = [
   { id: 'masters',       label: 'Masters',       sub: 'Postgraduate',    color: '#ef4444', bg: '#fef2f2', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
 ];
 
-function Thumb({ color, bg, title }: { color: string; bg: string; title: string }) {
+function Thumb({ color, bg, title, thumbnailUrl }: { color: string; bg: string; title: string; thumbnailUrl?: string | null }) {
   return (
     <div style={{ width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg,' + bg + ',' + color + '22)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: -15, right: -15, width: 80, height: 80, borderRadius: '50%', background: color + '18' }} />
-      <div style={{ width: 40, height: 40, borderRadius: 10, background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
-        <span style={{ color: '#fff', fontSize: 16, fontWeight: 800 }}>{title.charAt(0)}</span>
-      </div>
+      {thumbnailUrl ? (
+        <img src={thumbnailUrl} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      ) : (
+        <>
+          <div style={{ position: 'absolute', top: -15, right: -15, width: 80, height: 80, borderRadius: '50%', background: color + '18' }} />
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+            <span style={{ color: '#fff', fontSize: 16, fontWeight: 800 }}>{title.charAt(0)}</span>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -143,7 +149,7 @@ export default function HomePage() {
                 <Link key={c.id} href={'/watch/' + c.id}
                   className="course-card"
                   style={{ textDecoration: 'none', color: 'inherit', display: 'block', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden' }}>
-                  <Thumb color="#3b82f6" bg="#eff6ff" title={c.title} />
+                  <Thumb color="#3b82f6" bg="#eff6ff" title={c.title} thumbnailUrl={c.thumbnail_url} />
                   <div style={{ padding: '14px 16px' }}>
                     <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
                       <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#eff6ff', color: '#3b82f6' }}>{c.category}</span>

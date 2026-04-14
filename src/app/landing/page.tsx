@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { Course } from '@/types';
 
 const G = '#10B981';
 
@@ -20,17 +21,17 @@ const INSTRUCTORS = [
   { name: 'Mwalimu Amina Rashid', subject: 'Kiswahili & Literature', students: 987,  courses: 4, initial: 'A', color: '#f59e0b', bg: '#fffbeb' },
 ];
 
-const COURSES = [
-  { title: 'Mathematics Form 4', instructor: 'Dr. James Kiromo',  level: 'Form 4',   subject: 'Mathematics', rating: 4.9, students: 2341, color: '#3b82f6', bg: '#eff6ff', route: 'secondary' },
-  { title: 'Physics Mechanics',  instructor: 'Prof. Sarah Ali',   level: 'Form 5-6', subject: 'Physics',     rating: 4.8, students: 1187, color: '#8b5cf6', bg: '#f5f3ff', route: 'highschool' },
-  { title: 'PSLE Geography',     instructor: 'Mr. Hassan Mwanga', level: 'Std 7',    subject: 'Geography',   rating: 4.7, students: 893,  color: '#10b981', bg: '#ecfdf5', route: 'primary' },
-  { title: 'Kiswahili Fasihi',   instructor: 'Mwalimu Amina',     level: 'Form 1-4', subject: 'Kiswahili',   rating: 4.9, students: 654,  color: '#f59e0b', bg: '#fffbeb', route: 'secondary' },
-  { title: 'Chemistry Form 3',   instructor: 'Prof. Sarah Ali',   level: 'Form 3',   subject: 'Chemistry',   rating: 4.6, students: 541,  color: '#ef4444', bg: '#fef2f2', route: 'secondary' },
-  { title: 'English Literature', instructor: 'Dr. James Kiromo',  level: 'Form 2',   subject: 'English',     rating: 4.7, students: 432,  color: '#6366f1', bg: '#eef2ff', route: 'secondary' },
-];
-
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [courses, setCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    fetch('/api/courses?per_page=6', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setCourses(d.data.items || []);
+      });
+  }, []);
   return (
     <div style={{ fontFamily: "'Inter',-apple-system,sans-serif", background: '#fff', color: '#0a0a0a' }}>
 
@@ -170,31 +171,39 @@ export default function LandingPage() {
             <Link href="/courses" className="sk-section-link">View all</Link>
           </div>
           <div className="sk-course-grid">
-            {COURSES.map((course,i) => (
-              <Link key={i} href={'/courses?level='+course.route} className="sk-course-card">
-                <div className="sk-course-thumb" style={{ width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg,'+course.bg+','+course.color+'22)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
-                  <div style={{ position: 'absolute', top: -10, right: -10, width: 70, height: 70, borderRadius: '50%', background: course.color+'15' }} />
-                  <div style={{ width: 42, height: 42, borderRadius: 10, background: course.color, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
-                    <span style={{ color: '#fff', fontSize: 17, fontWeight: 800 }}>{course.subject.charAt(0)}</span>
-                  </div>
+            {courses.map((course,i) => {
+              const levelMeta = LEVELS.find((item) => item.level === course.category) || LEVELS[0];
+              return (
+              <Link key={course.id || i} href={'/watch/'+course.id} className="sk-course-card">
+                <div className="sk-course-thumb" style={{ width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg,'+levelMeta.bg+','+levelMeta.color+'22)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+                  {course.thumbnail_url ? (
+                    <img src={course.thumbnail_url} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <>
+                      <div style={{ position: 'absolute', top: -10, right: -10, width: 70, height: 70, borderRadius: '50%', background: levelMeta.color+'15' }} />
+                      <div style={{ width: 42, height: 42, borderRadius: 10, background: levelMeta.color, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                        <span style={{ color: '#fff', fontSize: 17, fontWeight: 800 }}>{course.subject.charAt(0)}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div className="sk-course-body" style={{ padding: '12px 14px' }}>
                   <div style={{ display: 'flex', gap: 5, marginBottom: 7, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: course.color+'15', color: course.color }}>{course.level}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: levelMeta.color+'15', color: levelMeta.color }}>{course.sub_category || course.category}</span>
                     <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#f3f4f6', color: '#6b7280' }}>{course.subject}</span>
                   </div>
                   <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4, marginBottom: 5, color: '#0a0a0a' }}>{course.title}</p>
-                  <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 8 }}>{course.instructor}</p>
+                  <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 8 }}>{course.instructor_name}</p>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                      <span style={{ color: '#f59e0b', fontSize: 11 }}>{'★'.repeat(Math.floor(course.rating))}</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: '#92400e' }}>{course.rating}</span>
+                      <span style={{ color: '#f59e0b', fontSize: 11 }}>★★★★★</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#92400e' }}>4.8</span>
                     </div>
                     <span style={{ fontSize: 12, fontWeight: 700, color: G }}>Preview first</span>
                   </div>
                 </div>
               </Link>
-            ))}
+            );})}
           </div>
         </div>
       </div>

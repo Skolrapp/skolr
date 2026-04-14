@@ -23,13 +23,19 @@ const LEVELS = [
 const SUBJECTS = ['Mathematics','Physics','Chemistry','Biology','Geography','History','Kiswahili','English','Commerce','ICT'];
 const SORT_OPTIONS = [{id:'popular',label:'Most popular'},{id:'newest',label:'Newest first'},{id:'rating',label:'Highest rated'}];
 
-function Thumb({color,bg,title}:{color:string;bg:string;title:string}){
+function Thumb({color,bg,title,thumbnailUrl}:{color:string;bg:string;title:string;thumbnailUrl?:string|null}){
   return(
     <div style={{width:'100%',aspectRatio:'16/9',background:'linear-gradient(135deg,'+bg+','+color+'22)',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden'}}>
-      <div style={{position:'absolute',top:-12,right:-12,width:70,height:70,borderRadius:'50%',background:color+'18'}}/>
-      <div style={{width:38,height:38,borderRadius:9,background:color,display:'flex',alignItems:'center',justifyContent:'center',zIndex:1}}>
-        <span style={{color:'#fff',fontSize:15,fontWeight:800}}>{title.charAt(0)}</span>
-      </div>
+      {thumbnailUrl ? (
+        <img src={thumbnailUrl} alt={title} style={{width:'100%',height:'100%',objectFit:'cover'}} />
+      ) : (
+        <>
+          <div style={{position:'absolute',top:-12,right:-12,width:70,height:70,borderRadius:'50%',background:color+'18'}}/>
+          <div style={{width:38,height:38,borderRadius:9,background:color,display:'flex',alignItems:'center',justifyContent:'center',zIndex:1}}>
+            <span style={{color:'#fff',fontSize:15,fontWeight:800}}>{title.charAt(0)}</span>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -286,7 +292,7 @@ function CoursesContent(){
                     style={{textDecoration:'none',color:'inherit',display:'block',background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,overflow:'hidden',transition:'transform 0.2s,box-shadow 0.2s'}}
                     onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.08)';}}
                     onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='none';}}>
-                    <Thumb color={(lvl as any).color||'#3b82f6'} bg={(lvl as any).bg||'#eff6ff'} title={c.title}/>
+                    <Thumb color={(lvl as any).color||'#3b82f6'} bg={(lvl as any).bg||'#eff6ff'} title={c.title} thumbnailUrl={c.thumbnail_url}/>
                     <div style={{padding:'12px 14px'}}>
                       <div style={{display:'flex',gap:5,marginBottom:7}}>
                         <span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:4,background:(lvl as any).bg||'#eff6ff',color:(lvl as any).color||'#3b82f6'}}>{c.sub_category||c.category}</span>
