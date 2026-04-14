@@ -72,3 +72,84 @@ export async function GET(
     },
   });
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const token = request.cookies.get('sk_token')?.value;
+  const session = token ? await validateSession(token) : null;
+
+  if (!session) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const supabase = createSupabaseAdmin();
+
+  const { data: course, error: courseError } = await supabase
+    .from('courses')
+    .select('id, instructor_id, is_published')
+    .eq('id', id)
+    .single();
+
+  if (courseError || !course) {
+    return NextResponse.json({ success: false, error: 'Course not found.' }, { status: 404 });
+  }
+
+  const canEdit = session.user.role === 'admin' || (course.instructor_id === session.user.id && !course.is_published);
+  if (!canEdit) {
+    return NextResponse.json({ success: false, error: 'Only admins or the draft-course instructor can edit this course.' }, { status: 403 });
+  }
+
+  const body = await request.json() as {
+    title?: string;
+    description?: string | null;
+    category?: string;
+    sub_category?: string | null;
+    subject?: string;
+    video_hls_url?: string;
+    thumbnail_url?: string | null;
+    duration_seconds?: number;
+    language?: 'en' | 'sw' | 'both';
+  };
+
+  if (!body.title?.trim()) {
+    return NextResponse.json({ success: false, error: 'Title is required.' }, { status: 400 });
+  }
+
+  if (!body.category) {
+    return NextResponse.json({ success: false, error: 'Education level is required.' }, { status: 400 });
+  }
+
+  if (!body.subject?.trim()) {
+    return NextResponse.json({ success: false, error: 'Subject is required.' }, { status: 400 });
+  }
+
+  if (!body.video_hls_url?.trim() || !body.video_hls_url.endsWith('.m3u8')) {
+    return NextResponse.json({ success: false, error: 'A valid intro video is required.' }, { status: 400 });
+  }
+
+  const { data, error } = await supabase
+    .from('courses')
+    .update({
+      title: body.title.trim(),
+      description: body.description?.trim() || null,
+      category: body.category,
+      sub_category: body.sub_category || null,
+      subject: body.subject.trim(),
+      video_hls_url: body.video_hls_url.trim(),
+      thumbnail_url: body.thumbnail_url?.trim() || null,
+      duration_seconds: body.duration_seconds || 0,
+      language: body.language || 'en',
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true, data });
+}

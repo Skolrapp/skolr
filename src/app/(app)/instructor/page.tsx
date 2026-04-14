@@ -146,6 +146,9 @@ export default function InstructorPage() {
                         </div>
                       )}
                       <div className="flex gap-3 mt-3">
+                        <Link href={`/instructor/courses/${course.id}/edit`} className="text-xs font-semibold" style={{ color: '#fbbf24' }}>
+                          Edit intro
+                        </Link>
                         <Link href={`/instructor/courses/${course.id}/chapters`} className="text-xs font-semibold" style={{ color: G }}>
                           Manage chapters
                         </Link>

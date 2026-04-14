@@ -362,6 +362,9 @@ export default function ChaptersPage() {
             <h1 className="text-lg font-bold" style={{ color: '#fff' }}>Manage Chapters</h1>
             {course && <p className="text-xs mt-0.5" style={{ color: '#737373' }}>{course.title}</p>}
           </div>
+          <Link href={`/instructor/courses/${id}/edit`} className="text-xs font-semibold" style={{ color: '#fbbf24' }}>
+            Edit intro
+          </Link>
         </div>
 
         <div className="rounded-2xl p-4 mb-5" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
