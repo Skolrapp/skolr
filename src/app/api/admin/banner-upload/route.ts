@@ -5,6 +5,7 @@ import { createSupabaseAdmin } from '@/lib/supabase/server';
 
 const BRANDING_BUCKET = process.env.SUPABASE_BRANDING_BUCKET || 'site-branding';
 const MAX_BANNER_SIZE = 8 * 1024 * 1024;
+const BANNER_SLOTS = ['hero-banner', 'campaign-banner', 'message-placeholder-1', 'message-placeholder-2', 'message-placeholder-3'] as const;
 
 async function ensureBrandingBucket() {
   const supabase = createSupabaseAdmin();
@@ -32,9 +33,14 @@ export async function POST(request: NextRequest) {
 
   const formData = await request.formData();
   const file = formData.get('file');
+  const slot = String(formData.get('slot') || '');
 
   if (!(file instanceof File)) {
     return NextResponse.json({ success: false, error: 'No banner image provided.' }, { status: 400 });
+  }
+
+  if (!BANNER_SLOTS.includes(slot as (typeof BANNER_SLOTS)[number])) {
+    return NextResponse.json({ success: false, error: 'Invalid banner slot.' }, { status: 400 });
   }
 
   if (!file.type.startsWith('image/')) {
@@ -48,7 +54,7 @@ export async function POST(request: NextRequest) {
   const supabase = await ensureBrandingBucket();
   const { data: existingFiles } = await supabase.storage.from(BRANDING_BUCKET).list('landing', { limit: 20 });
   const oldBannerPaths = (existingFiles || [])
-    .filter((entry) => entry.name.startsWith('hero-banner'))
+    .filter((entry) => entry.name.startsWith(slot))
     .map((entry) => `landing/${entry.name}`);
 
   if (oldBannerPaths.length > 0) {
@@ -56,7 +62,7 @@ export async function POST(request: NextRequest) {
   }
 
   const extension = extname(file.name) || '.jpg';
-  const path = `landing/hero-banner${extension.toLowerCase()}`;
+  const path = `landing/${slot}${extension.toLowerCase()}`;
   const arrayBuffer = await file.arrayBuffer();
 
   const { error: uploadError } = await supabase.storage
@@ -76,8 +82,49 @@ export async function POST(request: NextRequest) {
     success: true,
     data: {
       banner_url: data.publicUrl,
+      slot,
       bucket: BRANDING_BUCKET,
       path,
+    },
+  });
+}
+
+export async function DELETE(request: NextRequest) {
+  const token = request.cookies.get('sk_token')?.value;
+  const session = token ? await validateSession(token) : null;
+
+  if (!session || session.user.role !== 'admin') {
+    return NextResponse.json({ success: false, error: 'Admin access required.' }, { status: 403 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const slot = String(searchParams.get('slot') || '');
+
+  if (!BANNER_SLOTS.includes(slot as (typeof BANNER_SLOTS)[number])) {
+    return NextResponse.json({ success: false, error: 'Invalid banner slot.' }, { status: 400 });
+  }
+
+  const supabase = await ensureBrandingBucket();
+  const { data: existingFiles } = await supabase.storage.from(BRANDING_BUCKET).list('landing', { limit: 50 });
+  const bannerPaths = (existingFiles || [])
+    .filter((entry) => entry.name.startsWith(slot))
+    .map((entry) => `landing/${entry.name}`);
+
+  if (bannerPaths.length === 0) {
+    return NextResponse.json({ success: true, data: { slot, removed: false } });
+  }
+
+  const { error } = await supabase.storage.from(BRANDING_BUCKET).remove(bannerPaths);
+
+  if (error) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      slot,
+      removed: true,
     },
   });
 }

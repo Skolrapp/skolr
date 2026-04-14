@@ -8,7 +8,14 @@ import BottomNav from '@/components/layout/BottomNav';
 import TopHeader from '@/components/layout/TopHeader';
 
 const G = '#10B981';
-type Tab = 'reviews' | 'tracker' | 'cloning' | 'payments' | 'support';
+type Tab = 'reviews' | 'tracker' | 'cloning' | 'payments' | 'branding' | 'support';
+const BANNER_SLOTS = [
+  { key: 'hero-banner', label: 'Hero banner', size: '1600 x 900 px', ratio: '16:9', description: 'Top homepage hero background.' },
+  { key: 'campaign-banner', label: 'Campaign banner', size: '1600 x 760 px', ratio: '21:10', description: 'Large promotional banner in the middle section.' },
+  { key: 'message-placeholder-1', label: 'Message placeholder 1', size: '1200 x 720 px', ratio: '5:3', description: 'First message card near the lower homepage strip.' },
+  { key: 'message-placeholder-2', label: 'Message placeholder 2', size: '1200 x 720 px', ratio: '5:3', description: 'Second message card near the lower homepage strip.' },
+  { key: 'message-placeholder-3', label: 'Message placeholder 3', size: '1200 x 720 px', ratio: '5:3', description: 'Third message card near the lower homepage strip.' },
+] as const;
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -40,17 +47,19 @@ export default function AdminPage() {
   const [templates, setTemplates] = useState<any[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(true);
   const [cloneForm, setCloneForm] = useState({ sourceCourseId: '', targetSubjects: '', targetSubCategory: '' });
-  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
-  const [bannerUploading, setBannerUploading] = useState(false);
-  const [bannerDraftUrl, setBannerDraftUrl] = useState<string | null>(null);
-  const [bannerDraftFile, setBannerDraftFile] = useState<File | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<Record<string, string | null>>({});
+  const [brandingLoading, setBrandingLoading] = useState(true);
+  const [bannerUploadingSlot, setBannerUploadingSlot] = useState<string | null>(null);
+  const [bannerRemovingSlot, setBannerRemovingSlot] = useState<string | null>(null);
+  const [bannerDraftUrl, setBannerDraftUrl] = useState<Record<string, string | null>>({});
+  const [bannerDraftFile, setBannerDraftFile] = useState<Record<string, File | null>>({});
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const syncTabFromUrl = () => {
       const requestedTab = new URLSearchParams(window.location.search).get('tab');
-      if (requestedTab === 'reviews' || requestedTab === 'tracker' || requestedTab === 'cloning' || requestedTab === 'payments' || requestedTab === 'support') {
+      if (requestedTab === 'reviews' || requestedTab === 'tracker' || requestedTab === 'cloning' || requestedTab === 'payments' || requestedTab === 'branding' || requestedTab === 'support') {
         setTab(requestedTab);
       } else {
         setTab('reviews');
@@ -144,12 +153,22 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
+    setBrandingLoading(true);
     fetch('/api/site/branding', { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => {
-        if (d.success) setBannerPreview(d.data.landingBannerUrl || null);
-      });
+        if (d.success) setBannerPreview(d.data.banners || {});
+      })
+      .finally(() => setBrandingLoading(false));
   }, []);
+
+  useEffect(() => {
+    return () => {
+      Object.values(bannerDraftUrl).forEach((url) => {
+        if (url) URL.revokeObjectURL(url);
+      });
+    };
+  }, [bannerDraftUrl]);
 
   const reviewCourse = (id: string, action: 'approve' | 'reject') => {
     startTransition(async () => {
@@ -229,24 +248,25 @@ export default function AdminPage() {
     });
   };
 
-  const uploadLandingBanner = async (file: File) => {
-    if (bannerDraftUrl) {
-      URL.revokeObjectURL(bannerDraftUrl);
+  const uploadLandingBanner = async (slot: string, file: File) => {
+    if (bannerDraftUrl[slot]) {
+      URL.revokeObjectURL(bannerDraftUrl[slot] as string);
     }
-    setBannerDraftFile(file);
-    setBannerDraftUrl(URL.createObjectURL(file));
+    setBannerDraftFile((current) => ({ ...current, [slot]: file }));
+    setBannerDraftUrl((current) => ({ ...current, [slot]: URL.createObjectURL(file) }));
   };
 
-  const publishLandingBanner = async () => {
-    if (!bannerDraftFile) {
+  const publishLandingBanner = async (slot: string) => {
+    if (!bannerDraftFile[slot]) {
       setMessage('Choose a banner first.');
       setTimeout(() => setMessage(''), 4000);
       return;
     }
 
-    setBannerUploading(true);
+    setBannerUploadingSlot(slot);
     const formData = new FormData();
-    formData.append('file', bannerDraftFile);
+    formData.append('file', bannerDraftFile[slot] as File);
+    formData.append('slot', slot);
 
     try {
       const res = await fetch('/api/admin/banner-upload', {
@@ -256,18 +276,42 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setBannerPreview(data.data.banner_url);
-        if (bannerDraftUrl) URL.revokeObjectURL(bannerDraftUrl);
-        setBannerDraftFile(null);
-        setBannerDraftUrl(null);
-        setMessage('Landing banner published.');
+        setBannerPreview((current) => ({ ...current, [slot]: data.data.banner_url }));
+        if (bannerDraftUrl[slot]) URL.revokeObjectURL(bannerDraftUrl[slot] as string);
+        setBannerDraftFile((current) => ({ ...current, [slot]: null }));
+        setBannerDraftUrl((current) => ({ ...current, [slot]: null }));
+        setMessage(`${BANNER_SLOTS.find((item) => item.key === slot)?.label || 'Banner'} published.`);
       } else {
         setMessage(data.error || 'Banner publish failed.');
       }
     } catch {
       setMessage('Banner publish failed.');
     } finally {
-      setBannerUploading(false);
+      setBannerUploadingSlot(null);
+      setTimeout(() => setMessage(''), 4000);
+    }
+  };
+
+  const removeLandingBanner = async (slot: string) => {
+    setBannerRemovingSlot(slot);
+
+    try {
+      const res = await fetch(`/api/admin/banner-upload?slot=${encodeURIComponent(slot)}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setBannerPreview((current) => ({ ...current, [slot]: null }));
+        setMessage(`${BANNER_SLOTS.find((item) => item.key === slot)?.label || 'Banner'} removed.`);
+      } else {
+        setMessage(data.error || 'Banner removal failed.');
+      }
+    } catch {
+      setMessage('Banner removal failed.');
+    } finally {
+      setBannerRemovingSlot(null);
       setTimeout(() => setMessage(''), 4000);
     }
   };
@@ -281,7 +325,7 @@ export default function AdminPage() {
         <div className="flex items-center justify-between mb-5">
           <div>
             <h1 className="text-xl font-bold" style={{ color: '#fff' }}>Admin control center</h1>
-            <p className="text-xs mt-1" style={{ color: '#737373' }}>Review submitted courses and handle account support from one place.</p>
+            <p className="text-xs mt-1" style={{ color: '#737373' }}>Review courses, manage banners, monitor learners, and handle platform operations.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -303,6 +347,7 @@ export default function AdminPage() {
             ['tracker', 'Scholar tracker'],
             ['cloning', 'Course cloning'],
             ['payments', 'Payments'],
+            ['branding', 'Landing media'],
             ['support', 'User support'],
           ] as Array<[Tab, string]>).map(([id, label]) => (
             <button
@@ -685,6 +730,143 @@ export default function AdminPage() {
           </div>
         )}
 
+        {tab === 'branding' && (
+          <div className="space-y-4">
+            <div className="card">
+              <p className="text-sm font-bold" style={{ color: '#fff' }}>Landing media studio</p>
+              <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                Manage each homepage visual in its own slot. Review the draft preview, then publish when ready or remove the live asset without touching other sections.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {BANNER_SLOTS.map((slot) => (
+                <div key={slot.key} className="card sk-branding-card">
+                  {(() => {
+                    const isPublishing = bannerUploadingSlot === slot.key;
+                    const isRemoving = bannerRemovingSlot === slot.key;
+                    const hasDraft = !!bannerDraftFile[slot.key];
+                    const draftUrl = bannerDraftUrl[slot.key];
+                    const liveUrl = bannerPreview[slot.key];
+
+                    return (
+                      <>
+                  <div className="sk-branding-card-header flex items-start justify-between gap-4 flex-wrap">
+                    <div>
+                      <div className="sk-branding-title-row" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                        <p className="text-sm font-bold" style={{ color: '#fff' }}>{slot.label}</p>
+                        <span
+                          className="sk-branding-size-badge"
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            padding: '4px 8px',
+                            borderRadius: 999,
+                            background: 'rgba(255,255,255,0.06)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            color: '#a3a3a3',
+                          }}
+                        >
+                          {slot.size}
+                        </span>
+                      </div>
+                      <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                        {slot.description} Ratio: {slot.ratio}
+                      </p>
+                    </div>
+                    <div className="sk-branding-actions flex gap-2 flex-wrap">
+                      <label className="btn-secondary text-sm py-2.5 px-4 cursor-pointer sk-branding-action" style={{ width: 'auto' }}>
+                        Select file
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg,image/webp"
+                          className="hidden"
+                          disabled={!!bannerUploadingSlot || !!bannerRemovingSlot}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) uploadLandingBanner(slot.key, file);
+                            e.currentTarget.value = '';
+                          }}
+                        />
+                      </label>
+                      <button
+                        className="btn-primary text-sm py-2.5 px-4 sk-branding-action"
+                        style={{ width: 'auto' }}
+                        disabled={!!bannerUploadingSlot || !!bannerRemovingSlot || !hasDraft}
+                        onClick={() => publishLandingBanner(slot.key)}
+                      >
+                        {isPublishing ? 'Publishing...' : 'Publish update'}
+                      </button>
+                      <button
+                        className="btn-secondary text-sm py-2.5 px-4 sk-branding-action"
+                        style={{ width: 'auto', color: liveUrl ? '#fca5a5' : '#737373', borderColor: liveUrl ? '#3f1212' : '#2a2a2a' }}
+                        disabled={!!bannerUploadingSlot || !!bannerRemovingSlot || !liveUrl}
+                        onClick={() => removeLandingBanner(slot.key)}
+                      >
+                        {isRemoving ? 'Removing...' : 'Remove live'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="sk-branding-previews mt-4 grid gap-4 md:grid-cols-2">
+                    <div className="rounded-2xl overflow-hidden sk-branding-preview-panel" style={{ border: '1px solid #222', background: '#1a1a1a' }}>
+                      <div className="px-4 py-3 text-xs font-semibold" style={{ color: '#a3a3a3', borderBottom: '1px solid #222' }}>
+                        Draft preview
+                      </div>
+                      {draftUrl ? (
+                        <img src={draftUrl} alt={`${slot.label} draft`} className="w-full object-cover" style={{ maxHeight: 260 }} />
+                      ) : (
+                        <div className="flex items-center justify-center text-sm" style={{ minHeight: 220, color: '#737373', background: 'linear-gradient(135deg,#101010,#1a1a2e)' }}>
+                          No draft selected.
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="rounded-2xl overflow-hidden sk-branding-preview-panel" style={{ border: '1px solid #222', background: '#1a1a1a' }}>
+                      <div className="px-4 py-3 text-xs font-semibold" style={{ color: '#a3a3a3', borderBottom: '1px solid #222' }}>
+                        Live preview
+                      </div>
+                      {brandingLoading ? (
+                        <div className="flex items-center justify-center text-sm" style={{ minHeight: 220, color: '#737373', background: 'linear-gradient(135deg,#101010,#1a1a2e)' }}>
+                          Loading current banner...
+                        </div>
+                      ) : liveUrl ? (
+                        <img src={liveUrl} alt={`${slot.label} live`} className="w-full object-cover" style={{ maxHeight: 260 }} />
+                      ) : (
+                        <div className="flex items-center justify-center text-sm" style={{ minHeight: 220, color: '#737373', background: 'linear-gradient(135deg,#101010,#1a1a2e)' }}>
+                          No live image yet.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {hasDraft && (
+                    <div className="sk-branding-draft-row mt-3 flex items-center justify-between gap-3 flex-wrap">
+                      <p className="text-xs" style={{ color: '#737373' }}>
+                        Ready to publish: <span style={{ color: '#fff' }}>{bannerDraftFile[slot.key]?.name}</span>
+                      </p>
+                      <button
+                        className="text-xs font-semibold"
+                        style={{ color: '#f87171' }}
+                        onClick={() => {
+                          if (draftUrl) URL.revokeObjectURL(draftUrl);
+                          setBannerDraftFile((current) => ({ ...current, [slot.key]: null }));
+                          setBannerDraftUrl((current) => ({ ...current, [slot.key]: null }));
+                        }}
+                      >
+                        Discard draft
+                      </button>
+                    </div>
+                  )}
+                      </>
+                    );
+                  })()}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {tab === 'reviews' && (
           loading ? (
             <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="skel h-28 rounded-2xl" />)}</div>
@@ -781,91 +963,6 @@ export default function AdminPage() {
 
         {tab === 'support' && (
           <div className="space-y-4">
-            <div className="card">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="min-w-0">
-                  <p className="text-sm font-bold" style={{ color: '#fff' }}>Landing banner</p>
-                  <p className="text-xs mt-1" style={{ color: '#737373' }}>
-                    Choose a banner, preview it here first, then publish it when it feels right.
-                  </p>
-                </div>
-                <div className="flex gap-2 flex-wrap">
-                  <label
-                    className="btn-secondary text-sm py-2.5 px-4 cursor-pointer"
-                    style={{ width: 'auto' }}
-                  >
-                    Choose banner
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/jpg,image/webp"
-                      className="hidden"
-                      disabled={bannerUploading}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) uploadLandingBanner(file);
-                        e.currentTarget.value = '';
-                      }}
-                    />
-                  </label>
-                  <button
-                    className="btn-primary text-sm py-2.5 px-4"
-                    style={{ width: 'auto' }}
-                    disabled={bannerUploading || !bannerDraftFile}
-                    onClick={publishLandingBanner}
-                  >
-                    {bannerUploading ? 'Publishing...' : 'Publish banner'}
-                  </button>
-                </div>
-              </div>
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid #222', background: '#1a1a1a' }}>
-                  <div className="px-4 py-3 text-xs font-semibold" style={{ color: '#a3a3a3', borderBottom: '1px solid #222' }}>
-                    Draft preview
-                  </div>
-                  {bannerDraftUrl ? (
-                    <img src={bannerDraftUrl} alt="Draft banner preview" className="w-full object-cover" style={{ maxHeight: 260 }} />
-                  ) : (
-                    <div className="flex items-center justify-center text-sm" style={{ minHeight: 220, color: '#737373', background: 'linear-gradient(135deg,#101010,#1a1a2e)' }}>
-                      Select a new banner to preview it here before publishing.
-                    </div>
-                  )}
-                </div>
-                <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid #222', background: '#1a1a1a' }}>
-                  <div className="px-4 py-3 text-xs font-semibold" style={{ color: '#a3a3a3', borderBottom: '1px solid #222' }}>
-                    Live banner
-                  </div>
-                  {bannerPreview ? (
-                    <img src={bannerPreview} alt="Live landing banner preview" className="w-full object-cover" style={{ maxHeight: 260 }} />
-                  ) : (
-                    <div className="flex items-center justify-center text-sm" style={{ minHeight: 220, color: '#737373', background: 'linear-gradient(135deg,#101010,#1a1a2e)' }}>
-                      No live banner published yet.
-                    </div>
-                  )}
-                </div>
-              </div>
-              {bannerDraftFile && (
-                <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
-                  <p className="text-xs" style={{ color: '#737373' }}>
-                    Ready to publish: <span style={{ color: '#fff' }}>{bannerDraftFile.name}</span>
-                  </p>
-                  <button
-                    className="text-xs font-semibold"
-                    style={{ color: '#f87171' }}
-                    onClick={() => {
-                      if (bannerDraftUrl) URL.revokeObjectURL(bannerDraftUrl);
-                      setBannerDraftFile(null);
-                      setBannerDraftUrl(null);
-                    }}
-                  >
-                    Discard draft
-                  </button>
-                </div>
-              )}
-              <div className="mt-3 rounded-xl p-3 text-xs" style={{ background: '#171717', border: '1px solid #222', color: '#737373' }}>
-                The published banner appears in the dedicated campaign banner section on the landing page, not in the hero.
-              </div>
-            </div>
-
             <div className="card">
               <div className="flex gap-2">
                 <input

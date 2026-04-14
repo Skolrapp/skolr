@@ -32,8 +32,8 @@ const adminNav = [
     icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 2 4-6"/></svg> },
   { href: '/courses', tab: 'catalog', label: 'Catalog',
     icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg> },
-  { href: '/admin?tab=cloning', tab: 'cloning', label: 'Cloning',
-    icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><rect x="2" y="2" width="13" height="13" rx="2"/></svg> },
+  { href: '/admin?tab=branding', tab: 'branding', label: 'Media',
+    icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 13l2.5-3 3.5 4 2.5-3 3 4"/><circle cx="8.5" cy="9" r="1"/></svg> },
   { href: '/admin?tab=support', tab: 'support', label: 'Support',
     icon: <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8a6 6 0 10-12 0v1H4v4h2v3a2 2 0 002 2h3"/><path d="M13 19h4"/></svg> },
 ];

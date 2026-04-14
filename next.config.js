@@ -1,3 +1,4 @@
+const path = require('path');
 /** @type {import('next').NextConfig} */
 const withPWA = require('@ducanh2912/next-pwa').default({
   dest: 'public',
@@ -23,9 +24,7 @@ const withPWA = require('@ducanh2912/next-pwa').default({
 
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
+  outputFileTracingRoot: path.join(__dirname, '..'),
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co' },
