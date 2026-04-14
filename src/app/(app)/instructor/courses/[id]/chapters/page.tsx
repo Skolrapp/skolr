@@ -506,14 +506,48 @@ export default function ChaptersPage() {
               <div className="grid md:grid-cols-2 gap-3">
                 <div>
                   <label className="lbl">Attach to</label>
-                  <select className="inp" value={resourceForm.chapterId} onChange={(e) => setResourceForm((current) => ({ ...current, chapterId: e.target.value }))}>
-                    <option value="">Entire class</option>
-                    {chapters.map((chapter, index) => (
-                      <option key={chapter.id} value={chapter.id}>
-                        {`Chapter ${index + 1} - ${chapter.title}`}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setResourceForm((current) => ({ ...current, chapterId: '' }))}
+                      className="w-full text-left rounded-xl px-3 py-3 border"
+                      style={{
+                        background: resourceForm.chapterId === '' ? 'rgba(16,185,129,0.12)' : '#171717',
+                        borderColor: resourceForm.chapterId === '' ? 'rgba(16,185,129,0.45)' : '#262626',
+                        color: resourceForm.chapterId === '' ? '#34d399' : '#e5e5e5',
+                      }}
+                    >
+                      <p className="text-sm font-semibold">Entire class</p>
+                      <p className="text-[11px] mt-1" style={{ color: resourceForm.chapterId === '' ? '#a7f3d0' : '#737373' }}>
+                        One shared file for everyone in this course
+                      </p>
+                    </button>
+                    {chapters.length > 0 ? (
+                      <div className="max-h-44 overflow-y-auto space-y-2 pr-1">
+                        {chapters.map((chapter, index) => {
+                          const active = resourceForm.chapterId === chapter.id;
+                          return (
+                            <button
+                              key={chapter.id}
+                              type="button"
+                              onClick={() => setResourceForm((current) => ({ ...current, chapterId: chapter.id }))}
+                              className="w-full text-left rounded-xl px-3 py-3 border"
+                              style={{
+                                background: active ? 'rgba(16,185,129,0.12)' : '#171717',
+                                borderColor: active ? 'rgba(16,185,129,0.45)' : '#262626',
+                                color: active ? '#34d399' : '#e5e5e5',
+                              }}
+                            >
+                              <p className="text-sm font-semibold">{`Chapter ${index + 1}`}</p>
+                              <p className="text-[11px] mt-1" style={{ color: active ? '#a7f3d0' : '#a3a3a3' }}>{chapter.title}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-[11px]" style={{ color: '#737373' }}>Add chapters first if you want chapter-specific notes.</p>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="lbl">Type</label>
