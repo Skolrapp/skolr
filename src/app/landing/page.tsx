@@ -107,14 +107,14 @@ export default function LandingPage() {
         )}
       </header>
 
-      <section style={{ position: 'relative', minHeight: 600, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+      <section className="sk-hero-section" style={{ position: 'relative', minHeight: 600, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, zIndex: 0, backgroundImage: `url(${heroBannerUrl || '/banner.jpg'})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#0a0a0a' }} />
         <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(135deg,rgba(10,10,10,0.88),rgba(26,26,46,0.82),rgba(13,40,24,0.88))' }} />
         <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, opacity: 0.1 }} viewBox="0 0 1280 520" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
           <circle cx="900" cy="100" r="300" fill="#10B981"/><circle cx="1100" cy="400" r="200" fill="#3b82f6"/>
           <circle cx="800" cy="350" r="150" fill="#8b5cf6"/><circle cx="1050" cy="150" r="80" fill="#10B981"/>
         </svg>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 24px', width: '100%', position: 'relative', zIndex: 2 }}>
+        <div className="sk-shell sk-hero-shell" style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 24px', width: '100%', position: 'relative', zIndex: 2 }}>
           <div className="sk-hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.15fr) minmax(320px,0.85fr)', gap: 28, alignItems: 'end' }}>
             <div style={{ maxWidth: 640 }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 999, padding: '5px 14px', marginBottom: 20 }}>
@@ -127,9 +127,9 @@ export default function LandingPage() {
               <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }}>
                 HD lessons for Primary through University, aligned to Tanzania NECTA curriculum.
               </p>
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 40 }}>
-                <Link href="/register" style={{ padding: '14px 32px', fontSize: 15, fontWeight: 700, color: '#0a0a0a', background: '#fff', borderRadius: 10, textDecoration: 'none' }}>Start for free</Link>
-                <Link href="/courses" style={{ padding: '14px 32px', fontSize: 15, fontWeight: 700, color: '#fff', border: '2px solid rgba(255,255,255,0.3)', borderRadius: 10, textDecoration: 'none' }}>Explore with preview</Link>
+              <div className="sk-hero-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 40 }}>
+                <Link className="sk-hero-action-primary" href="/register" style={{ padding: '14px 32px', fontSize: 15, fontWeight: 700, color: '#0a0a0a', background: '#fff', borderRadius: 10, textDecoration: 'none' }}>Start for free</Link>
+                <Link className="sk-hero-action-secondary" href="/courses" style={{ padding: '14px 32px', fontSize: 15, fontWeight: 700, color: '#fff', border: '2px solid rgba(255,255,255,0.3)', borderRadius: 10, textDecoration: 'none' }}>Explore with preview</Link>
               </div>
               <div className="sk-banner-stats" style={{ display: 'flex', gap: 28 }}>
                 {[['10K+','Students'],['500+','Lessons'],['50+','Instructors']].map(([n,l]) => (
@@ -174,7 +174,7 @@ export default function LandingPage() {
       </section>
 
       <div style={{ borderBottom: '1px solid #f3f4f6', padding: '14px 24px' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <div className="sk-shell sk-alignment-strip" style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <p style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500 }}>Aligned to:</p>
           {['NECTA','PSLE','CSEE','ACSEE','HESLB'].map(b => (
             <span key={b} style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', padding: '3px 10px', border: '1px solid #e5e7eb', borderRadius: 5 }}>{b}</span>
@@ -182,12 +182,12 @@ export default function LandingPage() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 24px' }}>
+      <div className="sk-shell sk-section-shell" style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 24px' }}>
         <div className="sk-section-header">
           <div><h2 className="sk-section-title">Browse by level</h2><p className="sk-section-sub">Choose your level, then pick a class before previewing lessons</p></div>
           <Link href="/courses" className="sk-section-link">View guided catalog</Link>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+        <div className="sk-level-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
           {LEVELS.map(lv => (
             <Link key={lv.label} href={lv.level ? '/courses?level='+lv.level : '#'}
               style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 22px', background: lv.bg, borderRadius: 14, textDecoration: 'none', border: '1px solid '+lv.color+'22', color: 'inherit', opacity: lv.level ? 1 : 0.6 }}>
@@ -206,7 +206,7 @@ export default function LandingPage() {
       </div>
 
       <div style={{ background: '#f9fafb', padding: '56px 24px' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+        <div className="sk-shell sk-section-shell" style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div className="sk-section-header">
             <div><h2 className="sk-section-title">Featured courses</h2><p className="sk-section-sub">Most popular this month</p></div>
             <Link href="/courses" className="sk-section-link">View all</Link>
@@ -249,7 +249,7 @@ export default function LandingPage() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 24px' }}>
+      <div className="sk-shell sk-section-shell" style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 24px' }}>
         <div className="sk-section-header">
           <div><h2 className="sk-section-title">Brand story placeholders</h2><p className="sk-section-sub">Keep the guest moving with more space for positioning, trust, and conversion copy.</p></div>
         </div>
@@ -283,7 +283,7 @@ export default function LandingPage() {
       </div>
 
       <div style={{ background: '#fff', padding: '0 24px 64px' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+        <div className="sk-shell" style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div className="sk-conviction-strip" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18 }}>
             {[
               ['Message placeholder one', 'A compact persuasion block for outcomes, vision, or what makes Skolr different.'],
@@ -300,7 +300,7 @@ export default function LandingPage() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 24px' }}>
+      <div className="sk-shell sk-section-shell" style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 24px' }}>
         <div className="sk-section-header">
           <div><h2 className="sk-section-title">Meet our instructors</h2><p className="sk-section-sub">Expert teachers from Tanzania top institutions</p></div>
         </div>
@@ -322,7 +322,7 @@ export default function LandingPage() {
         </div>
       </div>
 
-      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a1a2e)', padding: '64px 24px', textAlign: 'center' }}>
+      <div className="sk-cta-band" style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a1a2e)', padding: '64px 24px', textAlign: 'center' }}>
         <div style={{ maxWidth: 520, margin: '0 auto' }}>
           <h2 style={{ fontSize: 34, fontWeight: 900, color: '#fff', marginBottom: 12 }}>Start your free trial today</h2>
           <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.55)', marginBottom: 28, lineHeight: 1.6 }}>7 days free. No credit card, no M-Pesa required.</p>
@@ -370,26 +370,87 @@ export default function LandingPage() {
       </footer>
 
       <style>{`
+        .sk-shell {
+          width: 100%;
+          padding-left: 24px;
+          padding-right: 24px;
+          box-sizing: border-box;
+        }
         @media (max-width: 900px) {
           .sk-hero-grid,
           .sk-premium-placeholder-grid,
-          .sk-conviction-strip {
+          .sk-conviction-strip,
+          .sk-level-grid {
             grid-template-columns: 1fr !important;
           }
-          .sk-hero-rail {
-            margin-top: 8px;
+          .sk-hero-section {
+            min-height: auto !important;
           }
-          div[style*="repeat(3,1fr)"] {
-            grid-template-columns: repeat(2,1fr) !important;
-            gap: 10px !important;
+          .sk-hero-shell,
+          .sk-section-shell {
+            padding-top: 40px !important;
+            padding-bottom: 40px !important;
+          }
+          .sk-hero-rail {
+            margin-top: 4px;
+          }
+          .sk-banner-stats {
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px !important;
           }
         }
         @media (max-width: 480px) {
-          div[style*="repeat(3,1fr)"] {
-            grid-template-columns: 1fr !important;
+          .sk-shell {
+            padding-left: 16px;
+            padding-right: 16px;
           }
           .sk-hero-h1 {
-            font-size: 40px !important;
+            font-size: 34px !important;
+            line-height: 1.05 !important;
+          }
+          .sk-hero-shell {
+            padding-top: 28px !important;
+            padding-bottom: 28px !important;
+          }
+          .sk-hero-actions {
+            display: grid !important;
+            grid-template-columns: 1fr;
+          }
+          .sk-hero-action-primary,
+          .sk-hero-action-secondary {
+            width: 100%;
+            text-align: center;
+          }
+          .sk-banner-stats {
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+          }
+          .sk-banner-stats > div,
+          .sk-hero-rail > div,
+          .sk-premium-placeholder-grid > div,
+          .sk-conviction-strip > div,
+          .sk-course-grid > a,
+          .sk-instructor-grid > div {
+            border-radius: 20px !important;
+          }
+          .sk-alignment-strip {
+            gap: 8px !important;
+          }
+          .sk-level-grid > a {
+            padding: 16px !important;
+          }
+          .sk-premium-placeholder-grid > div:first-child {
+            min-height: 260px !important;
+            padding: 20px !important;
+          }
+          .sk-premium-placeholder-grid > div:last-child > div,
+          .sk-conviction-strip > div {
+            min-height: auto !important;
+            padding: 18px !important;
+          }
+          .sk-cta-band {
+            padding: 48px 16px !important;
           }
         }
       `}</style>
