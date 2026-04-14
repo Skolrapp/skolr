@@ -24,7 +24,7 @@ const INSTRUCTORS = [
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
-  const [heroBannerUrl, setHeroBannerUrl] = useState<string | null>(null);
+  const [banners, setBanners] = useState<Record<string, string | null>>({});
 
   useEffect(() => {
     fetch('/api/courses?per_page=6', { credentials: 'include' })
@@ -38,9 +38,9 @@ export default function LandingPage() {
     fetch('/api/site/branding', { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => {
-        if (d.success) setHeroBannerUrl(d.data.landingBannerUrl || null);
+        if (d.success) setBanners(d.data.banners || {});
       })
-      .catch(() => setHeroBannerUrl(null));
+      .catch(() => setBanners({}));
   }, []);
   return (
     <div style={{ fontFamily: "'Inter',-apple-system,sans-serif", background: '#fff', color: '#0a0a0a' }}>
@@ -108,7 +108,7 @@ export default function LandingPage() {
       </header>
 
       <section className="sk-hero-section" style={{ position: 'relative', minHeight: 600, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: 'linear-gradient(135deg,#08110e,#101725 48%,#0d2a1d)' }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: banners['hero-banner'] ? `linear-gradient(135deg,rgba(8,17,14,0.38),rgba(16,23,37,0.52) 48%,rgba(13,42,29,0.5)), url(${banners['hero-banner']}) center/cover` : 'linear-gradient(135deg,#08110e,#101725 48%,#0d2a1d)' }} />
         <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))' }} />
         <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, opacity: 0.14 }} viewBox="0 0 1280 520" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
           <circle cx="900" cy="100" r="300" fill="#10B981"/><circle cx="1100" cy="400" r="200" fill="#3b82f6"/>
@@ -219,9 +219,6 @@ export default function LandingPage() {
       </div>
 
       <div className="sk-shell sk-section-shell" style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 24px' }}>
-        <div className="sk-section-header">
-          <div><h2 className="sk-section-title">Campaign banner</h2><p className="sk-section-sub">One premium banner zone for your strongest message, instead of many competing blocks.</p></div>
-        </div>
         <div
           className="sk-campaign-banner"
           style={{
@@ -229,28 +226,25 @@ export default function LandingPage() {
             borderRadius: 30,
             overflow: 'hidden',
             position: 'relative',
-            background: heroBannerUrl ? `linear-gradient(135deg,rgba(5,10,25,0.3),rgba(7,15,12,0.45)), url(${heroBannerUrl}) center/cover` : 'linear-gradient(135deg,#0b1324,#11253b 48%,#103d2b)',
+            background: banners['campaign-banner'] ? `linear-gradient(135deg,rgba(5,10,25,0.26),rgba(7,15,12,0.38)), url(${banners['campaign-banner']}) center/cover` : 'linear-gradient(135deg,#0b1324,#11253b 48%,#103d2b)',
             boxShadow: '0 30px 80px rgba(15,23,42,0.12)',
           }}
         >
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,rgba(7,10,20,0.8),rgba(7,10,20,0.42) 48%,rgba(8,27,19,0.72))' }} />
-          <div className="sk-campaign-banner-grid" style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(280px,0.8fr)', gap: 22, padding: 32, minHeight: '100%', alignItems: 'end' }}>
-            <div style={{ maxWidth: 560 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', marginBottom: 18 }}>Banner placeholder</p>
-              <h3 style={{ fontSize: 36, lineHeight: 1.08, fontWeight: 900, marginBottom: 14, color: '#fff' }}>Use this one banner for your strongest promise.</h3>
-              <p style={{ fontSize: 15, lineHeight: 1.7, color: 'rgba(255,255,255,0.68)', marginBottom: 30 }}>This area is ready for your campaign headline, a short trust line, and one call to action.</p>
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                <div style={{ padding: '11px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.08)', fontSize: 12, fontWeight: 700, color: '#fff' }}>Headline zone</div>
-                <div style={{ padding: '11px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.08)', fontSize: 12, fontWeight: 700, color: '#fff' }}>Proof line</div>
-                <div style={{ padding: '11px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.08)', fontSize: 12, fontWeight: 700, color: '#fff' }}>CTA zone</div>
-              </div>
-            </div>
+          <div className="sk-campaign-banner-grid" style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(280px,0.36fr)', gap: 18, padding: 24, minHeight: '100%', alignItems: 'stretch' }}>
+            <div style={{ borderRadius: 24, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }} />
             <div style={{ display: 'grid', gap: 14 }}>
-              {['Trust badge area', 'Offer highlight area', 'Enrollment hook area'].map((item) => (
-                <div key={item} style={{ borderRadius: 20, padding: '18px 20px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)', backdropFilter: 'blur(14px)' }}>
-                  <p style={{ fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', fontWeight: 700, color: 'rgba(255,255,255,0.48)', marginBottom: 8 }}>Placeholder</p>
-                  <p style={{ fontSize: 18, lineHeight: 1.25, fontWeight: 800, color: '#fff' }}>{item}</p>
-                </div>
+              {['message-placeholder-1', 'message-placeholder-2'].map((slot) => (
+                <div
+                  key={slot}
+                  style={{
+                    minHeight: 140,
+                    borderRadius: 20,
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    background: banners[slot] ? `linear-gradient(135deg,rgba(5,10,25,0.22),rgba(7,15,12,0.28)), url(${banners[slot]}) center/cover` : 'rgba(255,255,255,0.06)',
+                    backdropFilter: 'blur(12px)',
+                  }}
+                />
               ))}
             </div>
           </div>
@@ -261,15 +255,21 @@ export default function LandingPage() {
         <div className="sk-shell" style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div className="sk-conviction-strip" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18 }}>
             {[
-              ['Message placeholder one', 'A compact persuasion block for outcomes, vision, or what makes Skolr different.'],
-              ['Message placeholder two', 'Use this for a short comparison or a benefit statement aimed at parents and students.'],
-              ['Message placeholder three', 'A final pre-footer banner for urgency, trust, or your strongest call to action.'],
-            ].map(([title, copy], index) => (
-              <div key={title} style={{ borderRadius: 24, padding: 24, background: index === 1 ? 'linear-gradient(135deg,#10B981,#0f8f67)' : '#f9fafb', color: index === 1 ? '#fff' : '#0a0a0a', border: index === 1 ? 'none' : '1px solid #e5e7eb' }}>
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.1, opacity: 0.6, marginBottom: 12 }}>Placeholder</p>
-                <p style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.15, marginBottom: 12 }}>{title}</p>
-                <p style={{ fontSize: 14, lineHeight: 1.7, opacity: 0.72 }}>{copy}</p>
-              </div>
+              ['message-placeholder-1', 'linear-gradient(135deg,#0b1324,#11253b 48%,#103d2b)'],
+              ['message-placeholder-2', 'linear-gradient(135deg,#10B981,#0f8f67)'],
+              ['message-placeholder-3', '#f9fafb'],
+            ].map(([slot, fallback], index) => (
+              <div
+                key={slot}
+                style={{
+                  minHeight: 220,
+                  borderRadius: 24,
+                  padding: 24,
+                  background: banners[slot] ? `linear-gradient(135deg,rgba(5,10,25,${index === 1 ? 0.16 : 0.22}),rgba(7,15,12,0.22)), url(${banners[slot]}) center/cover` : fallback,
+                  color: index === 1 ? '#fff' : '#0a0a0a',
+                  border: banners[slot] || index === 1 ? 'none' : '1px solid #e5e7eb',
+                }}
+              />
             ))}
           </div>
         </div>

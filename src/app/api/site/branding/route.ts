@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 
 const BRANDING_BUCKET = process.env.SUPABASE_BRANDING_BUCKET || 'site-branding';
+const BANNER_SLOTS = ['hero-banner', 'campaign-banner', 'message-placeholder-1', 'message-placeholder-2', 'message-placeholder-3'] as const;
 
 export async function GET() {
   const supabase = createSupabaseAdmin();
@@ -9,7 +10,12 @@ export async function GET() {
   const exists = (buckets || []).some((bucket) => bucket.name === BRANDING_BUCKET);
 
   if (!exists) {
-    return NextResponse.json({ success: true, data: { landingBannerUrl: null } });
+    return NextResponse.json({
+      success: true,
+      data: {
+        banners: Object.fromEntries(BANNER_SLOTS.map((slot) => [slot, null])),
+      },
+    });
   }
 
   const { data: files } = await supabase.storage.from(BRANDING_BUCKET).list('landing', {
@@ -17,18 +23,19 @@ export async function GET() {
     sortBy: { column: 'updated_at', order: 'desc' },
   });
 
-  const activeBanner = (files || []).find((file) => file.name.startsWith('hero-banner'));
-
-  if (!activeBanner) {
-    return NextResponse.json({ success: true, data: { landingBannerUrl: null } });
-  }
-
-  const { data } = supabase.storage.from(BRANDING_BUCKET).getPublicUrl(`landing/${activeBanner.name}`);
+  const banners = Object.fromEntries(
+    BANNER_SLOTS.map((slot) => {
+      const activeBanner = (files || []).find((file) => file.name.startsWith(slot));
+      if (!activeBanner) return [slot, null];
+      const { data } = supabase.storage.from(BRANDING_BUCKET).getPublicUrl(`landing/${activeBanner.name}`);
+      return [slot, data.publicUrl];
+    })
+  );
 
   return NextResponse.json({
     success: true,
     data: {
-      landingBannerUrl: data.publicUrl,
+      banners,
     },
   });
 }

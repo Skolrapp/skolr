@@ -282,3 +282,44 @@
 /* ── BUTTONS ── */
 .sk-btn-primary { padding: 11px 22px; font-size: 14px; font-weight: 700; color: #fff; background: #10B981; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; }
 .sk-btn-outline  { padding: 10px 22px; font-size: 14px; font-weight: 600; color: #0a0a0a; background: #fff; border: 1.5px solid #e5e7eb; border-radius: 8px; cursor: pointer; font-family: inherit; }
+
+/* ── ADMIN BRANDING ── */
+.sk-branding-card { overflow: hidden; }
+.sk-branding-preview-panel img { display: block; width: 100%; }
+
+@media (max-width: 768px) {
+  .sk-branding-card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sk-branding-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .sk-branding-action {
+    width: 100% !important;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .sk-branding-previews {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sk-branding-preview-panel {
+    border-radius: 18px;
+  }
+
+  .sk-branding-draft-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .sk-branding-card {
+    padding: 14px;
+  }
+}
