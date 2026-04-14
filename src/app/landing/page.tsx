@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import type { Course } from '@/types';
 
 const G = '#10B981';
+const LANDING_COURSES_CACHE_KEY = 'skolr:landing:courses';
+const LANDING_BRANDING_CACHE_KEY = 'skolr:landing:branding';
+let landingCoursesCache: Course[] | null = null;
+let landingBrandingCache: Record<string, string | null> | null = null;
 
 const LEVELS = [
   { label: 'Primary',      sub: 'Standard 1 - 7',   level: 'primary',       color: '#3b82f6', bg: '#eff6ff', count: '120+ lessons', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
@@ -23,24 +27,56 @@ const INSTRUCTORS = [
 
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [banners, setBanners] = useState<Record<string, string | null>>({});
+  const [courses, setCourses] = useState<Course[]>(landingCoursesCache || []);
+  const [banners, setBanners] = useState<Record<string, string | null>>(landingBrandingCache || {});
 
   useEffect(() => {
-    fetch('/api/courses?per_page=6', { credentials: 'include' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) setCourses(d.data.items || []);
-      });
-  }, []);
+    if (typeof window !== 'undefined') {
+      if (!landingCoursesCache) {
+        const cachedCourses = window.sessionStorage.getItem(LANDING_COURSES_CACHE_KEY);
+        if (cachedCourses) {
+          try {
+            const parsed = JSON.parse(cachedCourses) as Course[];
+            landingCoursesCache = parsed;
+            setCourses(parsed);
+          } catch {}
+        }
+      }
 
-  useEffect(() => {
-    fetch('/api/site/branding', { credentials: 'include' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) setBanners(d.data.banners || {});
-      })
-      .catch(() => setBanners({}));
+      if (!landingBrandingCache) {
+        const cachedBranding = window.sessionStorage.getItem(LANDING_BRANDING_CACHE_KEY);
+        if (cachedBranding) {
+          try {
+            const parsed = JSON.parse(cachedBranding) as Record<string, string | null>;
+            landingBrandingCache = parsed;
+            setBanners(parsed);
+          } catch {}
+        }
+      }
+    }
+
+    Promise.allSettled([
+      fetch('/api/courses?per_page=6').then((r) => r.json()),
+      fetch('/api/site/branding').then((r) => r.json()),
+    ]).then(([coursesResult, brandingResult]) => {
+      if (coursesResult.status === 'fulfilled' && coursesResult.value.success) {
+        const nextCourses = coursesResult.value.data.items || [];
+        landingCoursesCache = nextCourses;
+        setCourses(nextCourses);
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem(LANDING_COURSES_CACHE_KEY, JSON.stringify(nextCourses));
+        }
+      }
+
+      if (brandingResult.status === 'fulfilled' && brandingResult.value.success) {
+        const nextBanners = brandingResult.value.data.banners || {};
+        landingBrandingCache = nextBanners;
+        setBanners(nextBanners);
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem(LANDING_BRANDING_CACHE_KEY, JSON.stringify(nextBanners));
+        }
+      }
+    });
   }, []);
   return (
     <div style={{ fontFamily: "'Inter',-apple-system,sans-serif", background: '#fff', color: '#0a0a0a' }}>

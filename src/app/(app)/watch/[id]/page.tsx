@@ -58,17 +58,21 @@ function WatchContent() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/api/courses/' + id, { credentials: 'include' })
-      .then(r => r.json())
-      .then(async d => {
-        if (!d.success) { router.push('/courses'); return; }
-        setCourse(d.data.course);
-        setProgress(d.data.progress_seconds || 0);
-        const cr = await fetch('/api/courses/' + id + '/chapters', { credentials: 'include' });
-        const cd = await cr.json();
-        if (cd.success && cd.data.length > 0) { setChapters(cd.data); }
-        if (d.data.course?.instructor_id) {
-          fetch('/api/instructors/' + d.data.course.instructor_id, { credentials: 'include' })
+    Promise.all([
+      fetch('/api/courses/' + id, { credentials: 'include' }).then(r => r.json()),
+      fetch('/api/courses/' + id + '/chapters', { credentials: 'include' }).then(r => r.json()),
+    ])
+      .then(([courseData, chaptersData]) => {
+        if (!courseData.success) { router.push('/courses'); return; }
+        setCourse(courseData.data.course);
+        setProgress(courseData.data.progress_seconds || 0);
+
+        if (chaptersData.success && chaptersData.data.length > 0) {
+          setChapters(chaptersData.data);
+        }
+
+        if (courseData.data.course?.instructor_id) {
+          fetch('/api/instructors/' + courseData.data.course.instructor_id, { credentials: 'include' })
             .then(r => r.json())
             .then(profileData => { if (profileData.success) setInstructorProfile(profileData.data); });
         }

@@ -12,6 +12,8 @@ import { EDUCATION_LEVELS } from '@/lib/constants';
 import type { Course, EducationLevel, SubCategory } from '@/types';
 
 const G = '#10B981';
+const COURSES_CACHE_PREFIX = 'skolr:courses:';
+const coursesQueryCache = new Map<string, { items: Course[]; total: number }>();
 const LEVELS = [
   { id: '',              label: 'All Levels',    color: '#6b7280', bg: '#f9fafb' },
   { id: 'primary',       label: 'Primary',       color: '#3b82f6', bg: '#eff6ff', sub: 'Std 1-7' },
@@ -55,16 +57,50 @@ function CoursesContent(){
   const PER=9;
 
   const fetchCourses=useCallback(()=>{
-    setFetching(true);
     const params=new URLSearchParams();
     if(level)params.set('level',level);
     if(sub)params.set('sub',sub);
     if(subject)params.set('subject',subject);
     params.set('per_page',String(PER));
     params.set('page',String(page));
-    fetch('/api/courses?'+params.toString(),{credentials:'include'})
+    const cacheKey = params.toString();
+    const memoryCached = coursesQueryCache.get(cacheKey);
+
+    if (memoryCached) {
+      setCourses(memoryCached.items);
+      setTotal(memoryCached.total);
+      setFetching(false);
+      return;
+    }
+
+    if (typeof window !== 'undefined') {
+      const sessionCached = window.sessionStorage.getItem(COURSES_CACHE_PREFIX + cacheKey);
+      if (sessionCached) {
+        try {
+          const parsed = JSON.parse(sessionCached) as { items: Course[]; total: number };
+          coursesQueryCache.set(cacheKey, parsed);
+          setCourses(parsed.items);
+          setTotal(parsed.total);
+          setFetching(false);
+          return;
+        } catch {}
+      }
+    }
+
+    setFetching(true);
+    fetch('/api/courses?'+cacheKey,{credentials:'include'})
       .then(r=>r.json())
-      .then(d=>{if(d.success){setCourses(d.data.items);setTotal(d.data.total||d.data.items.length);}})
+      .then(d=>{
+        if(d.success){
+          const payload = { items: d.data.items, total: d.data.total||d.data.items.length };
+          coursesQueryCache.set(cacheKey, payload);
+          setCourses(payload.items);
+          setTotal(payload.total);
+          if (typeof window !== 'undefined') {
+            window.sessionStorage.setItem(COURSES_CACHE_PREFIX + cacheKey, JSON.stringify(payload));
+          }
+        }
+      })
       .finally(()=>setFetching(false));
   },[level,sub,subject,page]);
 
