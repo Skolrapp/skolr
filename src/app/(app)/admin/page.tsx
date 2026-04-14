@@ -40,6 +40,8 @@ export default function AdminPage() {
   const [templates, setTemplates] = useState<any[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(true);
   const [cloneForm, setCloneForm] = useState({ sourceCourseId: '', targetSubjects: '', targetSubCategory: '' });
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [bannerUploading, setBannerUploading] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -139,6 +141,14 @@ export default function AdminPage() {
     loadUsers();
   }, []);
 
+  useEffect(() => {
+    fetch('/api/site/branding', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setBannerPreview(d.data.landingBannerUrl || null);
+      });
+  }, []);
+
   const reviewCourse = (id: string, action: 'approve' | 'reject') => {
     startTransition(async () => {
       const res = await fetch(`/api/admin/course-reviews/${id}`, {
@@ -215,6 +225,32 @@ export default function AdminPage() {
       }
       setTimeout(() => setMessage(''), 4000);
     });
+  };
+
+  const uploadLandingBanner = async (file: File) => {
+    setBannerUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/admin/banner-upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        setBannerPreview(data.data.banner_url);
+        setMessage('Landing banner updated.');
+      } else {
+        setMessage(data.error || 'Banner upload failed.');
+      }
+    } catch {
+      setMessage('Banner upload failed.');
+    } finally {
+      setBannerUploading(false);
+      setTimeout(() => setMessage(''), 4000);
+    }
   };
 
   if (!user) return null;
@@ -726,6 +762,43 @@ export default function AdminPage() {
 
         {tab === 'support' && (
           <div className="space-y-4">
+            <div className="card">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold" style={{ color: '#fff' }}>Landing banner</p>
+                  <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                    Upload one premium hero image for the landing page without using the terminal.
+                  </p>
+                </div>
+                <label
+                  className="btn-primary text-sm py-2.5 px-4 cursor-pointer"
+                  style={{ width: 'auto', opacity: bannerUploading ? 0.75 : 1 }}
+                >
+                  {bannerUploading ? 'Uploading...' : 'Upload banner'}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    className="hidden"
+                    disabled={bannerUploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadLandingBanner(file);
+                      e.currentTarget.value = '';
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="mt-4 rounded-2xl overflow-hidden" style={{ border: '1px solid #222', background: '#1a1a1a' }}>
+                {bannerPreview ? (
+                  <img src={bannerPreview} alt="Landing banner preview" className="w-full object-cover" style={{ maxHeight: 260 }} />
+                ) : (
+                  <div className="flex items-center justify-center text-sm" style={{ minHeight: 220, color: '#737373', background: 'linear-gradient(135deg,#101010,#1a1a2e)' }}>
+                    No banner uploaded yet. The landing page will keep the default fallback artwork.
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="card">
               <div className="flex gap-2">
                 <input

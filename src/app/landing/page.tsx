@@ -24,6 +24,7 @@ const INSTRUCTORS = [
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [heroBannerUrl, setHeroBannerUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/courses?per_page=6', { credentials: 'include' })
@@ -31,6 +32,15 @@ export default function LandingPage() {
       .then((d) => {
         if (d.success) setCourses(d.data.items || []);
       });
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/site/branding', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setHeroBannerUrl(d.data.landingBannerUrl || null);
+      })
+      .catch(() => setHeroBannerUrl(null));
   }, []);
   return (
     <div style={{ fontFamily: "'Inter',-apple-system,sans-serif", background: '#fff', color: '#0a0a0a' }}>
@@ -97,34 +107,65 @@ export default function LandingPage() {
         )}
       </header>
 
-      <section style={{ position: 'relative', minHeight: 520, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0, backgroundImage: 'url(/banner.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#0a0a0a' }} />
+      <section style={{ position: 'relative', minHeight: 600, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, backgroundImage: `url(${heroBannerUrl || '/banner.jpg'})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#0a0a0a' }} />
         <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(135deg,rgba(10,10,10,0.88),rgba(26,26,46,0.82),rgba(13,40,24,0.88))' }} />
         <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, opacity: 0.1 }} viewBox="0 0 1280 520" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
           <circle cx="900" cy="100" r="300" fill="#10B981"/><circle cx="1100" cy="400" r="200" fill="#3b82f6"/>
           <circle cx="800" cy="350" r="150" fill="#8b5cf6"/><circle cx="1050" cy="150" r="80" fill="#10B981"/>
         </svg>
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 24px', width: '100%', position: 'relative', zIndex: 2 }}>
-          <div style={{ maxWidth: 600 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 999, padding: '5px 14px', marginBottom: 20 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: G }} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: G }}>Tanzania No.1 Learning Platform</span>
+          <div className="sk-hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.15fr) minmax(320px,0.85fr)', gap: 28, alignItems: 'end' }}>
+            <div style={{ maxWidth: 640 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 999, padding: '5px 14px', marginBottom: 20 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: G }} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: G }}>Tanzania No.1 Learning Platform</span>
+              </div>
+              <h1 className="sk-hero-h1" style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1, color: '#fff', marginBottom: 18 }}>
+                Learn at your <span style={{ color: G }}>pace</span>,<br />in your <span style={{ color: G }}>space</span>
+              </h1>
+              <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }}>
+                HD lessons for Primary through University, aligned to Tanzania NECTA curriculum.
+              </p>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 40 }}>
+                <Link href="/register" style={{ padding: '14px 32px', fontSize: 15, fontWeight: 700, color: '#0a0a0a', background: '#fff', borderRadius: 10, textDecoration: 'none' }}>Start for free</Link>
+                <Link href="/courses" style={{ padding: '14px 32px', fontSize: 15, fontWeight: 700, color: '#fff', border: '2px solid rgba(255,255,255,0.3)', borderRadius: 10, textDecoration: 'none' }}>Explore with preview</Link>
+              </div>
+              <div className="sk-banner-stats" style={{ display: 'flex', gap: 28 }}>
+                {[['10K+','Students'],['500+','Lessons'],['50+','Instructors']].map(([n,l]) => (
+                  <div key={l}>
+                    <p style={{ fontSize: 22, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{n}</p>
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 3 }}>{l}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <h1 className="sk-hero-h1" style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1, color: '#fff', marginBottom: 18 }}>
-              Learn at your <span style={{ color: G }}>pace</span>,<br />in your <span style={{ color: G }}>space</span>
-            </h1>
-            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }}>
-              HD lessons for Primary through University, aligned to Tanzania NECTA curriculum.
-            </p>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 40 }}>
-              <Link href="/register" style={{ padding: '14px 32px', fontSize: 15, fontWeight: 700, color: '#0a0a0a', background: '#fff', borderRadius: 10, textDecoration: 'none' }}>Start for free</Link>
-              <Link href="/courses" style={{ padding: '14px 32px', fontSize: 15, fontWeight: 700, color: '#fff', border: '2px solid rgba(255,255,255,0.3)', borderRadius: 10, textDecoration: 'none' }}>Explore with preview</Link>
-            </div>
-            <div className="sk-banner-stats" style={{ display: 'flex', gap: 28 }}>
-              {[['10K+','Students'],['500+','Lessons'],['50+','Instructors']].map(([n,l]) => (
-                <div key={l}>
-                  <p style={{ fontSize: 22, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{n}</p>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 3 }}>{l}</p>
+
+            <div className="sk-hero-rail" style={{ display: 'grid', gap: 14 }}>
+              {[
+                ['Premium message space', 'Use this banner card for credibility, outcomes, or parent-facing trust copy.'],
+                ['Launch campaign block', 'Add scholarship drops, intake announcements, or seasonal enrollment hooks here.'],
+                ['Social proof banner', 'Place testimonials, pass-rate highlights, or school partner logos when ready.'],
+              ].map(([title, copy], index) => (
+                <div
+                  key={title}
+                  style={{
+                    background: index === 0 ? 'rgba(255,255,255,0.12)' : 'rgba(9,9,11,0.44)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: 22,
+                    padding: '18px 18px 16px',
+                    backdropFilter: 'blur(16px)',
+                    boxShadow: '0 24px 60px rgba(0,0,0,0.25)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+                    <span style={{ fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', fontWeight: 700 }}>Placeholder</span>
+                    <div style={{ width: 34, height: 34, borderRadius: 12, background: index === 0 ? 'rgba(16,185,129,0.18)' : 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: 8, height: 8, borderRadius: 999, background: index === 0 ? G : '#fff' }} />
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 18, lineHeight: 1.2, fontWeight: 800, color: '#fff', marginBottom: 8 }}>{title}</p>
+                  <p style={{ fontSize: 13, lineHeight: 1.6, color: 'rgba(255,255,255,0.62)' }}>{copy}</p>
                 </div>
               ))}
             </div>
@@ -208,6 +249,57 @@ export default function LandingPage() {
         </div>
       </div>
 
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 24px' }}>
+        <div className="sk-section-header">
+          <div><h2 className="sk-section-title">Brand story placeholders</h2><p className="sk-section-sub">Keep the guest moving with more space for positioning, trust, and conversion copy.</p></div>
+        </div>
+        <div className="sk-premium-placeholder-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 18 }}>
+          <div style={{ minHeight: 320, borderRadius: 28, padding: 28, background: 'linear-gradient(135deg,#0b1324,#11253b 48%,#103d2b)', color: '#fff', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at top right, rgba(16,185,129,0.18), transparent 42%)' }} />
+            <div style={{ position: 'relative', zIndex: 1, maxWidth: 520 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', marginBottom: 18 }}>Placeholder campaign</p>
+              <h3 style={{ fontSize: 34, lineHeight: 1.08, fontWeight: 900, marginBottom: 14 }}>Use this wide banner for one strong promise.</h3>
+              <p style={{ fontSize: 15, lineHeight: 1.7, color: 'rgba(255,255,255,0.66)', marginBottom: 30 }}>This block is ready for a headline, proof line, and a clean call to action when you are ready to write the message.</p>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ padding: '11px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.06)', fontSize: 12, fontWeight: 700 }}>Headline zone</div>
+                <div style={{ padding: '11px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.06)', fontSize: 12, fontWeight: 700 }}>Trust signal zone</div>
+                <div style={{ padding: '11px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.06)', fontSize: 12, fontWeight: 700 }}>CTA zone</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gap: 18 }}>
+            {[
+              ['Parent confidence panel', '#f9fafb', '#0a0a0a'],
+              ['Scholarship or intake panel', '#111827', '#ffffff'],
+            ].map(([title, bg, color]) => (
+              <div key={title} style={{ minHeight: 151, borderRadius: 24, padding: 24, background: bg, color, border: bg === '#f9fafb' ? '1px solid #e5e7eb' : '1px solid transparent' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.1, textTransform: 'uppercase', opacity: 0.55, marginBottom: 14 }}>Placeholder block</p>
+                <p style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.15, marginBottom: 10 }}>{title}</p>
+                <p style={{ fontSize: 14, lineHeight: 1.65, opacity: 0.65 }}>Keep this short and stylish so the page stays elegant while carrying another important message.</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ background: '#fff', padding: '0 24px 64px' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div className="sk-conviction-strip" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18 }}>
+            {[
+              ['Message placeholder one', 'A compact persuasion block for outcomes, vision, or what makes Skolr different.'],
+              ['Message placeholder two', 'Use this for a short comparison or a benefit statement aimed at parents and students.'],
+              ['Message placeholder three', 'A final pre-footer banner for urgency, trust, or your strongest call to action.'],
+            ].map(([title, copy], index) => (
+              <div key={title} style={{ borderRadius: 24, padding: 24, background: index === 1 ? 'linear-gradient(135deg,#10B981,#0f8f67)' : '#f9fafb', color: index === 1 ? '#fff' : '#0a0a0a', border: index === 1 ? 'none' : '1px solid #e5e7eb' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.1, opacity: 0.6, marginBottom: 12 }}>Placeholder</p>
+                <p style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.15, marginBottom: 12 }}>{title}</p>
+                <p style={{ fontSize: 14, lineHeight: 1.7, opacity: 0.72 }}>{copy}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 24px' }}>
         <div className="sk-section-header">
           <div><h2 className="sk-section-title">Meet our instructors</h2><p className="sk-section-sub">Expert teachers from Tanzania top institutions</p></div>
@@ -277,7 +369,30 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      <style>{'@media(max-width:900px){div[style*="repeat(3,1fr)"]{grid-template-columns:repeat(2,1fr)!important;gap:10px!important;}}@media(max-width:480px){div[style*="repeat(3,1fr)"]{grid-template-columns:1fr!important;}}'}</style>
+      <style>{`
+        @media (max-width: 900px) {
+          .sk-hero-grid,
+          .sk-premium-placeholder-grid,
+          .sk-conviction-strip {
+            grid-template-columns: 1fr !important;
+          }
+          .sk-hero-rail {
+            margin-top: 8px;
+          }
+          div[style*="repeat(3,1fr)"] {
+            grid-template-columns: repeat(2,1fr) !important;
+            gap: 10px !important;
+          }
+        }
+        @media (max-width: 480px) {
+          div[style*="repeat(3,1fr)"] {
+            grid-template-columns: 1fr !important;
+          }
+          .sk-hero-h1 {
+            font-size: 40px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
