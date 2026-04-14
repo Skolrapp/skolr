@@ -108,8 +108,18 @@ export default function LandingPage() {
       </header>
 
       <section className="sk-hero-section" style={{ position: 'relative', minHeight: 600, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: banners['hero-banner'] ? `linear-gradient(135deg,rgba(3,8,18,0.72),rgba(7,15,28,0.66) 42%,rgba(8,31,23,0.6)), url(${banners['hero-banner']}) center/cover` : 'linear-gradient(135deg,#08110e,#101725 48%,#0d2a1d)' }} />
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(4,8,14,0.18),rgba(4,8,14,0.08) 28%,rgba(4,8,14,0.42) 100%)' }} />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 0,
+            background: banners['hero-banner']
+              ? `url(${banners['hero-banner']}) center/cover no-repeat`
+              : 'linear-gradient(135deg,#08110e,#101725 48%,#0d2a1d)',
+          }}
+        />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(135deg,rgba(3,8,18,0.36),rgba(7,15,28,0.22) 42%,rgba(8,31,23,0.24))' }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(4,8,14,0.12),rgba(4,8,14,0.06) 28%,rgba(4,8,14,0.34) 100%)' }} />
         <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, opacity: 0.14 }} viewBox="0 0 1280 520" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
           <circle cx="900" cy="100" r="300" fill="#10B981"/><circle cx="1100" cy="400" r="200" fill="#3b82f6"/>
           <circle cx="800" cy="350" r="150" fill="#8b5cf6"/><circle cx="1050" cy="150" r="80" fill="#10B981"/>
