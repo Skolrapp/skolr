@@ -292,22 +292,8 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
           }}
         >
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,rgba(7,10,20,0.8),rgba(7,10,20,0.42) 48%,rgba(8,27,19,0.72))' }} />
-          <div className="sk-campaign-banner-grid" style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(280px,0.36fr)', gap: 18, padding: 24, minHeight: '100%', alignItems: 'stretch' }}>
-            <div style={{ borderRadius: 24, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }} />
-            <div style={{ display: 'grid', gap: 14 }}>
-              {['campaign-artwork-1', 'campaign-artwork-2'].map((slot) => (
-                <div
-                  key={slot}
-                  style={{
-                    minHeight: 140,
-                    borderRadius: 20,
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    background: banners[slot] ? `linear-gradient(135deg,rgba(5,10,25,0.22),rgba(7,15,12,0.28)), url(${banners[slot]}) center/cover` : 'rgba(255,255,255,0.06)',
-                    backdropFilter: 'blur(12px)',
-                  }}
-                />
-              ))}
-            </div>
+          <div style={{ position: 'relative', zIndex: 1, padding: 24, minHeight: '100%', display: 'flex', alignItems: 'stretch' }}>
+            <div style={{ width: '100%', borderRadius: 24, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }} />
           </div>
         </div>
       </div>
