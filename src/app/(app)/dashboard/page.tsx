@@ -6,7 +6,8 @@ import { useAuth } from '@/hooks/useAuth';
 import Footer from '@/components/layout/Footer';
 import TopHeader from '@/components/layout/TopHeader';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
-import type { Course } from '@/types';
+import { EDUCATION_LEVELS } from '@/lib/constants';
+import type { Course, EducationLevel, LearnerProfile } from '@/types';
 
 const G = '#10B981';
 
@@ -40,6 +41,13 @@ export default function HomePage() {
   const router = useRouter();
   const [courses,  setCourses]  = useState<Course[]>([]);
   const [fetching, setFetching] = useState(true);
+  const [learnerProfiles, setLearnerProfiles] = useState<LearnerProfile[]>([]);
+  const [addingLearner, setAddingLearner] = useState(false);
+  const [parentLearnerForm, setParentLearnerForm] = useState({
+    full_name: '',
+    education_level: 'primary' as EducationLevel,
+    sub_category: 'Std 1',
+  });
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -56,11 +64,36 @@ export default function HomePage() {
       .finally(() => setFetching(false));
   }, [user]);
 
+  useEffect(() => {
+    if (!user || user.role !== 'student') return;
+    fetch('/api/learner-profiles', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setLearnerProfiles(d.data || []); });
+  }, [user]);
+
   if (!user) return null;
   if (user.role === 'admin') return null;
 
   const isActive  = isSubscriptionActive(user.subscription_expires_at);
   const firstName = user.name?.split(' ')[0] || 'there';
+  const isParentAccount = user.account_type === 'parent_guardian';
+  const selectedParentLevel = EDUCATION_LEVELS.find((entry) => entry.key === parentLearnerForm.education_level);
+
+  const addLearnerProfile = async () => {
+    if (!parentLearnerForm.full_name.trim()) return;
+    const res = await fetch('/api/learner-profiles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(parentLearnerForm),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setLearnerProfiles((current) => [...current, data.data]);
+      setParentLearnerForm({ full_name: '', education_level: 'primary', sub_category: 'Std 1' });
+      setAddingLearner(false);
+    }
+  };
 
   return (
     <div style={{ background: '#fff', minHeight: '100vh', fontFamily: "'Inter',-apple-system,sans-serif", color: '#0a0a0a' }}>
@@ -72,7 +105,9 @@ export default function HomePage() {
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>Welcome back,</p>
             <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fff', marginBottom: 6 }}>{firstName}</h1>
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>
-              {isActive ? 'Your subscription is active — keep learning!' : 'Start your free trial to access all courses.'}
+              {isParentAccount
+                ? (isActive ? 'Your learner subscription is active and ready for guided study.' : 'Start a family subscription to unlock classes for your learner.')
+                : (isActive ? 'Your subscription is active — keep learning!' : 'Start your free trial to access all courses.')}
             </p>
           </div>
           <div className="dashboard-hero-stats" style={{ display: 'flex', gap: 24 }}>
@@ -92,6 +127,102 @@ export default function HomePage() {
       </div>
 
       <div className="dashboard-shell" style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px' }}>
+        {isParentAccount && (
+          <div style={{ marginBottom: 32, background: 'linear-gradient(135deg,#f8fafc,#ecfeff)', border: '1px solid #e5e7eb', borderRadius: 18, padding: '20px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: G, marginBottom: 8 }}>Parent dashboard</p>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0a0a0a', marginBottom: 6 }}>Learners under your care</h2>
+                <p style={{ fontSize: 14, color: '#6b7280' }}>Use your WhatsApp-linked account to manage access for minors up to Form 6.</p>
+              </div>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => setAddingLearner((current) => !current)}
+                  style={{ padding: '10px 16px', fontSize: 13, fontWeight: 700, color: G, background: '#fff', border: '1px solid #d1fae5', borderRadius: 999, cursor: 'pointer' }}
+                >
+                  {addingLearner ? 'Close learner form' : 'Add learner'}
+                </button>
+                <Link href="/settings" style={{ padding: '10px 16px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>
+                  Manage subscription
+                </Link>
+              </div>
+            </div>
+            {addingLearner && (
+              <div className="parent-learner-form" style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: 16, marginBottom: 16 }}>
+                <div className="parent-learner-form-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr auto', gap: 10, alignItems: 'end' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 6 }}>Learner full name</label>
+                    <input
+                      value={parentLearnerForm.full_name}
+                      onChange={(e) => setParentLearnerForm((current) => ({ ...current, full_name: e.target.value }))}
+                      placeholder="Learner full name"
+                      style={{ width: '100%', padding: '11px 12px', borderRadius: 10, border: '1px solid #e5e7eb', background: '#fff', color: '#0a0a0a', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 6 }}>Level</label>
+                    <select
+                      value={parentLearnerForm.education_level}
+                      onChange={(e) => {
+                        const nextLevel = e.target.value as EducationLevel;
+                        const nextMeta = EDUCATION_LEVELS.find((entry) => entry.key === nextLevel);
+                        setParentLearnerForm((current) => ({
+                          ...current,
+                          education_level: nextLevel,
+                          sub_category: nextMeta?.sub_categories[0] || '',
+                        }));
+                      }}
+                      style={{ width: '100%', padding: '11px 12px', borderRadius: 10, border: '1px solid #e5e7eb', background: '#fff', color: '#0a0a0a', fontSize: 14, outline: 'none' }}
+                    >
+                      {EDUCATION_LEVELS.filter((entry) => ['primary', 'secondary', 'highschool'].includes(entry.key)).map((entry) => (
+                        <option key={entry.key} value={entry.key}>{entry.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 6 }}>Class</label>
+                    <select
+                      value={parentLearnerForm.sub_category}
+                      onChange={(e) => setParentLearnerForm((current) => ({ ...current, sub_category: e.target.value }))}
+                      style={{ width: '100%', padding: '11px 12px', borderRadius: 10, border: '1px solid #e5e7eb', background: '#fff', color: '#0a0a0a', fontSize: 14, outline: 'none' }}
+                    >
+                      {(selectedParentLevel?.sub_categories || []).map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    onClick={addLearnerProfile}
+                    style={{ padding: '12px 16px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 12, border: 'none', cursor: 'pointer' }}
+                  >
+                    Save learner
+                  </button>
+                </div>
+              </div>
+            )}
+            {learnerProfiles.length === 0 ? (
+              <div style={{ background: '#fff', border: '1px dashed #d1d5db', borderRadius: 14, padding: 18 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 6 }}>No learner profiles yet</p>
+                <p style={{ fontSize: 13, color: '#6b7280' }}>Add the first learner from your account after running the parent signup SQL update.</p>
+              </div>
+            ) : (
+              <div className="parent-learner-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 12 }}>
+                {learnerProfiles.map((profile) => (
+                  <div key={profile.id} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: 16 }}>
+                    <p style={{ fontSize: 15, fontWeight: 800, color: '#0a0a0a', marginBottom: 4 }}>{profile.full_name}</p>
+                    <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 10 }}>
+                      {LEVELS.find((level) => level.id === profile.education_level)?.label || profile.education_level}
+                      {profile.sub_category ? ` · ${profile.sub_category}` : ''}
+                    </p>
+                    <span style={{ display: 'inline-flex', fontSize: 11, fontWeight: 700, padding: '5px 10px', borderRadius: 999, background: profile.is_minor ? 'rgba(16,185,129,0.1)' : '#f3f4f6', color: profile.is_minor ? '#059669' : '#6b7280' }}>
+                      {profile.is_minor ? 'Minor learner' : 'Adult learner'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <div style={{ marginBottom: 48 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 20 }}>
@@ -229,6 +360,14 @@ export default function HomePage() {
 
           .course-card {
             min-width: 0;
+          }
+
+          .parent-learner-grid {
+            grid-template-columns: minmax(0, 1fr) !important;
+          }
+
+          .parent-learner-form-grid {
+            grid-template-columns: minmax(0, 1fr) !important;
           }
         }
       `}</style>

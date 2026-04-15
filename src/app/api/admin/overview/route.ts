@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     sessionsResult,
     enrollmentsResult,
   ] = await Promise.all([
-    supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'student'),
+    supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'student').eq('account_type', 'individual'),
     supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'instructor'),
     supabase.from('courses').select('id, is_published, subject, created_at'),
     supabase.from('course_review_requests').select('id, status, submitted_at, courses(title), users!instructor_id(name)').order('submitted_at', { ascending: false }).limit(6),

@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
     .from('users')
     .select('id, name, phone, created_at, subscription_tier')
     .eq('role', 'student')
+    .eq('account_type', 'individual')
     .eq('is_active', true)
     .order('created_at', { ascending: false })
     .limit(50);

@@ -35,6 +35,7 @@ create table public.users (
   id                     uuid primary key default uuid_generate_v4(),
   name                   text not null,
   phone                  text unique not null,
+  account_type           text not null default 'individual' check (account_type in ('individual', 'parent_guardian')),
   email                  text unique,
   password_hash          text not null,
   role                   user_role not null default 'student',
@@ -52,6 +53,25 @@ alter table public.users enable row level security;
 create policy "Users can read own data"
   on public.users for select
   using (auth.uid()::text = id::text or true);  -- adjust for your auth setup
+
+-- ─── LEARNER PROFILES ────────────────────────────────────────
+
+create table public.learner_profiles (
+  id                       uuid primary key default uuid_generate_v4(),
+  account_user_id          uuid not null references public.users(id) on delete cascade,
+  full_name                text not null,
+  education_level          education_level not null,
+  sub_category             text,
+  is_minor                 boolean not null default false,
+  guardian_name            text,
+  guardian_whatsapp_number text,
+  consent_confirmed_at     timestamptz,
+  created_at               timestamptz not null default now(),
+  updated_at               timestamptz not null default now()
+);
+
+create index idx_learner_profiles_account on public.learner_profiles(account_user_id);
+alter table public.learner_profiles enable row level security;
 
 -- ─── DEVICES ─────────────────────────────────────────────────
 
@@ -180,6 +200,10 @@ create trigger trg_users_updated_at
 
 create trigger trg_courses_updated_at
   before update on public.courses
+  for each row execute function update_updated_at();
+
+create trigger trg_learner_profiles_updated_at
+  before update on public.learner_profiles
   for each row execute function update_updated_at();
 
 -- ─── SEED DEMO DATA ──────────────────────────────────────────

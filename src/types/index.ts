@@ -1,6 +1,7 @@
 // ─── User & Auth ─────────────────────────────────────────────────────────────
 
 export type UserRole = 'student' | 'instructor' | 'admin';
+export type AccountType = 'individual' | 'parent_guardian';
 export type CourseReviewStatus = 'pending' | 'approved' | 'rejected';
 
 export type SubscriptionTier =
@@ -23,6 +24,7 @@ export interface User {
   id: string;
   name: string;
   phone: string;
+  account_type?: AccountType;
   email?: string;
   role: UserRole;
   subscription_tier: SubscriptionTier;
@@ -96,6 +98,20 @@ export interface Enrollment {
   progress_seconds: number;
   completed: boolean;
   enrolled_at: string;
+}
+
+export interface LearnerProfile {
+  id: string;
+  account_user_id: string;
+  full_name: string;
+  education_level: EducationLevel;
+  sub_category?: SubCategory;
+  is_minor: boolean;
+  guardian_name?: string | null;
+  guardian_whatsapp_number?: string | null;
+  consent_confirmed_at?: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 // ─── Payments ────────────────────────────────────────────────────────────────

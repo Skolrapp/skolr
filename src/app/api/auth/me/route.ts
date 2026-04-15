@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
       id: user.id,
       name: user.name,
       phone: user.phone,
+      account_type: user.account_type,
       role: user.role,
       subscription_tier: user.subscription_tier,
       subscription_expires_at: user.subscription_expires_at,

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const supabase = createSupabaseAdmin();
   let query = supabase
     .from('users')
-    .select('id, name, phone, role, is_active, subscription_tier, created_at')
+    .select('id, name, phone, role, account_type, is_active, subscription_tier, created_at')
     .order('created_at', { ascending: false })
     .limit(20);
 

@@ -64,7 +64,7 @@ function LoginContent() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="lbl">Phone number</label>
+              <label className="lbl">WhatsApp number</label>
               <div className="flex gap-2">
                 <span className="phone-prefix">+255</span>
                 <input className="inp flex-1" type="tel" inputMode="tel" placeholder="712 345 678"
