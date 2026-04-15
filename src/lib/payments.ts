@@ -9,6 +9,26 @@ import { PLATFORM_FEE_RATE } from './constants';
 import { v4 as uuidv4 } from 'uuid';
 import type { PaymentProvider, SubscriptionTier, BillingCycle, Transaction } from '@/types';
 
+type GatewayInitiationResult = {
+  success: boolean;
+  status: 'pending' | 'success' | 'failed';
+  message: string;
+  providerRef?: string;
+};
+
+async function activateUserSubscription(userId: string, tier: SubscriptionTier, cycle: BillingCycle) {
+  const supabase = createSupabaseAdmin();
+  const expiry = getExpiryDate(cycle);
+
+  await supabase
+    .from('users')
+    .update({
+      subscription_tier: tier,
+      subscription_expires_at: expiry.toISOString(),
+    })
+    .eq('id', userId);
+}
+
 // ─── Flutterwave ──────────────────────────────────────────────────────────────
 
 async function initiateFlutterwave(params: {
@@ -19,14 +39,15 @@ async function initiateFlutterwave(params: {
   msisdn: string;
   provider: PaymentProvider;
   txRef: string;
-}): Promise<{ success: boolean; message: string; providerRef?: string }> {
+}): Promise<GatewayInitiationResult> {
   const FLW = process.env.FLUTTERWAVE_SECRET_KEY;
 
   if (!FLW) {
     // Demo / sandbox mode when not configured
     return {
       success: true,
-      message: 'Demo mode: payment simulated. Configure FLUTTERWAVE_SECRET_KEY for live payments.',
+      status: 'success',
+      message: 'Demo mode: payment simulated and subscription activated. Configure FLUTTERWAVE_SECRET_KEY for live payments.',
       providerRef: `DEMO-${Date.now()}`,
     };
   }
@@ -50,15 +71,17 @@ async function initiateFlutterwave(params: {
       }),
     });
     const data = await res.json();
+    const accepted = res.ok && data.status === 'success';
     return {
-      success: data.status === 'success',
-      message: data.status === 'success'
+      success: accepted,
+      status: accepted ? 'pending' : 'failed',
+      message: accepted
         ? 'Check your phone — a payment prompt has been sent. Enter your PIN to confirm.'
         : (data.message || 'Payment initiation failed.'),
       providerRef: data.data?.flw_ref,
     };
   } catch {
-    return { success: false, message: 'Payment service temporarily unavailable.' };
+    return { success: false, status: 'failed', message: 'Payment service temporarily unavailable.' };
   }
 }
 
@@ -71,13 +94,14 @@ async function initiatePesapal(params: {
   amount: number;
   msisdn: string;
   txRef: string;
-}): Promise<{ success: boolean; message: string; redirectUrl?: string; providerRef?: string }> {
+}): Promise<GatewayInitiationResult & { redirectUrl?: string }> {
   const KEY    = process.env.PESAPAL_CONSUMER_KEY;
   const SECRET = process.env.PESAPAL_CONSUMER_SECRET;
 
   if (!KEY || !SECRET) {
     return {
       success: true,
+      status: 'success',
       message: 'Demo mode: Pesapal not configured. Configure PESAPAL_* env vars for live.',
       providerRef: `DEMO-PP-${Date.now()}`,
     };
@@ -87,8 +111,56 @@ async function initiatePesapal(params: {
   // See: https://developer.pesapal.com/how-to-integrate/e-commerce/api-30-json
   return {
     success: false,
+    status: 'failed',
     message: 'Pesapal integration pending — configure credentials.',
   };
+}
+
+async function verifyFlutterwavePayment(params: {
+  transactionId?: number | string | null;
+  txRef: string;
+  expectedAmount: number;
+  expectedCurrency: string;
+}) {
+  const FLW = process.env.FLUTTERWAVE_SECRET_KEY;
+  if (!FLW) {
+    return { verified: true, providerRef: null as string | null };
+  }
+
+  const endpoint = params.transactionId
+    ? `https://api.flutterwave.com/v3/transactions/${params.transactionId}/verify`
+    : `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(params.txRef)}`;
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${FLW}`,
+      },
+      cache: 'no-store',
+    });
+
+    const payload = await res.json();
+    const data = payload?.data;
+    const chargedAmount = Number(data?.charged_amount ?? data?.amount ?? 0);
+    const normalizedCurrency = String(data?.currency || '').toUpperCase();
+    const normalizedStatus = String(data?.status || '').toLowerCase();
+    const matches =
+      res.ok &&
+      payload?.status === 'success' &&
+      data?.tx_ref === params.txRef &&
+      normalizedStatus === 'successful' &&
+      normalizedCurrency === params.expectedCurrency.toUpperCase() &&
+      chargedAmount >= params.expectedAmount;
+
+    return {
+      verified: matches,
+      providerRef: (data?.flw_ref as string | null) || null,
+    };
+  } catch {
+    return { verified: false, providerRef: null as string | null };
+  }
 }
 
 // ─── Unified initiator ────────────────────────────────────────────────────────
@@ -105,7 +177,7 @@ export async function initiatePayment(params: {
   const gateway = process.env.PAYMENT_PROVIDER || 'flutterwave';
   const fee = Math.round(params.amount * PLATFORM_FEE_RATE);
 
-  let result: { success: boolean; message: string; providerRef?: string };
+  let result: GatewayInitiationResult;
 
   if (gateway === 'pesapal') {
     result = await initiatePesapal({ ...params, txRef });
@@ -125,18 +197,23 @@ export async function initiatePayment(params: {
       platform_fee:      fee,
       net_amount:        params.amount - fee,
       provider:          params.provider,
-      provider_reference: result.providerRef || txRef,
+      provider_reference: txRef,
       msisdn:            params.msisdn,
-      status:            result.success ? 'pending' : 'failed',
+      status:            result.status,
+      settled_at:        result.status === 'success' ? new Date().toISOString() : null,
     })
     .select()
     .single();
+
+  if (result.status === 'success') {
+    await activateUserSubscription(params.userId, params.tier, params.cycle);
+  }
 
   return {
     success:       result.success,
     transactionId: txn?.id || uuidv4(),
     message:       result.message,
-    requiresAction: result.success,
+    requiresAction: result.status === 'pending',
   };
 }
 
@@ -144,35 +221,53 @@ export async function initiatePayment(params: {
 
 export async function handlePaymentWebhook(
   txRef: string,
-  status: 'success' | 'failed',
-  providerRef: string
+  status: 'pending' | 'success' | 'failed',
+  _providerRef: string,
+  flutterwaveTransactionId?: number | string | null
 ): Promise<void> {
   const supabase = createSupabaseAdmin();
-
-  // Update transaction status
-  const { data: txn } = await supabase
+  const { data: existingTxn } = await supabase
     .from('transactions')
-    .update({
-      status:             status,
-      provider_reference: providerRef,
-      settled_at:         status === 'success' ? new Date().toISOString() : null,
-    })
+    .select('*')
     .eq('provider_reference', txRef)
-    .select()
     .single();
 
-  if (!txn || status !== 'success') return;
+  const txn = existingTxn as Transaction | null;
+  if (!txn) return;
 
-  // Activate subscription for the user
-  const expiry = getExpiryDate(txn.billing_cycle as BillingCycle);
+  if (status === 'pending') {
+    await supabase
+      .from('transactions')
+      .update({ status: 'pending' })
+      .eq('id', txn.id);
+    return;
+  }
+
+  let finalStatus: 'success' | 'failed' = status;
+  let settledAt: string | null = null;
+
+  if (status === 'success' && (process.env.PAYMENT_PROVIDER || 'flutterwave') === 'flutterwave') {
+    const verification = await verifyFlutterwavePayment({
+      transactionId: flutterwaveTransactionId,
+      txRef,
+      expectedAmount: txn.amount,
+      expectedCurrency: 'TZS',
+    });
+    finalStatus = verification.verified ? 'success' : 'failed';
+    settledAt = verification.verified ? new Date().toISOString() : null;
+  }
 
   await supabase
-    .from('users')
+    .from('transactions')
     .update({
-      subscription_tier:       txn.subscription_tier,
-      subscription_expires_at: expiry.toISOString(),
+      status: finalStatus,
+      settled_at: settledAt,
     })
-    .eq('id', txn.user_id);
+    .eq('id', txn.id);
+
+  if (finalStatus !== 'success') return;
+
+  await activateUserSubscription(txn.user_id, txn.subscription_tier, txn.billing_cycle as BillingCycle);
 }
 
 // ─── Instructor earnings ──────────────────────────────────────────────────────
