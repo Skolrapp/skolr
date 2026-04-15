@@ -37,12 +37,13 @@ function Thumb({ color, bg, title, thumbnailUrl }: { color: string; bg: string; 
 }
 
 export default function HomePage() {
-  const { user } = useAuth();
+  const { user, refetch } = useAuth();
   const router = useRouter();
   const [courses,  setCourses]  = useState<Course[]>([]);
   const [fetching, setFetching] = useState(true);
   const [learnerProfiles, setLearnerProfiles] = useState<LearnerProfile[]>([]);
   const [addingLearner, setAddingLearner] = useState(false);
+  const [switchingLearnerId, setSwitchingLearnerId] = useState<string | null>(null);
   const [parentLearnerForm, setParentLearnerForm] = useState({
     full_name: '',
     education_level: 'primary' as EducationLevel,
@@ -92,6 +93,25 @@ export default function HomePage() {
       setLearnerProfiles((current) => [...current, data.data]);
       setParentLearnerForm({ full_name: '', education_level: 'primary', sub_category: 'Std 1' });
       setAddingLearner(false);
+      await refetch();
+    }
+  };
+
+  const setActiveLearner = async (learnerProfileId: string) => {
+    setSwitchingLearnerId(learnerProfileId);
+    try {
+      const res = await fetch('/api/learner-profiles/active', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ learnerProfileId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await refetch();
+      }
+    } finally {
+      setSwitchingLearnerId(null);
     }
   };
 
@@ -109,6 +129,12 @@ export default function HomePage() {
                 ? (isActive ? 'Your learner subscription is active and ready for guided study.' : 'Start a family subscription to unlock classes for your learner.')
                 : (isActive ? 'Your subscription is active — keep learning!' : 'Start your free trial to access all courses.')}
             </p>
+            {user.active_learner_name && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '8px 12px', borderRadius: 999, background: 'rgba(16,185,129,0.14)', border: '1px solid rgba(16,185,129,0.3)', color: '#d1fae5', fontSize: 12, fontWeight: 700 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399' }} />
+                Learning as {user.active_learner_name}
+              </div>
+            )}
           </div>
           <div className="dashboard-hero-stats" style={{ display: 'flex', gap: 24 }}>
             {([['Plan', user.subscription_tier?.replace(/_/g, ' ') || 'Free', '#fff'], ['Access', isActive ? 'Active' : 'None', isActive ? G : '#ef4444']] as [string,string,string][]).map(([label, value, color]) => (
@@ -133,7 +159,10 @@ export default function HomePage() {
               <div>
                 <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: G, marginBottom: 8 }}>Parent dashboard</p>
                 <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0a0a0a', marginBottom: 6 }}>Learners under your care</h2>
-                <p style={{ fontSize: 14, color: '#6b7280' }}>Use your WhatsApp-linked account to manage access for minors up to Form 6.</p>
+                <p style={{ fontSize: 14, color: '#6b7280' }}>
+                  Use your WhatsApp-linked account to manage access for minors up to Form 6.
+                  {user.active_learner_name ? ` ${user.active_learner_name} is the current learner on this device.` : ''}
+                </p>
               </div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button
@@ -217,6 +246,29 @@ export default function HomePage() {
                     <span style={{ display: 'inline-flex', fontSize: 11, fontWeight: 700, padding: '5px 10px', borderRadius: 999, background: profile.is_minor ? 'rgba(16,185,129,0.1)' : '#f3f4f6', color: profile.is_minor ? '#059669' : '#6b7280' }}>
                       {profile.is_minor ? 'Minor learner' : 'Adult learner'}
                     </span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: profile.id === user.active_learner_profile_id ? G : '#9ca3af' }}>
+                        {profile.id === user.active_learner_profile_id ? 'Active on this device' : 'Ready to switch'}
+                      </span>
+                      <button
+                        onClick={() => setActiveLearner(profile.id)}
+                        disabled={profile.id === user.active_learner_profile_id || switchingLearnerId === profile.id}
+                        style={{
+                          padding: '10px 14px',
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: profile.id === user.active_learner_profile_id ? '#6b7280' : '#fff',
+                          background: profile.id === user.active_learner_profile_id ? '#f3f4f6' : G,
+                          borderRadius: 10,
+                          border: 'none',
+                          cursor: profile.id === user.active_learner_profile_id ? 'default' : 'pointer',
+                          width: '100%',
+                          maxWidth: 170,
+                        }}
+                      >
+                        {switchingLearnerId === profile.id ? 'Switching...' : profile.id === user.active_learner_profile_id ? 'Currently active' : 'Switch learner'}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -368,6 +420,10 @@ export default function HomePage() {
 
           .parent-learner-form-grid {
             grid-template-columns: minmax(0, 1fr) !important;
+          }
+
+          .parent-learner-grid button {
+            max-width: none !important;
           }
         }
       `}</style>

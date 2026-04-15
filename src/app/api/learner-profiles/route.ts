@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth';
+import { ACTIVE_LEARNER_COOKIE, setActiveLearnerCookie } from '@/lib/activeLearner';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import type { EducationLevel } from '@/types';
 
@@ -23,7 +24,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, data: data || [] });
+  return NextResponse.json({
+    success: true,
+    data: data || [],
+    active_learner_profile_id: request.cookies.get(ACTIVE_LEARNER_COOKIE)?.value || null,
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -61,5 +66,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Could not save learner profile. Run the parent signup SQL, then try again.' }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, data }, { status: 201 });
+  const response = NextResponse.json({ success: true, data }, { status: 201 });
+  if (!request.cookies.get(ACTIVE_LEARNER_COOKIE)?.value) {
+    setActiveLearnerCookie(response, data.id);
+  }
+  return response;
 }

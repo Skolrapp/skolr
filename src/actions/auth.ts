@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import { createSession, invalidateSession } from '@/lib/auth';
+import { ACTIVE_LEARNER_COOKIE, getInitialLearnerProfileId } from '@/lib/activeLearner';
 import type { EducationLevel, SubCategory } from '@/types';
 
 function normalizeTzPhone(rawPhone: string) {
@@ -153,6 +154,18 @@ export async function loginAction(formData: FormData) {
     maxAge:   60 * 60 * 24 * 7,
     path:     '/',
   });
+  if (user.role === 'student') {
+    const initialLearnerProfileId = await getInitialLearnerProfileId(user.id);
+    if (initialLearnerProfileId) {
+      cookieStore.set(ACTIVE_LEARNER_COOKIE, initialLearnerProfileId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7,
+        path: '/',
+      });
+    }
+  }
 
   return {
     success: true,
@@ -168,5 +181,6 @@ export async function logoutAction() {
   const token = cookieStore.get('sk_token')?.value;
   if (token) await invalidateSession(token);
   cookieStore.delete('sk_token');
+  cookieStore.delete(ACTIVE_LEARNER_COOKIE);
   redirect('/login');
 }

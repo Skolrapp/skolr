@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import { createSession, getDeviceFingerprint } from '@/lib/auth';
+import { getInitialLearnerProfileId, setActiveLearnerCookie } from '@/lib/activeLearner';
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,6 +39,9 @@ export async function POST(request: NextRequest) {
 
     const res = NextResponse.json({ success: true, user: { id: user.id, name: user.name, phone: user.phone, role: user.role, subscription_tier: user.subscription_tier, subscription_expires_at: user.subscription_expires_at } });
     res.cookies.set('sk_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 60*60*24*7, path: '/' });
+    if (user.role === 'student') {
+      setActiveLearnerCookie(res, await getInitialLearnerProfileId(user.id));
+    }
     return res;
   } catch (err) {
     console.error('[login]', err);

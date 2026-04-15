@@ -148,15 +148,17 @@ create policy "Instructors can manage own courses" on public.courses for all usi
 create table public.enrollments (
   id               uuid primary key default uuid_generate_v4(),
   user_id          uuid not null references public.users(id) on delete cascade,
+  learner_profile_id uuid references public.learner_profiles(id) on delete cascade,
   course_id        uuid not null references public.courses(id) on delete cascade,
   enrolled_at      timestamptz not null default now(),
   progress_seconds integer not null default 0,
   completed        boolean not null default false,
   completed_at     timestamptz,
-  unique(user_id, course_id)
+  unique(user_id, learner_profile_id, course_id)
 );
 
 create index idx_enrollments_user   on public.enrollments(user_id);
+create index idx_enrollments_learner on public.enrollments(learner_profile_id);
 create index idx_enrollments_course on public.enrollments(course_id);
 alter table public.enrollments enable row level security;
 

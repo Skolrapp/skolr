@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth';
+import { getActiveLearnerFromCookies } from '@/lib/activeLearner';
 
 export async function GET(request: NextRequest) {
   const token = request.cookies.get('sk_token')?.value;
@@ -11,6 +12,7 @@ export async function GET(request: NextRequest) {
     return res;
   }
   const { user } = result;
+  const { activeLearner } = await getActiveLearnerFromCookies(user);
   return NextResponse.json({
     success: true,
     user: {
@@ -18,6 +20,10 @@ export async function GET(request: NextRequest) {
       name: user.name,
       phone: user.phone,
       account_type: user.account_type,
+      active_learner_profile_id: activeLearner?.id || null,
+      active_learner_name: activeLearner?.full_name || null,
+      active_learner_level: activeLearner?.education_level || null,
+      active_learner_sub_category: activeLearner?.sub_category || null,
       role: user.role,
       subscription_tier: user.subscription_tier,
       subscription_expires_at: user.subscription_expires_at,

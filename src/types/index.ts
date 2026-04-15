@@ -25,6 +25,10 @@ export interface User {
   name: string;
   phone: string;
   account_type?: AccountType;
+  active_learner_profile_id?: string | null;
+  active_learner_name?: string | null;
+  active_learner_level?: EducationLevel | null;
+  active_learner_sub_category?: SubCategory | null;
   email?: string;
   role: UserRole;
   subscription_tier: SubscriptionTier;
@@ -94,6 +98,7 @@ export interface Course {
 export interface Enrollment {
   id: string;
   user_id: string;
+  learner_profile_id?: string | null;
   course_id: string;
   progress_seconds: number;
   completed: boolean;

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth';
+import { getActiveLearnerFromCookies } from '@/lib/activeLearner';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET(
@@ -31,13 +32,27 @@ export async function GET(
 
   // Get enrollment progress
   let enrollment: { progress_seconds?: number; completed?: boolean } | null = null;
+  let activeLearnerName: string | null = null;
   if (session) {
-    const enrollmentResult = await supabase
-      .from('enrollments')
-      .select('progress_seconds, completed')
-      .eq('user_id', session.user.id)
-      .eq('course_id', id)
-      .single();
+    const { activeLearner } = await getActiveLearnerFromCookies(session.user);
+    activeLearnerName = activeLearner?.full_name || null;
+    let enrollmentResult;
+    if (activeLearner?.id) {
+      enrollmentResult = await supabase
+        .from('enrollments')
+        .select('progress_seconds, completed')
+        .eq('user_id', session.user.id)
+        .eq('learner_profile_id', activeLearner.id)
+        .eq('course_id', id)
+        .single();
+    } else {
+      enrollmentResult = await supabase
+        .from('enrollments')
+        .select('progress_seconds, completed')
+        .eq('user_id', session.user.id)
+        .eq('course_id', id)
+        .single();
+    }
     enrollment = enrollmentResult.data;
   }
 
@@ -68,6 +83,7 @@ export async function GET(
       },
       progress_seconds: enrollment?.progress_seconds ?? 0,
       enrolled: !!enrollment,
+      active_learner_name: activeLearnerName,
       guest_preview: !session,
     },
   });

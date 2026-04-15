@@ -24,6 +24,28 @@ create table if not exists public.learner_profiles (
 
 create index if not exists idx_learner_profiles_account on public.learner_profiles(account_user_id);
 
+alter table public.enrollments
+  add column if not exists learner_profile_id uuid references public.learner_profiles(id) on delete cascade;
+
+update public.enrollments as e
+set learner_profile_id = source.id
+from (
+  select distinct on (account_user_id) id, account_user_id
+  from public.learner_profiles
+  order by account_user_id, created_at asc
+) as source
+where e.user_id = source.account_user_id
+  and e.learner_profile_id is null;
+
+alter table public.enrollments
+  drop constraint if exists enrollments_user_id_course_id_key;
+
+create unique index if not exists idx_enrollments_user_learner_course
+  on public.enrollments(user_id, learner_profile_id, course_id);
+
+create index if not exists idx_enrollments_learner
+  on public.enrollments(learner_profile_id);
+
 drop trigger if exists trg_learner_profiles_updated_at on public.learner_profiles;
 
 create trigger trg_learner_profiles_updated_at

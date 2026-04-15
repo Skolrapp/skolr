@@ -2,6 +2,7 @@
 
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import { getCurrentUser } from '@/lib/auth';
+import { getActiveLearnerFromCookies } from '@/lib/activeLearner';
 import { v4 as uuidv4 } from 'uuid';
 import type { EducationLevel } from '@/types';
 
@@ -10,6 +11,7 @@ import type { EducationLevel } from '@/types';
 export async function saveProgressAction(courseId: string, progressSeconds: number) {
   const user = await getCurrentUser();
   if (!user) return { error: 'Not authenticated' };
+  const { activeLearner } = await getActiveLearnerFromCookies(user);
 
   const supabase = createSupabaseAdmin();
   const course = await supabase
@@ -21,16 +23,25 @@ export async function saveProgressAction(courseId: string, progressSeconds: numb
   const duration  = course.data?.duration_seconds || 0;
   const completed = duration > 0 && progressSeconds >= duration * 0.95;
 
-  await supabase
-    .from('enrollments')
-    .upsert({
-      id:               uuidv4(),
-      user_id:          user.id,
-      course_id:        courseId,
-      progress_seconds: progressSeconds,
-      completed,
-      completed_at:     completed ? new Date().toISOString() : null,
-    }, { onConflict: 'user_id,course_id' });
+  const payload = {
+    id: uuidv4(),
+    user_id: user.id,
+    learner_profile_id: activeLearner?.id || null,
+    course_id: courseId,
+    progress_seconds: progressSeconds,
+    completed,
+    completed_at: completed ? new Date().toISOString() : null,
+  };
+
+  if (activeLearner?.id) {
+    await supabase
+      .from('enrollments')
+      .upsert(payload, { onConflict: 'user_id,learner_profile_id,course_id' });
+  } else {
+    await supabase
+      .from('enrollments')
+      .upsert(payload, { onConflict: 'user_id,course_id' });
+  }
 
   return { success: true };
 }

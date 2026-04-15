@@ -6,5 +6,6 @@ export async function POST(request: NextRequest) {
   if (token) await invalidateSession(token);
   const res = NextResponse.json({ success: true });
   res.cookies.delete('sk_token');
+  res.cookies.delete('sk_active_learner');
   return res;
 }
