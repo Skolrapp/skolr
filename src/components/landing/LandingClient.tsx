@@ -235,6 +235,68 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         </div>
       </div>
 
+      <div style={{ padding: '0 24px 56px' }}>
+        <div className="sk-shell" style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div
+            className="sk-hook-banner"
+            style={{
+              position: 'relative',
+              overflow: 'hidden',
+              borderRadius: 30,
+              padding: '34px 36px',
+              background: 'linear-gradient(135deg,#07111f 0%,#0d2034 48%,#0d3726 100%)',
+              boxShadow: '0 30px 80px rgba(15,23,42,0.12)',
+            }}
+          >
+            <div style={{ position: 'absolute', top: -80, right: -40, width: 240, height: 240, borderRadius: '50%', background: 'rgba(16,185,129,0.18)' }} />
+            <div style={{ position: 'absolute', bottom: -120, left: '28%', width: 220, height: 220, borderRadius: '50%', background: 'rgba(59,130,246,0.12)' }} />
+            <div className="sk-hook-banner-grid" style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(280px,0.8fr)', gap: 22, alignItems: 'center' }}>
+              <div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', marginBottom: 18 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: G }} />
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#d1fae5' }}>Why parents and learners stay on Skolr</span>
+                </div>
+                <h2 style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.08, color: '#fff', marginBottom: 12 }}>
+                  Give every learner a sharper start before the next exam window opens.
+                </h2>
+                <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.72)', maxWidth: 620, marginBottom: 24 }}>
+                  Preview lessons instantly, move from class to class with confidence, and turn revision time into a steady study routine that feels easier to keep.
+                </p>
+                <div className="sk-hook-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  <Link href="/register" style={{ padding: '13px 26px', borderRadius: 12, background: '#fff', color: '#0a0a0a', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>
+                    Start free trial
+                  </Link>
+                  <Link href="/pricing" style={{ padding: '13px 26px', borderRadius: 12, border: '1.5px solid rgba(255,255,255,0.18)', color: '#fff', fontSize: 14, fontWeight: 700, textDecoration: 'none', background: 'rgba(255,255,255,0.04)' }}>
+                    See plans
+                  </Link>
+                </div>
+              </div>
+              <div className="sk-hook-proof-grid" style={{ display: 'grid', gap: 12 }}>
+                {[
+                  ['Free lesson previews', 'Let visitors feel the teaching quality before they commit.'],
+                  ['Class-by-class guidance', 'Parents can choose the exact level that fits the learner today.'],
+                  ['Study momentum', 'Short, focused lessons help learners come back consistently.'],
+                ].map(([title, copy], index) => (
+                  <div
+                    key={title}
+                    style={{
+                      padding: '18px 18px 16px',
+                      borderRadius: 20,
+                      background: index === 1 ? 'rgba(16,185,129,0.16)' : 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      backdropFilter: 'blur(10px)',
+                    }}
+                  >
+                    <p style={{ fontSize: 14, fontWeight: 800, color: '#fff', marginBottom: 6 }}>{title}</p>
+                    <p style={{ fontSize: 12, lineHeight: 1.7, color: 'rgba(255,255,255,0.68)' }}>{copy}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div style={{ background: '#f9fafb', padding: '56px 24px' }}>
         <div className="sk-shell sk-section-shell" style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div className="sk-section-header">
@@ -402,6 +464,7 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         @media (max-width: 900px) {
           .sk-premium-placeholder-grid,
           .sk-conviction-strip,
+          .sk-hook-banner-grid,
           .sk-level-grid,
           .sk-campaign-banner-grid {
             grid-template-columns: 1fr !important;
@@ -418,6 +481,9 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
             display: grid !important;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 14px !important;
+          }
+          .sk-hook-proof-grid {
+            grid-template-columns: 1fr !important;
           }
         }
         @media (max-width: 480px) {
@@ -462,6 +528,18 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
           }
           .sk-level-grid > a {
             padding: 16px !important;
+          }
+          .sk-hook-banner {
+            padding: 24px 18px !important;
+            border-radius: 24px !important;
+          }
+          .sk-hook-actions {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+          }
+          .sk-hook-actions a {
+            width: 100%;
+            text-align: center;
           }
           .sk-campaign-banner {
             aspect-ratio: 1600 / 760 !important;
