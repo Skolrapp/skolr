@@ -44,14 +44,19 @@ export async function GET(
         .eq('user_id', session.user.id)
         .eq('learner_profile_id', activeLearner.id)
         .eq('course_id', id)
-        .single();
+        .order('enrolled_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
     } else {
       enrollmentResult = await supabase
         .from('enrollments')
         .select('progress_seconds, completed')
         .eq('user_id', session.user.id)
         .eq('course_id', id)
-        .single();
+        .is('learner_profile_id', null)
+        .order('enrolled_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
     }
     enrollment = enrollmentResult.data;
   }

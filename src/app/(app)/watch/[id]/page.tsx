@@ -7,7 +7,6 @@ import Reviews from '@/components/ui/Reviews';
 import { useAuth } from '@/hooks/useAuth';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
 import { LEVEL_COLORS } from '@/lib/constants';
-import { saveProgressAction } from '@/actions/courses';
 import Link from 'next/link';
 import type { Course, Chapter } from '@/types';
 
@@ -110,7 +109,12 @@ function WatchContent() {
   const handleProgress = useCallback(async (seconds: number) => {
     setProgress(seconds);
     if (!user) return;
-    await saveProgressAction(id, seconds);
+    await fetch(`/api/courses/${id}/progress`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ progressSeconds: seconds }),
+    });
   }, [id, user]);
 
   const addResource = () => {
