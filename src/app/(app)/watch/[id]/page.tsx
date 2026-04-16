@@ -284,6 +284,7 @@ function WatchContent() {
                 posterUrl={course.thumbnail_url}
                 title={currentTitle}
                 startAt={activeChapter ? 0 : progress}
+                rememberKey={`${id}:${activeChapter?.id || 'intro'}:${user?.active_learner_profile_id || user?.id || 'guest'}`}
                 onProgress={handleProgress}
               />
             </div>

@@ -7,6 +7,7 @@ interface Props {
   posterUrl?: string;
   title?: string;
   startAt?: number;
+  rememberKey?: string;
   onProgress?: (seconds: number) => void;
   previewSeconds?: number;
   onPreviewLimit?: () => void;
@@ -21,7 +22,7 @@ function bwToQ(bps: number): Quality {
   return 'poor';
 }
 
-export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onProgress, previewSeconds = 0, onPreviewLimit }: Props) {
+export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rememberKey, onProgress, previewSeconds = 0, onPreviewLimit }: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const vRef     = useRef<HTMLVideoElement>(null);
   const hlsRef   = useRef<Hls | null>(null);
@@ -29,6 +30,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
   const ctrlRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewTriggeredRef = useRef(false);
   const startAtRef = useRef(startAt);
+  const lastSavedProgressRef = useRef(0);
 
   const [ready,    setReady]    = useState(false);
   const [playing,  setPlaying]  = useState(false);
@@ -60,15 +62,55 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
       : `${mins}:${String(secs).padStart(2, '0')}`;
   };
 
+  const clampTime = useCallback((value: number, max: number) => {
+    if (!Number.isFinite(value)) return 0;
+    return Math.max(0, Math.min(value, max || value));
+  }, []);
+
+  const persistLocalProgress = useCallback((seconds: number) => {
+    if (!rememberKey || typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(`sk-video-progress:${rememberKey}`, String(Math.max(0, Math.floor(seconds))));
+    } catch {}
+  }, [rememberKey]);
+
+  const flushProgress = useCallback((seconds?: number) => {
+    const video = vRef.current;
+    const nextSeconds = Math.max(0, Math.floor(seconds ?? video?.currentTime ?? 0));
+    lastSavedProgressRef.current = nextSeconds;
+    persistLocalProgress(nextSeconds);
+    onProgress?.(nextSeconds);
+  }, [onProgress, persistLocalProgress]);
+
   const activity = useCallback(() => {
     setShowCtrl(true);
     if (ctrlRef.current) clearTimeout(ctrlRef.current);
     ctrlRef.current = setTimeout(() => setShowCtrl(false), 3200);
   }, []);
 
+  const seekBy = useCallback((delta: number) => {
+    const video = vRef.current;
+    if (!video) return;
+    const nextTime = clampTime(video.currentTime + delta, duration || video.duration || 0);
+    video.currentTime = nextTime;
+    setCurrentTime(nextTime);
+    persistLocalProgress(nextTime);
+    activity();
+  }, [activity, clampTime, duration, persistLocalProgress]);
+
   useEffect(() => {
     startAtRef.current = startAt;
   }, [hlsUrl, startAt]);
+
+  useEffect(() => {
+    if (!rememberKey || typeof window === 'undefined') return;
+    try {
+      const stored = Number(window.localStorage.getItem(`sk-video-progress:${rememberKey}`) || '0');
+      if (stored > startAtRef.current) {
+        startAtRef.current = stored;
+      }
+    } catch {}
+  }, [hlsUrl, rememberKey]);
 
   useEffect(() => {
     const syncFullscreen = () => {
@@ -120,6 +162,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
     const syncMeta = () => {
       setDuration(video.duration || 0);
       setCurrentTime(video.currentTime || 0);
+      persistLocalProgress(video.currentTime || 0);
     };
     const syncVolume = () => {
       setMuted(video.muted);
@@ -130,16 +173,31 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
     video.addEventListener('durationchange', syncMeta);
     video.addEventListener('timeupdate', syncMeta);
     video.addEventListener('volumechange', syncVolume);
-    progRef.current = setInterval(() => { if (!video.paused && onProgress) onProgress(Math.floor(video.currentTime)); }, 5000);
+    progRef.current = setInterval(() => {
+      if (!video.paused) flushProgress(video.currentTime);
+    }, 5000);
+
+    const handlePauseOrEnd = () => flushProgress(video.currentTime);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') flushProgress(video.currentTime);
+    };
+
+    video.addEventListener('pause', handlePauseOrEnd);
+    video.addEventListener('ended', handlePauseOrEnd);
+    document.addEventListener('visibilitychange', handleVisibility);
     return () => {
       hlsRef.current?.destroy();
       video.removeEventListener('loadedmetadata', syncMeta);
       video.removeEventListener('durationchange', syncMeta);
       video.removeEventListener('timeupdate', syncMeta);
       video.removeEventListener('volumechange', syncVolume);
+      video.removeEventListener('pause', handlePauseOrEnd);
+      video.removeEventListener('ended', handlePauseOrEnd);
+      document.removeEventListener('visibilitychange', handleVisibility);
       if (progRef.current) clearInterval(progRef.current);
+      flushProgress(video.currentTime);
     };
-  }, [hlsUrl, onProgress]);
+  }, [flushProgress, hlsUrl, persistLocalProgress]);
 
   useEffect(() => {
     const video = vRef.current;
@@ -181,6 +239,12 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
     if (event.key === ' ' || event.code === 'Space') {
       event.preventDefault();
       togglePlay();
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      seekBy(-10);
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      seekBy(10);
     }
   };
 
@@ -308,7 +372,10 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
                 step={0.1}
                 value={Math.min(currentTime, duration || 0)}
                 onChange={(e) => handleSeek(Number(e.target.value))}
-                className="w-full accent-emerald-500 cursor-pointer"
+                className="sk-player-range w-full cursor-pointer"
+                style={{
+                  background: `linear-gradient(90deg, #ef4444 0%, #ef4444 ${duration ? (Math.min(currentTime, duration) / duration) * 100 : 0}%, rgba(255,255,255,0.22) ${duration ? (Math.min(currentTime, duration) / duration) * 100 : 0}%, rgba(255,255,255,0.22) 100%)`,
+                }}
               />
               <div className="mt-1 flex items-center justify-between text-[11px] font-medium text-white/80">
                 <span>{formatTime(currentTime)}</span>
@@ -316,10 +383,24 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <button
+                className="text-white text-[11px] font-bold rounded-full border border-white/20 bg-white/10 px-2.5 py-1 !min-h-0 !min-w-0"
+                onClick={(e) => { e.stopPropagation(); seekBy(-10); }}
+                aria-label="Go back 10 seconds"
+              >
+                -10s
+              </button>
               <button className="text-white !min-h-0 !min-w-0 p-1" onClick={(e) => { e.stopPropagation(); togglePlay(); }}>
                 {playing
                   ? <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
                   : <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>}
+              </button>
+              <button
+                className="text-white text-[11px] font-bold rounded-full border border-white/20 bg-white/10 px-2.5 py-1 !min-h-0 !min-w-0"
+                onClick={(e) => { e.stopPropagation(); seekBy(10); }}
+                aria-label="Go forward 10 seconds"
+              >
+                +10s
               </button>
               <button className="text-white !min-h-0 !min-w-0 p-1" onClick={(e) => { e.stopPropagation();
                 const nextMuted = !muted;
@@ -387,6 +468,43 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, onP
           </div>
         </>
       )}
+      <style jsx>{`
+        .sk-player-range {
+          -webkit-appearance: none;
+          appearance: none;
+          height: 6px;
+          border-radius: 999px;
+          outline: none;
+        }
+        .sk-player-range::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 14px;
+          height: 14px;
+          border-radius: 999px;
+          background: #ef4444;
+          border: 2px solid #fff;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+        }
+        .sk-player-range::-moz-range-track {
+          height: 6px;
+          border-radius: 999px;
+          background: transparent;
+        }
+        .sk-player-range::-moz-range-progress {
+          height: 6px;
+          border-radius: 999px;
+          background: #ef4444;
+        }
+        .sk-player-range::-moz-range-thumb {
+          width: 14px;
+          height: 14px;
+          border-radius: 999px;
+          background: #ef4444;
+          border: 2px solid #fff;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+        }
+      `}</style>
     </div>
   );
 }
