@@ -145,7 +145,7 @@ export default function CourseDetailMockupPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
             <div style={{ borderRadius: 24, background: '#fff', border: '1px solid #e6eaf0', padding: 24 }}>
               <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 12 }}>What learners will achieve</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 12 }}>
+              <div className="course-detail-two-col" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 12 }}>
                 {OUTCOMES.map((item) => (
                   <div key={item} style={{ borderRadius: 18, padding: '16px 16px 16px 14px', background: '#f8fafc', border: '1px solid #ecf0f4', display: 'flex', gap: 12 }}>
                     <div style={{ width: 24, height: 24, flexShrink: 0, borderRadius: 999, background: '#dcfce7', color: '#047857', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900 }}>✓</div>
@@ -186,7 +186,7 @@ export default function CourseDetailMockupPage() {
             <div style={{ borderRadius: 24, background: '#fff', border: '1px solid #e6eaf0', padding: 24 }}>
               <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>Social proof</p>
               <h2 style={{ fontSize: 28, lineHeight: 1.12, fontWeight: 900, color: '#0a0a0a', margin: '0 0 16px' }}>Reviews that reduce hesitation</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 14 }}>
+              <div className="course-detail-two-col" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 14 }}>
                 {REVIEWS.map((review) => (
                   <div key={review.name} style={{ borderRadius: 18, padding: 18, background: '#f8fafc', border: '1px solid #ecf0f4' }}>
                     <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#0a0a0a' }}>{review.name}</p>
@@ -239,41 +239,6 @@ export default function CourseDetailMockupPage() {
         </section>
       </main>
 
-      <style jsx>{`
-        @media (max-width: 980px) {
-          .course-detail-hero,
-          .course-detail-body {
-            grid-template-columns: 1fr !important;
-          }
-        }
-
-        @media (max-width: 720px) {
-          .course-detail-hero h1 {
-            font-size: 34px !important;
-          }
-        }
-
-        @media (max-width: 640px) {
-          .course-detail-hero,
-          .course-detail-body {
-            gap: 18px !important;
-          }
-
-          .course-detail-hero-stats {
-            gap: 14px !important;
-          }
-
-          .course-detail-hero-actions > button {
-            width: 100%;
-          }
-        }
-
-        @media (max-width: 580px) {
-          div[style*='repeat(2,minmax(0,1fr))'] {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }

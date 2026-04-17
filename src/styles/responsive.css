@@ -323,3 +323,38 @@
     padding: 14px;
   }
 }
+
+/* ── COURSE DETAIL MOCKUP ── */
+@media (max-width: 980px) {
+  .course-detail-hero,
+  .course-detail-body {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .course-detail-hero h1 {
+    font-size: 34px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .course-detail-hero,
+  .course-detail-body {
+    gap: 18px !important;
+  }
+
+  .course-detail-hero-stats {
+    gap: 14px !important;
+  }
+
+  .course-detail-hero-actions > button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 580px) {
+  .course-detail-two-col {
+    grid-template-columns: 1fr !important;
+  }
+}
