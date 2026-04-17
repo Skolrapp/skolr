@@ -365,21 +365,107 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         <div className="sk-shell" style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div className="sk-conviction-strip" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18 }}>
             {[
-              ['message-placeholder-1', 'linear-gradient(135deg,#0b1324,#11253b 48%,#103d2b)'],
-              ['message-placeholder-2', 'linear-gradient(135deg,#10B981,#0f8f67)'],
-              ['message-placeholder-3', '#f9fafb'],
-            ].map(([slot, fallback], index) => (
+              {
+                slot: 'message-placeholder-1',
+                title: <>Stay in <span style={{ color: '#2f6a5f' }}>control</span><br />of your child&apos;s<br />education</>,
+                copy: 'Skolr organizes your child’s learning so they never fall behind.',
+                action: 'Start Learning Now',
+                href: '/register',
+                fallback: 'linear-gradient(180deg,#f3f0f2 0%,#efedf0 100%)',
+                color: '#1f2937',
+                buttonBackground: '#2f6a5f',
+                buttonColor: '#fff',
+                buttonBorder: 'none',
+              },
+              {
+                slot: 'message-placeholder-2',
+                title: <>From <span style={{ color: '#2f6a5f' }}>confusion</span><br />to clear<br /><span style={{ color: '#2f6a5f' }}>learning paths</span></>,
+                copy: 'Every topic is structured step by step so your child knows what to learn next.',
+                action: 'See How It Works',
+                href: '/courses',
+                fallback: 'linear-gradient(180deg,#eef7f3 0%,#dceee8 100%)',
+                color: '#1f2937',
+                buttonBackground: 'rgba(255,255,255,0.72)',
+                buttonColor: '#2f6a5f',
+                buttonBorder: '1.5px solid rgba(47,106,95,0.65)',
+              },
+              {
+                slot: 'message-placeholder-3',
+                title: <>Not more<br />content.<br /><span style={{ color: '#b9e2d1' }}>Better structure.</span></>,
+                copy: 'No scattered videos — just a clear path from topic to mastery.',
+                action: 'Get Started',
+                href: '/register',
+                fallback: 'linear-gradient(180deg,#1d2d29 0%,#203733 100%)',
+                color: '#f8fafc',
+                buttonBackground: 'linear-gradient(135deg,#d8f5e8,#b8e6d4)',
+                buttonColor: '#22433b',
+                buttonBorder: 'none',
+              },
+            ].map((card, index) => (
               <div
-                key={slot}
+                key={card.slot}
                 style={{
-                  minHeight: 220,
-                  borderRadius: 24,
-                  padding: 24,
-                  background: banners[slot] ? `linear-gradient(135deg,rgba(5,10,25,${index === 1 ? 0.16 : 0.22}),rgba(7,15,12,0.22)), url(${banners[slot]}) center/cover` : fallback,
-                  color: index === 1 ? '#fff' : '#0a0a0a',
-                  border: banners[slot] || index === 1 ? 'none' : '1px solid #e5e7eb',
+                  minHeight: 605,
+                  borderRadius: 0,
+                  padding: '42px 26px 28px',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  background: banners[card.slot]
+                    ? `linear-gradient(180deg,rgba(255,255,255,${index === 2 ? 0.06 : 0.4}) 0%,rgba(255,255,255,${index === 2 ? 0.04 : 0.18}) 100%), url(${banners[card.slot]}) center/cover`
+                    : card.fallback,
+                  color: card.color,
+                  border: index === 0 ? '1px solid #ece7ea' : 'none',
                 }}
-              />
+              >
+                {index === 2 && (
+                  <svg
+                    viewBox="0 0 400 220"
+                    preserveAspectRatio="none"
+                    style={{ position: 'absolute', left: 0, right: 0, bottom: 0, width: '100%', height: 220, opacity: 0.45 }}
+                  >
+                    <path d="M-20 200 C 40 160, 70 160, 120 120 S 220 70, 280 110 S 360 165, 430 130" stroke="rgba(210,235,226,0.8)" strokeWidth="3" fill="none" />
+                    <path d="M-30 235 C 25 210, 70 170, 120 180 S 220 230, 300 190 S 360 130, 430 145" stroke="rgba(210,235,226,0.38)" strokeWidth="2" fill="none" />
+                    {[70, 145, 225, 300].map((x, circleIndex) => (
+                      <circle key={x} cx={x} cy={[176, 126, 145, 102][circleIndex]} r="5" fill="rgba(210,235,226,0.72)" />
+                    ))}
+                  </svg>
+                )}
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <h3 style={{ fontSize: 28, lineHeight: 1.22, fontWeight: 800, marginBottom: 28, letterSpacing: '-0.03em' }}>{card.title}</h3>
+                  <p style={{ fontSize: 15, lineHeight: 1.75, maxWidth: 240, color: index === 2 ? 'rgba(248,250,252,0.78)' : '#374151' }}>{card.copy}</p>
+                </div>
+                <div style={{ position: 'relative', zIndex: 1, marginTop: 26 }}>
+                  <Link
+                    href={card.href}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      minHeight: 42,
+                      padding: '0 18px',
+                      borderRadius: 8,
+                      background: card.buttonBackground,
+                      color: card.buttonColor,
+                      fontSize: 13,
+                      fontWeight: 800,
+                      textDecoration: 'none',
+                      border: card.buttonBorder,
+                      boxShadow: index === 2 ? '0 12px 25px rgba(8,31,23,0.22)' : 'none',
+                    }}
+                  >
+                    {card.action}
+                    {index === 1 && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    )}
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -546,7 +632,8 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
           }
           .sk-conviction-strip > div {
             min-height: auto !important;
-            padding: 18px !important;
+            padding: 28px 20px 22px !important;
+            border-radius: 24px !important;
           }
           .sk-cta-band {
             padding: 48px 16px !important;
