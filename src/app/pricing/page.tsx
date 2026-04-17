@@ -1,6 +1,22 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 const G = '#10B981';
+
+export const metadata: Metadata = {
+  title: 'Pricing for Tanzania learners',
+  description:
+    'View Skolr pricing for Primary, Secondary, High School, and University learners in Tanzania. Start with a free trial and choose the right plan for your level.',
+  alternates: {
+    canonical: '/pricing',
+  },
+  openGraph: {
+    title: 'Skolr pricing for Tanzania learners',
+    description:
+      'Simple pricing for Tanzania learners across Primary, Secondary, High School, and University levels.',
+    url: 'https://skolr.co.tz/pricing',
+  },
+};
 
 const PLANS = [
   { id: 'primary_only',      name: 'Primary',       price: 9000,  annual: 89500,  color: '#3b82f6', bg: '#eff6ff', levels: ['Primary (Std 1-7)'],                       popular: false },
