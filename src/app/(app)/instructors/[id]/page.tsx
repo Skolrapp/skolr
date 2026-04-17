@@ -121,7 +121,7 @@ export default function InstructorProfilePage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 16 }}>
             {courses.map((course: any) => (
-              <Link key={course.id} href={`/watch/${course.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit', border: '1px solid #e5e7eb', borderRadius: 18, overflow: 'hidden', background: '#fff', boxShadow: '0 10px 24px rgba(15,23,42,0.04)' }}>
+              <Link key={course.id} href={`/courses/${course.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit', border: '1px solid #e5e7eb', borderRadius: 18, overflow: 'hidden', background: '#fff', boxShadow: '0 10px 24px rgba(15,23,42,0.04)' }}>
                 <div style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg,#ecfdf5,#dbeafe)', overflow: 'hidden' }}>
                   {course.thumbnail_url
                     ? <img src={course.thumbnail_url} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

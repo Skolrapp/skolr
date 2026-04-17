@@ -19,7 +19,11 @@ Scope:
 - manage learners section with add, edit, remove, and progress snapshot
 
 3. Course detail pages
-Status: pending
+Status: in progress
+Scope:
+- real public course detail route
+- card flow from landing and browse into detail page
+- conversion step before watch/subscribe
 
 4. Learning analytics
 Status: pending

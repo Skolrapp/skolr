@@ -324,7 +324,7 @@ function CoursesContent(){
                 const lvl=LEVELS.find(l=>l.id===c.category)||LEVELS[1];
                 const access=isActive&&canAccessLevel(user?.subscription_tier,c.category);
                 return(
-                  <Link key={c.id} href={'/watch/'+c.id}
+                  <Link key={c.id} href={'/courses/'+c.id}
                     style={{textDecoration:'none',color:'inherit',display:'block',background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,overflow:'hidden',transition:'transform 0.2s,box-shadow 0.2s'}}
                     onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.08)';}}
                     onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='none';}}>

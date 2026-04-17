@@ -161,7 +161,7 @@ export default function HomePage() {
           ) : (
             <div className="course-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
               {courses.map(c => (
-                <Link key={c.id} href={'/watch/' + c.id}
+                <Link key={c.id} href={'/courses/' + c.id}
                   className="course-card"
                   style={{ textDecoration: 'none', color: 'inherit', display: 'block', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden' }}>
                   <Thumb color="#3b82f6" bg="#eff6ff" title={c.title} thumbnailUrl={c.thumbnail_url} />

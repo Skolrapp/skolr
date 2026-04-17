@@ -323,7 +323,7 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
             {courses.map((course,i) => {
               const levelMeta = LEVELS.find((item) => item.level === course.category) || LEVELS[0];
               return (
-              <Link key={course.id || i} href={'/watch/'+course.id} className="sk-course-card">
+              <Link key={course.id || i} href={'/courses/'+course.id} className="sk-course-card">
                 <div className="sk-course-thumb" style={{ width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg,'+levelMeta.bg+','+levelMeta.color+'22)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
                   {course.thumbnail_url ? (
                     <img src={course.thumbnail_url} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

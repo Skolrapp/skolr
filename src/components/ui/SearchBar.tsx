@@ -58,7 +58,7 @@ export default function SearchBar({ placeholder = 'Search courses, subjects, ins
               {results.courses.map((c: any) => {
                 const col = (LEVEL_COLORS as any)[c.category] || LEVEL_COLORS.primary;
                 return (
-                  <button key={c.id} onClick={() => goTo('/watch/' + c.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', minHeight: 0, minWidth: 0 }}
+                  <button key={c.id} onClick={() => goTo('/courses/' + c.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', minHeight: 0, minWidth: 0 }}
                     onMouseEnter={e => (e.currentTarget.style.background = '#222')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <div style={{ width: 36, height: 36, borderRadius: 8, background: col.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={col.color} strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
