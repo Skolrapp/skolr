@@ -5,13 +5,14 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
 import TopHeader from '@/components/layout/TopHeader';
+import ParentLearnerManager from '@/components/parent/ParentLearnerManager';
 import { SUBSCRIPTION_BUNDLES } from '@/lib/subscriptions';
 import { MOBILE_MONEY_PROVIDERS, BILLING_CYCLES } from '@/lib/constants';
 import { startFreeTrialAction } from '@/actions/trial';
 import type { Device, SubscriptionTier, PaymentProvider, BillingCycle } from '@/types';
 
 const G = '#10B981';
-type Tab = 'plans' | 'devices' | 'account';
+type Tab = 'plans' | 'devices' | 'learners' | 'account';
 
 function SettingsContent() {
   const sp = useSearchParams();
@@ -78,6 +79,7 @@ function SettingsContent() {
   };
 
   if (!user) return null;
+  const isParentAccount = user.account_type === 'parent_guardian';
 
   return (
     <div className="min-h-screen" style={{ background: '#111111' }}>
@@ -91,9 +93,9 @@ function SettingsContent() {
 
         {/* Tabs */}
         <div className="tab-bar mb-5">
-          {(['plans','devices','account'] as Tab[]).map(t => (
+          {(['plans', 'devices', ...(isParentAccount ? (['learners'] as Tab[]) : []), 'account'] as Tab[]).map(t => (
             <button key={t} onClick={() => setTab(t)} className={`tab-item ${tab === t ? 'on' : ''}`}>
-              {t === 'plans' ? 'Subscription' : t}
+              {t === 'plans' ? 'Subscription' : t === 'learners' ? 'Learners' : t}
             </button>
           ))}
         </div>
@@ -291,6 +293,12 @@ function SettingsContent() {
                 }
               </div>
             )}
+          </div>
+        )}
+
+        {tab === 'learners' && isParentAccount && (
+          <div className="animate-fade-in">
+            <ParentLearnerManager user={user} refetchUser={refetch} variant="settings" />
           </div>
         )}
 

@@ -119,6 +119,18 @@ export interface LearnerProfile {
   updated_at: string;
 }
 
+export interface LearnerProfileStats {
+  enrolled_courses: number;
+  completed_courses: number;
+  completion_percent: number;
+  total_progress_seconds: number;
+  last_activity_at?: string | null;
+}
+
+export interface ManagedLearnerProfile extends LearnerProfile {
+  stats: LearnerProfileStats;
+}
+
 // ─── Payments ────────────────────────────────────────────────────────────────
 
 export type PaymentProvider = 'mpesa' | 'tigopesa' | 'airtelmoney' | 'card';
