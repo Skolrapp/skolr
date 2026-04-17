@@ -53,7 +53,7 @@ async function initiateFlutterwave(params: {
   }
 
   const providerMap: Record<string, string> = {
-    mpesa: 'MPESA', tigopesa: 'TIGO', airtelmoney: 'AIRTEL',
+    mpesa: 'VODACOM', tigopesa: 'TIGO', airtelmoney: 'AIRTEL',
   };
 
   try {
@@ -125,7 +125,10 @@ async function verifyFlutterwavePayment(params: {
 }) {
   const FLW = process.env.FLUTTERWAVE_SECRET_KEY;
   if (!FLW) {
-    return { verified: true, providerRef: null as string | null };
+    return {
+      verified: process.env.NODE_ENV !== 'production',
+      providerRef: null as string | null,
+    };
   }
 
   const endpoint = params.transactionId

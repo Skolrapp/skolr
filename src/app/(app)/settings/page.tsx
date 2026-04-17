@@ -80,6 +80,11 @@ function SettingsContent() {
 
   if (!user) return null;
   const isParentAccount = user.account_type === 'parent_guardian';
+  const planHeading = isParentAccount ? 'Choose a family bundle' : 'Choose your bundle';
+  const accountLabel = isParentAccount ? 'Parent account' : user.role === 'instructor' ? 'Instructor account' : 'Learner account';
+  const payButtonLabel = isParentAccount
+    ? `Subscribe family plan with ${MOBILE_MONEY_PROVIDERS.find(p => p.id === provider)?.label}`
+    : `Subscribe with ${MOBILE_MONEY_PROVIDERS.find(p => p.id === provider)?.label}`;
 
   return (
     <div className="min-h-screen" style={{ background: '#111111' }}>
@@ -118,7 +123,9 @@ function SettingsContent() {
                   <span className="badge text-xs ml-auto" style={{ background: 'rgba(16,185,129,0.15)', color: G }}>No payment needed</span>
                 </div>
                 <p className="text-xs mb-4" style={{ color: '#a3a3a3' }}>
-                  Pick a bundle below, then tap Start free trial — instant access for 7 days. No M-Pesa, no card required.
+                  {isParentAccount
+                    ? 'Pick the right family bundle below, then tap Start free trial to unlock your learner profiles for 7 days. No M-Pesa, no card required.'
+                    : 'Pick a bundle below, then tap Start free trial — instant access for 7 days. No M-Pesa, no card required.'}
                 </p>
                 {trialMsg && (
                   <div className="rounded-xl p-3 text-sm mb-3" style={trialMsg.ok
@@ -139,7 +146,12 @@ function SettingsContent() {
             )}
 
             <div>
-              <h2 className="sec-head">Choose your bundle</h2>
+              <h2 className="sec-head">{planHeading}</h2>
+              <p className="text-xs mb-3" style={{ color: '#737373' }}>
+                {isParentAccount
+                  ? 'These plans pay for learner access under your parent account. Switch learners later without changing the subscription owner.'
+                  : 'Choose the learning bundle that matches the classes you want to unlock.'}
+              </p>
               <div className="space-y-2">
                 {SUBSCRIPTION_BUNDLES.map(b => (
                   <button key={b.id} onClick={() => setTier(b.id as SubscriptionTier)}
@@ -150,7 +162,11 @@ function SettingsContent() {
                     <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: b.color }} />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold" style={{ color: tier === b.id ? b.color : '#fff' }}>{b.name}</p>
+                        <p className="text-sm font-bold" style={{ color: tier === b.id ? b.color : '#fff' }}>
+                          {isParentAccount && ['primary_only', 'secondary_only', 'primary_secondary', 'highschool_only', 'full_k12'].includes(b.id)
+                            ? `${b.name} Family`
+                            : b.name}
+                        </p>
                         {b.badge && <span className="badge text-xs" style={{ background: `${b.color}20`, color: b.color }}>{b.badge}</span>}
                         {b.popular && <span className="badge badge-green text-xs">Popular</span>}
                       </div>
@@ -187,6 +203,11 @@ function SettingsContent() {
             {/* Provider */}
             <div>
               <h2 className="sec-head">Pay with Mobile Money</h2>
+              <div className="rounded-xl p-3 mb-3 text-xs" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid #262626', color: '#a3a3a3' }}>
+                <strong style={{ color: '#fff' }}>{accountLabel}:</strong> {isParentAccount
+                  ? 'the parent phone number completes payment and owns the subscription.'
+                  : 'the phone number below will receive the payment push prompt.'}
+              </div>
               <div className="space-y-2">
                 {MOBILE_MONEY_PROVIDERS.map(p => (
                   <button key={p.id} onClick={() => setProvider(p.id as PaymentProvider)}
@@ -213,12 +234,19 @@ function SettingsContent() {
 
             {/* Phone */}
             <div>
-              <label className="lbl">Mobile money number</label>
+              <label className="lbl">{isParentAccount ? 'Parent mobile money number' : 'Mobile money number'}</label>
               <div className="flex gap-2">
                 <span className="phone-prefix">+255</span>
                 <input className="inp flex-1" type="tel" inputMode="tel" placeholder="712 345 678"
                   value={msisdn} onChange={e => setMsisdn(e.target.value)} />
               </div>
+              <p className="text-xs mt-2" style={{ color: '#737373' }}>
+                {provider === 'mpesa'
+                  ? 'Use a Vodacom M-Pesa number registered in Tanzania.'
+                  : provider === 'tigopesa'
+                    ? 'Use a Tigo Pesa or Mixx by Yas number registered in Tanzania.'
+                    : 'Use an Airtel Money number registered in Tanzania.'}
+              </p>
             </div>
 
             {/* Total */}
@@ -241,10 +269,10 @@ function SettingsContent() {
             <button className="btn-primary" onClick={pay} disabled={paying}>
               {paying
                 ? <span className="flex items-center gap-2"><span className="w-4 h-4 rounded-full border-2 border-black/30 border-t-black animate-spin"/>Processing...</span>
-                : `Subscribe with ${MOBILE_MONEY_PROVIDERS.find(p => p.id === provider)?.label}`}
+                : payButtonLabel}
             </button>
             <p className="text-xs text-center" style={{ color: '#525252' }}>
-              A USSD prompt will be sent to your phone. Enter your PIN to confirm payment.
+              A push prompt or wallet request will be sent to your phone. Approve it on the handset, then wait a moment for Skolr to confirm the payment.
             </p>
           </div>
         )}

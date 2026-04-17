@@ -5,7 +5,11 @@ This file tracks the current product build order so we can move one bullet to th
 ## Current Order
 
 1. Payments to production
-Status: pending
+Status: in progress
+Scope:
+- harden Flutterwave live collection flow
+- align Tanzania network mapping with provider docs
+- improve parent-friendly payment UI and rollout guidance
 
 2. Parent experience
 Status: in progress

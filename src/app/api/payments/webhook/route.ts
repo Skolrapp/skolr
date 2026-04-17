@@ -4,7 +4,7 @@ import { createHmac, timingSafeEqual } from 'crypto';
 
 function verifyFlw(payload: string, sig: string) {
   const secret = process.env.FLUTTERWAVE_WEBHOOK_SECRET || '';
-  if (!secret) return true; // skip in demo mode
+  if (!secret) return process.env.NODE_ENV !== 'production';
   if (!sig) return false;
 
   const legacyHeaderMatch = sig === secret;
