@@ -31,7 +31,7 @@ export async function GET(
   }
 
   // Get enrollment progress
-  let enrollment: { progress_seconds?: number; completed?: boolean } | null = null;
+  let enrollment: { progress_seconds?: number; completed?: boolean; last_lesson_id?: string | null; last_lesson_progress_seconds?: number | null } | null = null;
   let activeLearnerName: string | null = null;
   if (session) {
     const { activeLearner } = await getActiveLearnerFromCookies(session.user);
@@ -40,7 +40,7 @@ export async function GET(
     if (activeLearner?.id) {
       enrollmentResult = await supabase
         .from('enrollments')
-        .select('progress_seconds, completed')
+        .select('progress_seconds, completed, last_lesson_id, last_lesson_progress_seconds')
         .eq('user_id', session.user.id)
         .eq('learner_profile_id', activeLearner.id)
         .eq('course_id', id)
@@ -50,7 +50,7 @@ export async function GET(
     } else {
       enrollmentResult = await supabase
         .from('enrollments')
-        .select('progress_seconds, completed')
+        .select('progress_seconds, completed, last_lesson_id, last_lesson_progress_seconds')
         .eq('user_id', session.user.id)
         .eq('course_id', id)
         .is('learner_profile_id', null)
@@ -59,11 +59,6 @@ export async function GET(
         .maybeSingle();
     }
     enrollment = enrollmentResult.data;
-  }
-
-  // Increment view count
-  if (course.is_published) {
-    await supabase.from('courses').update({ view_count: (course.view_count || 0) + 1 }).eq('id', id);
   }
 
   const { data: review } = await supabase
@@ -87,6 +82,8 @@ export async function GET(
         users: undefined,
       },
       progress_seconds: enrollment?.progress_seconds ?? 0,
+      last_lesson_id: enrollment?.last_lesson_id ?? 'intro',
+      last_lesson_progress_seconds: enrollment?.last_lesson_progress_seconds ?? 0,
       enrolled: !!enrollment,
       active_learner_name: activeLearnerName,
       guest_preview: !session,

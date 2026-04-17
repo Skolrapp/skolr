@@ -3,7 +3,12 @@ import { createSupabaseAdmin } from '@/lib/supabase/server';
 import { getActiveLearnerFromCookies } from '@/lib/activeLearner';
 import type { User } from '@/types';
 
-export async function saveCourseProgressForUser(user: User, courseId: string, progressSeconds: number) {
+type SaveProgressOptions = {
+  lessonId?: string | null;
+  lessonProgressSeconds?: number;
+};
+
+export async function saveCourseProgressForUser(user: User, courseId: string, progressSeconds: number, options: SaveProgressOptions = {}) {
   const { activeLearner } = await getActiveLearnerFromCookies(user);
   const supabase = createSupabaseAdmin();
 
@@ -46,6 +51,8 @@ export async function saveCourseProgressForUser(user: User, courseId: string, pr
         progress_seconds: progressSeconds,
         completed,
         completed_at: completed ? new Date().toISOString() : null,
+        last_lesson_id: options.lessonId || null,
+        last_lesson_progress_seconds: Math.max(0, Math.floor(options.lessonProgressSeconds ?? progressSeconds)),
       })
       .eq('id', existingResult.data.id);
 
@@ -66,6 +73,8 @@ export async function saveCourseProgressForUser(user: User, courseId: string, pr
       progress_seconds: progressSeconds,
       completed,
       completed_at: completed ? new Date().toISOString() : null,
+      last_lesson_id: options.lessonId || null,
+      last_lesson_progress_seconds: Math.max(0, Math.floor(options.lessonProgressSeconds ?? progressSeconds)),
     });
 
   if (insertResult.error) {

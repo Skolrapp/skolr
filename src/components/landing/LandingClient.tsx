@@ -36,15 +36,20 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
   const [banners, setBanners] = useState<Record<string, string | null>>(landingBrandingCache || initialBanners);
 
   useEffect(() => {
+    let shouldFetchCourses = initialCourses.length === 0;
+    let shouldFetchBranding = Object.keys(initialBanners).length === 0;
+
     if (typeof window !== 'undefined') {
       if (!landingCoursesCache && initialCourses.length > 0) {
         landingCoursesCache = initialCourses;
         window.sessionStorage.setItem(LANDING_COURSES_CACHE_KEY, JSON.stringify(initialCourses));
+        shouldFetchCourses = false;
       }
 
       if (!landingBrandingCache && Object.keys(initialBanners).length > 0) {
         landingBrandingCache = initialBanners;
         window.sessionStorage.setItem(LANDING_BRANDING_CACHE_KEY, JSON.stringify(initialBanners));
+        shouldFetchBranding = false;
       }
 
       if (!landingCoursesCache) {
@@ -54,8 +59,11 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
             const parsed = JSON.parse(cachedCourses) as Course[];
             landingCoursesCache = parsed;
             setCourses(parsed);
+            shouldFetchCourses = false;
           } catch {}
         }
+      } else {
+        shouldFetchCourses = false;
       }
 
       if (!landingBrandingCache) {
@@ -65,17 +73,25 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
             const parsed = JSON.parse(cachedBranding) as Record<string, string | null>;
             landingBrandingCache = parsed;
             setBanners(parsed);
+            shouldFetchBranding = false;
           } catch {}
         }
+      } else {
+        shouldFetchBranding = false;
       }
     }
 
-    Promise.allSettled([
-      fetch('/api/courses?per_page=6').then((r) => r.json()),
-      fetch('/api/site/branding').then((r) => r.json()),
-    ]).then(([coursesResult, brandingResult]) => {
-      if (coursesResult.status === 'fulfilled' && coursesResult.value.success) {
-        const nextCourses = coursesResult.value.data.items || [];
+    const pendingRequests: Array<Promise<unknown>> = [];
+    if (shouldFetchCourses) pendingRequests.push(fetch('/api/courses?per_page=6').then((r) => r.json()));
+    if (shouldFetchBranding) pendingRequests.push(fetch('/api/site/branding').then((r) => r.json()));
+    if (!pendingRequests.length) return;
+
+    Promise.allSettled(pendingRequests).then((results) => {
+      const coursesResult = shouldFetchCourses ? results.shift() : null;
+      const brandingResult = shouldFetchBranding ? results.shift() : null;
+
+      if (coursesResult && coursesResult.status === 'fulfilled' && (coursesResult.value as any).success) {
+        const nextCourses = (coursesResult.value as any).data.items || [];
         landingCoursesCache = nextCourses;
         setCourses(nextCourses);
         if (typeof window !== 'undefined') {
@@ -83,8 +99,8 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         }
       }
 
-      if (brandingResult.status === 'fulfilled' && brandingResult.value.success) {
-        const nextBanners = brandingResult.value.data.banners || {};
+      if (brandingResult && brandingResult.status === 'fulfilled' && (brandingResult.value as any).success) {
+        const nextBanners = (brandingResult.value as any).data.banners || {};
         landingBrandingCache = nextBanners;
         setBanners(nextBanners);
         if (typeof window !== 'undefined') {

@@ -43,6 +43,8 @@ function WatchContent() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [activeChapter, setActiveChapter] = useState<Chapter | null>(null);
   const [progress, setProgress] = useState(0);
+  const [resumeLessonId, setResumeLessonId] = useState('intro');
+  const [resumeLessonProgress, setResumeLessonProgress] = useState(0);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('overview');
   const [resources, setResources] = useState<any[]>([]);
@@ -52,6 +54,7 @@ function WatchContent() {
   const [resError, setResError] = useState('');
   const [resPending, startResTransition] = useTransition();
   const [accessPromptOpen, setAccessPromptOpen] = useState(false);
+  const [progressSaveError, setProgressSaveError] = useState('');
   const [instructorProfile, setInstructorProfile] = useState<any>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -65,9 +68,14 @@ function WatchContent() {
         if (!courseData.success) { router.push('/courses'); return; }
         setCourse(courseData.data.course);
         setProgress(courseData.data.progress_seconds || 0);
+        setResumeLessonId(courseData.data.last_lesson_id || 'intro');
+        setResumeLessonProgress(courseData.data.last_lesson_progress_seconds || courseData.data.progress_seconds || 0);
 
         if (chaptersData.success && chaptersData.data.length > 0) {
-          setChapters(chaptersData.data);
+          const nextChapters = chaptersData.data as Chapter[];
+          setChapters(nextChapters);
+          const resumedChapter = nextChapters.find((chapter) => chapter.id === (courseData.data.last_lesson_id || ''));
+          setActiveChapter(resumedChapter || null);
         }
 
         if (courseData.data.course?.instructor_id) {
@@ -109,13 +117,32 @@ function WatchContent() {
   const handleProgress = useCallback(async (seconds: number) => {
     setProgress(seconds);
     if (!user) return;
-    await fetch(`/api/courses/${id}/progress`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ progressSeconds: seconds }),
-    });
-  }, [id, user]);
+    const lessonId = activeChapter?.id || 'intro';
+    const courseProgressSeconds = activeChapter ? progress : seconds;
+
+    try {
+      const response = await fetch(`/api/courses/${id}/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          progressSeconds: courseProgressSeconds,
+          lessonId,
+          lessonProgressSeconds: seconds,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        setProgressSaveError(data.error || 'Progress could not be saved.');
+      } else {
+        setProgressSaveError('');
+        setResumeLessonId(lessonId);
+        setResumeLessonProgress(seconds);
+      }
+    } catch {
+      setProgressSaveError('Progress could not be saved. Check your connection and keep learning.');
+    }
+  }, [activeChapter, id, progress, user]);
 
   const addResource = () => {
     setResError('');
@@ -287,11 +314,16 @@ function WatchContent() {
                 hlsUrl={currentVideo}
                 posterUrl={course.thumbnail_url}
                 title={currentTitle}
-                startAt={activeChapter ? 0 : progress}
+                startAt={activeChapter ? (activeChapter.id === resumeLessonId ? resumeLessonProgress : 0) : (resumeLessonId === 'intro' ? resumeLessonProgress : progress)}
                 rememberKey={`${id}:${activeChapter?.id || 'intro'}:${user?.active_learner_profile_id || user?.id || 'guest'}`}
                 onProgress={handleProgress}
               />
             </div>
+            {progressSaveError && (
+              <div style={{ marginTop: 12, maxWidth: 1080, padding: '10px 12px', borderRadius: 12, background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', fontSize: 13, fontWeight: 600 }}>
+                {progressSaveError}
+              </div>
+            )}
           </div>
 
           {chapters.length > 0 && (
@@ -311,6 +343,8 @@ function WatchContent() {
                         onClick={() => {
                           if (isIntro) {
                             setActiveChapter(null);
+                            setResumeLessonId('intro');
+                            setResumeLessonProgress(progress);
                             return;
                           }
                           if (!hasCourseAccess) {
@@ -318,6 +352,8 @@ function WatchContent() {
                             return;
                           }
                           setActiveChapter(lesson.chapter || null);
+                          setResumeLessonId(lesson.chapter?.id || 'intro');
+                          setResumeLessonProgress(0);
                         }}
                         style={{
                           padding: '12px 14px',
@@ -561,6 +597,8 @@ function WatchContent() {
                 <button key={lesson.id} onClick={() => {
                   if (isIntro) {
                     setActiveChapter(null);
+                    setResumeLessonId('intro');
+                    setResumeLessonProgress(progress);
                     return;
                   }
                   if (!hasCourseAccess) {
@@ -568,6 +606,8 @@ function WatchContent() {
                     return;
                   }
                   setActiveChapter(lesson.chapter || null);
+                  setResumeLessonId(lesson.chapter?.id || 'intro');
+                  setResumeLessonProgress(0);
                 }}
                   style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', background: isActive ? '#f0fdf4' : !isIntro && !hasCourseAccess ? '#fffbeb' : 'transparent', border: 'none', borderLeft: '3px solid ' + (isActive ? G : 'transparent'), borderBottom: '1px solid #f3f4f6', cursor: 'pointer', textAlign: 'left' }}>
                   <div style={{ width: 26, height: 26, borderRadius: '50%', background: isActive ? G : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>

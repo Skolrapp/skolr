@@ -152,6 +152,8 @@ create table public.enrollments (
   course_id        uuid not null references public.courses(id) on delete cascade,
   enrolled_at      timestamptz not null default now(),
   progress_seconds integer not null default 0,
+  last_lesson_id   text,
+  last_lesson_progress_seconds integer not null default 0,
   completed        boolean not null default false,
   completed_at     timestamptz,
   unique(user_id, learner_profile_id, course_id)

@@ -14,13 +14,20 @@ export async function POST(
   }
 
   const { id } = await params;
-  const { progressSeconds } = await request.json() as { progressSeconds?: number };
+  const { progressSeconds, lessonId, lessonProgressSeconds } = await request.json() as {
+    progressSeconds?: number;
+    lessonId?: string | null;
+    lessonProgressSeconds?: number;
+  };
 
   if (typeof progressSeconds !== 'number' || progressSeconds < 0) {
     return NextResponse.json({ success: false, error: 'Valid progress is required.' }, { status: 400 });
   }
 
-  const result = await saveCourseProgressForUser(session.user, id, Math.floor(progressSeconds));
+  const result = await saveCourseProgressForUser(session.user, id, Math.floor(progressSeconds), {
+    lessonId: lessonId || null,
+    lessonProgressSeconds: typeof lessonProgressSeconds === 'number' ? lessonProgressSeconds : Math.floor(progressSeconds),
+  });
   if (!result.success) {
     return NextResponse.json({ success: false, error: result.error }, { status: 500 });
   }

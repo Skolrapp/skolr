@@ -43,12 +43,12 @@ async function initiateFlutterwave(params: {
   const FLW = process.env.FLUTTERWAVE_SECRET_KEY;
 
   if (!FLW) {
-    // Demo / sandbox mode when not configured
     return {
-      success: true,
-      status: 'success',
-      message: 'Demo mode: payment simulated and subscription activated. Configure FLUTTERWAVE_SECRET_KEY for live payments.',
-      providerRef: `DEMO-${Date.now()}`,
+      success: false,
+      status: 'failed',
+      message: process.env.NODE_ENV === 'production'
+        ? 'Payment service is not configured right now. Please contact support.'
+        : 'Flutterwave is not configured. Add FLUTTERWAVE_SECRET_KEY to enable payments.',
     };
   }
 
@@ -100,10 +100,11 @@ async function initiatePesapal(params: {
 
   if (!KEY || !SECRET) {
     return {
-      success: true,
-      status: 'success',
-      message: 'Demo mode: Pesapal not configured. Configure PESAPAL_* env vars for live.',
-      providerRef: `DEMO-PP-${Date.now()}`,
+      success: false,
+      status: 'failed',
+      message: process.env.NODE_ENV === 'production'
+        ? 'Payment service is not configured right now. Please contact support.'
+        : 'Pesapal is not configured. Add PESAPAL_* env vars to enable payments.',
     };
   }
 
