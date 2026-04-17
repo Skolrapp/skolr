@@ -2,16 +2,48 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import '@/styles/globals.css';
 import '@/styles/responsive.css';
+import { getSiteUrl } from '@/lib/site';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
-  title: 'Skolr — Your pace, your space',
-  description: "Learn at your pace, in your space.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'Skolr | Tanzania online learning for Primary to University',
+    template: '%s | Skolr',
+  },
+  description: 'Skolr helps learners in Tanzania study from Primary to University with structured video lessons, NECTA-aligned learning paths, and parent-friendly progress tracking.',
   applicationName: 'Skolr',
   manifest: '/manifest.json',
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Skolr' },
-  keywords: ['Skolr', 'Tanzania education', 'online learning', 'NECTA', 'HD classroom'],
+  keywords: ['Skolr', 'Tanzania education', 'online learning', 'NECTA', 'primary lessons', 'secondary lessons', 'form six lessons'],
+  alternates: {
+    canonical: '/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    url: siteUrl,
+    siteName: 'Skolr',
+    title: 'Skolr | Tanzania online learning for Primary to University',
+    description: 'Structured video lessons, exam-ready learning paths, and parent-friendly progress tracking for Tanzania learners.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Skolr | Tanzania online learning for Primary to University',
+    description: 'Structured video lessons and learning paths for Tanzania learners from Primary to University.',
+  },
 };
 
 export const viewport: Viewport = {
