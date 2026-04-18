@@ -4,7 +4,6 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { validateSession } from '@/lib/auth';
 import { getActiveLearnerFromCookies } from '@/lib/activeLearner';
-import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
 import VideoPlayer from '@/components/player/VideoPlayer';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import type { Chapter, Course, EducationLevel, User } from '@/types';
@@ -192,34 +191,14 @@ export default async function CourseDetailPage(
     description: course.description || '',
     duration_seconds: course.duration_seconds || 0,
   } as Partial<Chapter>]).slice(0, 4);
-  const hasActiveSubscription = !!user && isSubscriptionActive(user.subscription_expires_at);
-  const hasAccess = !!user && hasActiveSubscription && canAccessLevel(user.subscription_tier, course.category);
-
-  if (hasAccess) {
+  if (user) {
     redirect(`/watch/${course.id}`);
   }
 
   let primaryHref = '/register';
   let primaryLabel = 'Start free trial';
-  let secondaryHref = '/pricing';
-  let secondaryLabel = 'View plans';
-
-  if (user) {
-    if (hasAccess) {
-      primaryHref = `/watch/${course.id}`;
-      primaryLabel = enrolled || progressSeconds > 0 ? 'Resume class' : 'Open class';
-      secondaryHref = '/courses';
-      secondaryLabel = 'Browse more classes';
-    } else {
-      primaryHref = '/settings?tab=plans';
-      primaryLabel = user.account_type === 'parent_guardian' ? 'Unlock for learner' : 'Unlock this class';
-      secondaryHref = `/watch/${course.id}`;
-      secondaryLabel = 'Go to lesson page';
-    }
-  } else {
-    secondaryHref = '/login';
-    secondaryLabel = 'Log in';
-  }
+  let secondaryHref = '/login';
+  let secondaryLabel = 'Log in';
 
   return (
     <div style={{ minHeight: '100vh', background: '#f7f8fa', color: '#0a0a0a', fontFamily: "'Inter',-apple-system,sans-serif" }}>
@@ -240,12 +219,14 @@ export default async function CourseDetailPage(
 
       <main style={{ maxWidth: 1240, margin: '0 auto', padding: '32px 24px 80px' }}>
         <section className="course-detail-hero" style={{ display: 'grid', gridTemplateColumns: '1.32fr 0.68fr', gap: 20, alignItems: 'stretch', marginBottom: 24 }}>
-          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 24, padding: '24px 24px 28px', background: 'linear-gradient(140deg,#08110e,#0d1724 42%,#0f3a2a)', minHeight: 380, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at top right, rgba(16,185,129,0.22), transparent 36%), radial-gradient(circle at bottom left, rgba(59,130,246,0.18), transparent 32%)' }} />
-            {course.thumbnail_url && (
-              <div style={{ position: 'absolute', inset: 0, backgroundImage: `linear-gradient(135deg, rgba(2,6,23,0.72), rgba(2,6,23,0.32)), url(${course.thumbnail_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-            )}
+          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 24, padding: '28px 28px 30px', background: 'linear-gradient(155deg,#020617 0%,#0f172a 54%,#0b3b2e 100%)', minHeight: 380, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid rgba(148,163,184,0.16)', boxShadow: '0 20px 60px rgba(2,6,23,0.24)' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at top right, rgba(16,185,129,0.16), transparent 34%), radial-gradient(circle at bottom left, rgba(59,130,246,0.14), transparent 32%)' }} />
+            <div style={{ position: 'absolute', top: 22, right: 22, width: 140, height: 140, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.08), transparent 68%)' }} />
+            <div style={{ position: 'absolute', bottom: 26, right: 34, width: 120, height: 1, background: 'linear-gradient(90deg, rgba(52,211,153,0), rgba(52,211,153,0.45), rgba(52,211,153,0))' }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
+              <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#6ee7b7', marginBottom: 16 }}>
+                Guest class preview
+              </p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
                 <span style={{ display: 'inline-flex', padding: '6px 12px', borderRadius: 999, background: 'rgba(255,255,255,0.12)', color: '#fff', fontSize: 11, fontWeight: 800, letterSpacing: 0.4 }}>{levelMeta.label}</span>
                 {course.sub_category && <span style={{ display: 'inline-flex', padding: '6px 12px', borderRadius: 999, background: 'rgba(16,185,129,0.18)', color: '#d1fae5', fontSize: 11, fontWeight: 800 }}>{course.sub_category}</span>}
@@ -257,22 +238,30 @@ export default async function CourseDetailPage(
               <p style={{ fontSize: 15, lineHeight: 1.68, color: 'rgba(255,255,255,0.78)', maxWidth: 580, marginBottom: 20 }}>
                 {course.description || `Explore how Skolr teaches ${course.subject} through structured lessons, guided examples, and a clear chapter order before you commit to a subscription.`}
               </p>
-              <div className="course-detail-hero-stats" style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+              <div className="course-detail-hero-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 12, maxWidth: 620 }}>
                 {[
                   [formatDuration(course.duration_seconds || 0), 'Estimated study time'],
                   [averageRating ? `${averageRating} / 5` : 'New', 'Learner rating'],
                   [course.subject, 'Subject focus'],
                 ].map(([value, label]) => (
-                  <div key={label}>
-                    <p style={{ fontSize: 20, fontWeight: 800, color: '#fff' }}>{value}</p>
-                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.48)' }}>{label}</p>
+                  <div key={label} style={{ borderRadius: 16, padding: '14px 14px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <p style={{ fontSize: 20, fontWeight: 800, color: '#fff', margin: 0 }}>{value}</p>
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.58)', margin: '4px 0 0' }}>{label}</p>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="course-detail-hero-actions" style={{ position: 'relative', zIndex: 1, display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 18 }}>
-              <Link href={primaryHref} style={{ padding: '14px 18px', borderRadius: 14, background: '#fff', color: '#0a0a0a', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>{primaryLabel}</Link>
-              <Link href="#lesson-outline" style={{ padding: '14px 18px', borderRadius: 14, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>See lesson outline</Link>
+            <div style={{ position: 'relative', zIndex: 1, marginTop: 22, borderRadius: 20, padding: '16px 16px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 10 }}>
+                Next step
+              </p>
+              <div className="course-detail-hero-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <Link href={primaryHref} style={{ padding: '14px 18px', borderRadius: 14, background: '#ffffff', color: '#0a0a0a', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>{primaryLabel}</Link>
+                <Link href="#lesson-outline" style={{ padding: '14px 18px', borderRadius: 14, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>See lesson outline</Link>
+              </div>
+              <p style={{ marginTop: 10, fontSize: 12, lineHeight: 1.6, color: 'rgba(255,255,255,0.6)' }}>
+                Listen to the instructor intro, review the chapter path, then create an account when you are ready to continue.
+              </p>
             </div>
           </div>
 
@@ -418,14 +407,10 @@ export default async function CourseDetailPage(
             <div style={{ position: 'sticky', top: 94, borderRadius: 22, background: '#fff', border: '1px solid #e6eaf0', boxShadow: '0 18px 50px rgba(15,23,42,0.06)', padding: 20 }}>
               <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>Next step</p>
               <h3 style={{ fontSize: 28, lineHeight: 1.05, fontWeight: 900, color: '#0a0a0a', margin: '0 0 8px' }}>
-                {hasAccess ? 'Continue into the lesson flow' : user ? 'Unlock this class on your account' : 'Start free, then continue'}
+                Start free, then continue
               </h3>
               <p style={{ fontSize: 14, lineHeight: 1.7, color: '#64748b', marginBottom: 18 }}>
-                {hasAccess
-                  ? 'You already have enough access to move from this detail page into the watch experience.'
-                  : user
-                    ? 'This class sits behind the subscription tier shown below. Once unlocked, you can move into the watch page and save progress there.'
-                    : 'Create an account when you are ready to start learning and save progress.'}
+                Create an account when you are ready to start learning, unlock the class, and save progress.
               </p>
               <div style={{ borderRadius: 18, padding: 16, background: '#f8fafc', border: '1px solid #ecf0f4', marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
@@ -446,9 +431,7 @@ export default async function CourseDetailPage(
                 <Link href={secondaryHref} style={{ display: 'block', padding: '14px 16px', borderRadius: 14, border: '1px solid #dbe3eb', background: '#fff', color: '#334155', fontSize: 14, fontWeight: 800, textDecoration: 'none', textAlign: 'center' }}>{secondaryLabel}</Link>
               </div>
               <p style={{ marginTop: 12, fontSize: 12, lineHeight: 1.65, color: '#64748b' }}>
-                {user?.account_type === 'parent_guardian'
-                  ? 'Parent accounts subscribe once, then switch learner profiles without changing the subscription owner.'
-                  : 'Progress, reviews, and saved lessons continue on the watch page after you enter the class.'}
+                Progress, reviews, and saved lessons begin once you create an account and enter the class.
               </p>
             </div>
           </aside>

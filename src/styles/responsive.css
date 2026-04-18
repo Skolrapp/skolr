@@ -348,7 +348,7 @@
     gap: 14px !important;
   }
 
-  .course-detail-hero-actions > button {
+  .course-detail-hero-actions > a {
     width: 100%;
   }
 }
