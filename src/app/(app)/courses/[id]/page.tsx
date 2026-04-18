@@ -227,38 +227,38 @@ export default async function CourseDetailPage(
       </header>
 
       <main style={{ maxWidth: 1240, margin: '0 auto', padding: '32px 24px 80px' }}>
-        <section className="course-detail-hero" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 24, alignItems: 'stretch', marginBottom: 28 }}>
-          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 28, padding: '28px 28px 32px', background: 'linear-gradient(140deg,#08110e,#0d1724 42%,#0f3a2a)', minHeight: 420, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <section className="course-detail-hero" style={{ display: 'grid', gridTemplateColumns: '1.32fr 0.68fr', gap: 20, alignItems: 'stretch', marginBottom: 24 }}>
+          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 24, padding: '24px 24px 28px', background: 'linear-gradient(140deg,#08110e,#0d1724 42%,#0f3a2a)', minHeight: 380, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at top right, rgba(16,185,129,0.22), transparent 36%), radial-gradient(circle at bottom left, rgba(59,130,246,0.18), transparent 32%)' }} />
             {course.thumbnail_url && (
               <div style={{ position: 'absolute', inset: 0, backgroundImage: `linear-gradient(135deg, rgba(2,6,23,0.72), rgba(2,6,23,0.32)), url(${course.thumbnail_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
             )}
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 18 }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
                 <span style={{ display: 'inline-flex', padding: '6px 12px', borderRadius: 999, background: 'rgba(255,255,255,0.12)', color: '#fff', fontSize: 11, fontWeight: 800, letterSpacing: 0.4 }}>{levelMeta.label}</span>
                 {course.sub_category && <span style={{ display: 'inline-flex', padding: '6px 12px', borderRadius: 999, background: 'rgba(16,185,129,0.18)', color: '#d1fae5', fontSize: 11, fontWeight: 800 }}>{course.sub_category}</span>}
                 <span style={{ display: 'inline-flex', padding: '6px 12px', borderRadius: 999, background: 'rgba(255,255,255,0.12)', color: '#fff', fontSize: 11, fontWeight: 800 }}>{chapters.length || 1} lesson{chapters.length === 1 ? '' : 's'}</span>
               </div>
-              <h1 style={{ fontSize: 42, lineHeight: 1.08, fontWeight: 900, color: '#fff', marginBottom: 14 }}>
+              <h1 style={{ fontSize: 38, lineHeight: 1.08, fontWeight: 900, color: '#fff', marginBottom: 12 }}>
                 {course.title}
               </h1>
-              <p style={{ fontSize: 16, lineHeight: 1.72, color: 'rgba(255,255,255,0.78)', maxWidth: 620, marginBottom: 24 }}>
+              <p style={{ fontSize: 15, lineHeight: 1.68, color: 'rgba(255,255,255,0.78)', maxWidth: 580, marginBottom: 20 }}>
                 {course.description || `Explore how Skolr teaches ${course.subject} through structured lessons, guided examples, and a clear chapter order before you commit to a subscription.`}
               </p>
-              <div className="course-detail-hero-stats" style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+              <div className="course-detail-hero-stats" style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
                 {[
                   [formatDuration(course.duration_seconds || 0), 'Estimated study time'],
                   [averageRating ? `${averageRating} / 5` : 'New', 'Learner rating'],
                   [course.subject, 'Subject focus'],
                 ].map(([value, label]) => (
                   <div key={label}>
-                    <p style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{value}</p>
+                    <p style={{ fontSize: 20, fontWeight: 800, color: '#fff' }}>{value}</p>
                     <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.48)' }}>{label}</p>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="course-detail-hero-actions" style={{ position: 'relative', zIndex: 1, display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 22 }}>
+            <div className="course-detail-hero-actions" style={{ position: 'relative', zIndex: 1, display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 18 }}>
               <Link href={primaryHref} style={{ padding: '14px 18px', borderRadius: 14, background: '#fff', color: '#0a0a0a', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>{primaryLabel}</Link>
               <Link href="#lesson-outline" style={{ padding: '14px 18px', borderRadius: 14, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>See lesson outline</Link>
             </div>
@@ -281,7 +281,7 @@ export default async function CourseDetailPage(
               <div style={{ padding: 18 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
                   <div>
-                    <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6 }}>Teacher</p>
+                    <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6 }}>Instructor</p>
                     <p style={{ fontSize: 18, fontWeight: 800, color: '#0a0a0a', marginTop: 3 }}>{course.instructor_name}</p>
                   </div>
                   <div style={{ width: 48, height: 48, borderRadius: 16, background: '#ecfdf5', color: '#047857', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
@@ -289,7 +289,7 @@ export default async function CourseDetailPage(
                   </div>
                 </div>
                 <p style={{ fontSize: 14, lineHeight: 1.7, color: '#64748b', marginBottom: 16 }}>
-                  Skolr organizes this class into a clear chapter path so learners and parents know what comes next before entering the full watch experience.
+                  A focused lesson path with clear chapters, progress tracking, and exam-oriented pacing.
                 </p>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   <span style={{ padding: '7px 10px', borderRadius: 999, background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 700 }}>Structured path</span>
@@ -298,26 +298,12 @@ export default async function CourseDetailPage(
                 </div>
               </div>
             </div>
-
-            <div style={{ borderRadius: 24, background: '#fff', border: '1px solid #e6eaf0', boxShadow: '0 18px 50px rgba(15,23,42,0.06)', padding: 18 }}>
-              <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 10 }}>Access guidance</p>
-              <p style={{ fontSize: 24, lineHeight: 1.15, fontWeight: 900, color: '#0a0a0a', marginBottom: 10 }}>
-                {hasAccess ? 'You can open this class now' : user ? 'Subscription unlocks the full lesson flow' : 'This page is the trust step before signup'}
-              </p>
-              <p style={{ fontSize: 14, lineHeight: 1.75, color: '#64748b', marginBottom: 14 }}>
-                {hasAccess
-                  ? `You${activeLearnerName ? ` and ${activeLearnerName}` : ''} already have the right access tier for this class.`
-                  : user
-                    ? 'Use this detail page to check the subject, teacher, and lesson order before unlocking the class.'
-                    : 'Visitors can understand the value here first, then create an account or start a free trial when ready.'}
-              </p>
-            </div>
           </aside>
         </section>
 
-        <section className="course-detail-body" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24 }}>
+        <section className="course-detail-body" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-            <div style={{ borderRadius: 24, background: '#fff', border: '1px solid #e6eaf0', padding: 24 }}>
+            <div style={{ borderRadius: 22, background: '#fff', border: '1px solid #e6eaf0', padding: 22 }}>
               <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 12 }}>What learners will achieve</p>
               <div className="course-detail-two-col" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 12 }}>
                 {outcomes.map((item) => (
@@ -329,11 +315,11 @@ export default async function CourseDetailPage(
               </div>
             </div>
 
-            <div id="lesson-outline" style={{ borderRadius: 24, background: '#fff', border: '1px solid #e6eaf0', padding: 24 }}>
+            <div id="lesson-outline" style={{ borderRadius: 22, background: '#fff', border: '1px solid #e6eaf0', padding: 22 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
                 <div>
                   <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 6 }}>Lesson outline</p>
-                  <h2 style={{ fontSize: 28, lineHeight: 1.12, fontWeight: 900, color: '#0a0a0a', margin: 0 }}>Chapter flow before the watch page</h2>
+                  <h2 style={{ fontSize: 28, lineHeight: 1.12, fontWeight: 900, color: '#0a0a0a', margin: 0 }}>Lesson outline</h2>
                 </div>
                 <span style={{ fontSize: 13, color: '#64748b', fontWeight: 700 }}>{chapters.length || 1} chapter{chapters.length === 1 ? '' : 's'}</span>
               </div>
@@ -364,7 +350,7 @@ export default async function CourseDetailPage(
               </div>
             </div>
 
-            <div style={{ borderRadius: 24, background: '#fff', border: '1px solid #e6eaf0', padding: 24 }}>
+            <div style={{ borderRadius: 22, background: '#fff', border: '1px solid #e6eaf0', padding: 22 }}>
               <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>Social proof</p>
               <h2 style={{ fontSize: 28, lineHeight: 1.12, fontWeight: 900, color: '#0a0a0a', margin: '0 0 16px' }}>Learner reviews</h2>
               <div className="course-detail-two-col" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 14 }}>
@@ -386,7 +372,7 @@ export default async function CourseDetailPage(
           </div>
 
           <aside style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            <div style={{ position: 'sticky', top: 94, borderRadius: 24, background: '#fff', border: '1px solid #e6eaf0', boxShadow: '0 18px 50px rgba(15,23,42,0.06)', padding: 22 }}>
+            <div style={{ position: 'sticky', top: 94, borderRadius: 22, background: '#fff', border: '1px solid #e6eaf0', boxShadow: '0 18px 50px rgba(15,23,42,0.06)', padding: 20 }}>
               <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>Next step</p>
               <h3 style={{ fontSize: 28, lineHeight: 1.05, fontWeight: 900, color: '#0a0a0a', margin: '0 0 8px' }}>
                 {hasAccess ? 'Continue into the lesson flow' : user ? 'Unlock this class on your account' : 'Start free, then continue'}
@@ -396,7 +382,7 @@ export default async function CourseDetailPage(
                   ? 'You already have enough access to move from this detail page into the watch experience.'
                   : user
                     ? 'This class sits behind the subscription tier shown below. Once unlocked, you can move into the watch page and save progress there.'
-                    : 'This detail page explains the value first. When ready, create an account and start your free trial.'}
+                    : 'Create an account when you are ready to start learning and save progress.'}
               </p>
               <div style={{ borderRadius: 18, padding: 16, background: '#f8fafc', border: '1px solid #ecf0f4', marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
