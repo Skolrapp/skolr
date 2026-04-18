@@ -15,6 +15,16 @@ function isMissingResumeColumn(message?: string) {
   );
 }
 
+function logResumeColumnFallback(details: {
+  courseId: string;
+  userId: string;
+  learnerProfileId?: string | null;
+  source: 'progress-update' | 'progress-insert';
+  message?: string;
+}) {
+  console.warn('[resume-column-fallback]', details);
+}
+
 export async function saveCourseProgressForUser(user: User, courseId: string, progressSeconds: number, options: SaveProgressOptions = {}) {
   const { activeLearner } = await getActiveLearnerFromCookies(user);
   const supabase = createSupabaseAdmin();
@@ -64,6 +74,13 @@ export async function saveCourseProgressForUser(user: User, courseId: string, pr
       .eq('id', existingResult.data.id);
 
     if (updateResult.error && isMissingResumeColumn(updateResult.error.message)) {
+      logResumeColumnFallback({
+        source: 'progress-update',
+        courseId,
+        userId: user.id,
+        learnerProfileId: activeLearner?.id || null,
+        message: updateResult.error.message,
+      });
       updateResult = await supabase
         .from('enrollments')
         .update({
@@ -96,6 +113,13 @@ export async function saveCourseProgressForUser(user: User, courseId: string, pr
     });
 
   if (insertResult.error && isMissingResumeColumn(insertResult.error.message)) {
+    logResumeColumnFallback({
+      source: 'progress-insert',
+      courseId,
+      userId: user.id,
+      learnerProfileId: activeLearner?.id || null,
+      message: insertResult.error.message,
+    });
     insertResult = await supabase
       .from('enrollments')
       .insert({

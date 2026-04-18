@@ -10,6 +10,16 @@ function isMissingResumeColumn(message?: string) {
   );
 }
 
+function logResumeColumnFallback(details: {
+  courseId: string;
+  userId: string;
+  learnerProfileId?: string | null;
+  source: 'course-route';
+  message?: string;
+}) {
+  console.warn('[resume-column-fallback]', details);
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -56,6 +66,13 @@ export async function GET(
         .maybeSingle();
 
       if (enrollmentResult.error && isMissingResumeColumn(enrollmentResult.error.message)) {
+        logResumeColumnFallback({
+          source: 'course-route',
+          courseId: id,
+          userId: session.user.id,
+          learnerProfileId: activeLearner.id,
+          message: enrollmentResult.error.message,
+        });
         enrollmentResult = await supabase
           .from('enrollments')
           .select('progress_seconds, completed')
@@ -78,6 +95,13 @@ export async function GET(
         .maybeSingle();
 
       if (enrollmentResult.error && isMissingResumeColumn(enrollmentResult.error.message)) {
+        logResumeColumnFallback({
+          source: 'course-route',
+          courseId: id,
+          userId: session.user.id,
+          learnerProfileId: null,
+          message: enrollmentResult.error.message,
+        });
         enrollmentResult = await supabase
           .from('enrollments')
           .select('progress_seconds, completed')
