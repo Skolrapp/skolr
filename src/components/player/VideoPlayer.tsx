@@ -11,6 +11,7 @@ interface Props {
   onProgress?: (seconds: number) => void;
   previewSeconds?: number;
   onPreviewLimit?: () => void;
+  autoPlay?: boolean;
 }
 
 type Quality = 'excellent' | 'good' | 'fair' | 'poor';
@@ -22,7 +23,7 @@ function bwToQ(bps: number): Quality {
   return 'poor';
 }
 
-export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rememberKey, onProgress, previewSeconds = 0, onPreviewLimit }: Props) {
+export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rememberKey, onProgress, previewSeconds = 0, onPreviewLimit, autoPlay = false }: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const vRef     = useRef<HTMLVideoElement>(null);
   const hlsRef   = useRef<Hls | null>(null);
@@ -35,7 +36,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
 
   const [ready,    setReady]    = useState(false);
   const [playing,  setPlaying]  = useState(false);
-  const [muted,    setMuted]    = useState(false);
+  const [muted,    setMuted]    = useState(autoPlay);
   const [volume,   setVolume]   = useState(1);
   const [buffering,setBuffering]= useState(false);
   const [showCtrl, setShowCtrl] = useState(true);
@@ -102,6 +103,10 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
   useEffect(() => {
     startAtRef.current = startAt;
   }, [hlsUrl, startAt]);
+
+  useEffect(() => {
+    setMuted(autoPlay);
+  }, [autoPlay, hlsUrl]);
 
   useEffect(() => {
     if (!rememberKey || typeof window === 'undefined') return;
@@ -224,6 +229,17 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
       setReady(true);
       setBuffering(false);
       applyStartTime();
+      if (autoPlay) {
+        video.muted = true;
+        setMuted(true);
+        void video.play().then(() => {
+          if (!mounted) return;
+          setPlaying(true);
+        }).catch(() => {
+          if (!mounted) return;
+          setPlaying(false);
+        });
+      }
     };
     const syncWaiting = () => {
       if (!mounted) return;
@@ -280,7 +296,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
       if (progRef.current) clearInterval(progRef.current);
       flushProgress(video.currentTime);
     };
-  }, [flushProgress, hlsUrl, persistLocalProgress]);
+  }, [autoPlay, flushProgress, hlsUrl, persistLocalProgress]);
 
   useEffect(() => {
     const video = vRef.current;

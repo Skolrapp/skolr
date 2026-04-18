@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { validateSession } from '@/lib/auth';
 import { getActiveLearnerFromCookies } from '@/lib/activeLearner';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
+import VideoPlayer from '@/components/player/VideoPlayer';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import type { Chapter, Course, EducationLevel, User } from '@/types';
 
@@ -184,6 +185,12 @@ export default async function CourseDetailPage(
   const user = session?.user || null;
   const levelMeta = LEVEL_META[course.category] || LEVEL_META.primary;
   const outcomes = getOutcomeBullets(course, chapters.length);
+  const overviewChapters = (chapters.length ? chapters : [{
+    id: 'intro',
+    title: course.title,
+    description: course.description || '',
+    duration_seconds: course.duration_seconds || 0,
+  } as Partial<Chapter>]).slice(0, 4);
   const hasActiveSubscription = !!user && isSubscriptionActive(user.subscription_expires_at);
   const hasAccess = !!user && hasActiveSubscription && canAccessLevel(user.subscription_tier, course.category);
 
@@ -266,37 +273,60 @@ export default async function CourseDetailPage(
 
           <aside style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div style={{ borderRadius: 24, background: '#fff', border: '1px solid #e6eaf0', boxShadow: '0 18px 50px rgba(15,23,42,0.06)', overflow: 'hidden' }}>
-              <div style={{ aspectRatio: '16/10', background: 'linear-gradient(135deg,#def7ec,#eff6ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                {course.thumbnail_url ? (
-                  <img src={course.thumbnail_url} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <div style={{ width: 96, height: 96, borderRadius: '50%', background: 'rgba(255,255,255,0.62)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 30px rgba(16,185,129,0.14)' }}>
-                    <svg width="34" height="34" viewBox="0 0 24 24" fill={G}><path d="M8 5v14l11-7z" /></svg>
-                  </div>
-                )}
-                <div style={{ position: 'absolute', bottom: 16, left: 16, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 999, background: '#0f172a', color: '#fff', fontSize: 11, fontWeight: 800 }}>
-                  {user ? 'Open lesson flow' : 'Create account to continue'}
-                </div>
+              <div style={{ padding: 12, background: '#0f172a' }}>
+                <VideoPlayer
+                  hlsUrl={course.video_hls_url}
+                  posterUrl={course.thumbnail_url}
+                  title={`${course.title} intro`}
+                  previewSeconds={user ? 0 : 180}
+                  autoPlay
+                />
               </div>
               <div style={{ padding: 18 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 14, alignItems: 'flex-start' }}>
                   <div>
-                    <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6 }}>Instructor</p>
+                    <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6 }}>Course intro</p>
                     <p style={{ fontSize: 18, fontWeight: 800, color: '#0a0a0a', marginTop: 3 }}>{course.instructor_name}</p>
                   </div>
-                  <div style={{ width: 48, height: 48, borderRadius: 16, background: '#ecfdf5', color: '#047857', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 }}>
-                    {course.instructor_name.charAt(0)}
-                  </div>
+                  <span style={{ display: 'inline-flex', padding: '7px 10px', borderRadius: 999, background: '#f8fafc', color: '#475569', fontSize: 11, fontWeight: 800 }}>
+                    {user ? 'Full intro available' : 'Guest preview available'}
+                  </span>
                 </div>
                 <p style={{ fontSize: 14, lineHeight: 1.7, color: '#64748b', marginBottom: 16 }}>
-                  A focused lesson path with clear chapters, progress tracking, and exam-oriented pacing.
+                  Guests can listen to the instructor's brief introduction here, then review the chapter flow before deciding to continue.
                 </p>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   <span style={{ padding: '7px 10px', borderRadius: 999, background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 700 }}>Structured path</span>
-                  <span style={{ padding: '7px 10px', borderRadius: 999, background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 700 }}>Progress tracking</span>
-                  <span style={{ padding: '7px 10px', borderRadius: 999, background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 700 }}>Quiz-ready</span>
+                  <span style={{ padding: '7px 10px', borderRadius: 999, background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 700 }}>{chapters.length || 1} chapters</span>
+                  <span style={{ padding: '7px 10px', borderRadius: 999, background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 700 }}>Intro preview</span>
                 </div>
               </div>
+            </div>
+
+            <div style={{ borderRadius: 24, background: '#fff', border: '1px solid #e6eaf0', boxShadow: '0 18px 50px rgba(15,23,42,0.06)', padding: 18 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' }}>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 4 }}>Course overview</p>
+                  <p style={{ fontSize: 18, fontWeight: 800, color: '#0a0a0a', margin: 0 }}>Chapter path</p>
+                </div>
+                <Link href="#lesson-outline" style={{ fontSize: 12, fontWeight: 800, color: '#0f766e', textDecoration: 'none' }}>See all chapters</Link>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {overviewChapters.map((chapter, index) => (
+                  <div key={chapter.id || `${course.id}-overview-${index}`} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 0', borderTop: index === 0 ? 'none' : '1px solid #edf2f7' }}>
+                    <div style={{ width: 30, height: 30, borderRadius: 10, background: '#ecfdf5', color: '#047857', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 }}>
+                      {index + 1}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#0a0a0a' }}>{chapter.title || `Chapter ${index + 1}`}</p>
+                      <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748b' }}>{formatDuration(Number(chapter.duration_seconds || 0))}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p style={{ marginTop: 12, fontSize: 12, lineHeight: 1.65, color: '#64748b' }}>
+                Guests can review the full chapter list below. Full lesson playback opens after account access.
+              </p>
             </div>
           </aside>
         </section>
@@ -304,7 +334,15 @@ export default async function CourseDetailPage(
         <section className="course-detail-body" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
             <div style={{ borderRadius: 22, background: '#fff', border: '1px solid #e6eaf0', padding: 22 }}>
-              <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 12 }}>What learners will achieve</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 6 }}>Overview</p>
+                  <h2 style={{ fontSize: 28, lineHeight: 1.12, fontWeight: 900, color: '#0a0a0a', margin: 0 }}>What this class covers</h2>
+                </div>
+                <span style={{ padding: '7px 10px', borderRadius: 999, background: levelMeta.bg, color: levelMeta.color, fontSize: 12, fontWeight: 800 }}>
+                  {levelMeta.label}
+                </span>
+              </div>
               <div className="course-detail-two-col" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 12 }}>
                 {outcomes.map((item) => (
                   <div key={item} style={{ borderRadius: 18, padding: '16px 16px 16px 14px', background: '#f8fafc', border: '1px solid #ecf0f4', display: 'flex', gap: 12 }}>
@@ -319,7 +357,7 @@ export default async function CourseDetailPage(
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
                 <div>
                   <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 6 }}>Lesson outline</p>
-                  <h2 style={{ fontSize: 28, lineHeight: 1.12, fontWeight: 900, color: '#0a0a0a', margin: 0 }}>Lesson outline</h2>
+                  <h2 style={{ fontSize: 28, lineHeight: 1.12, fontWeight: 900, color: '#0a0a0a', margin: 0 }}>Course chapters</h2>
                 </div>
                 <span style={{ fontSize: 13, color: '#64748b', fontWeight: 700 }}>{chapters.length || 1} chapter{chapters.length === 1 ? '' : 's'}</span>
               </div>
