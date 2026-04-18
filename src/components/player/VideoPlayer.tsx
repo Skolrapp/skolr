@@ -31,6 +31,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
   const previewTriggeredRef = useRef(false);
   const startAtRef = useRef(startAt);
   const lastSavedProgressRef = useRef(0);
+  const fatalRecoveryRef = useRef({ network: 0, media: 0 });
 
   const [ready,    setReady]    = useState(false);
   const [playing,  setPlaying]  = useState(false);
@@ -131,48 +132,123 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
   useEffect(() => {
     const video = vRef.current;
     if (!video) return;
+    let mounted = true;
+
+    setReady(false);
+    setPlaying(false);
+    setBuffering(true);
+    setError(null);
+    setDuration(0);
+    setCurrentTime(0);
+    setLevels([]);
+    setCurLevel(-1);
+    setSubtitleTracks([]);
+    setSubtitleTrack(-1);
+    setShowQ(false);
+    setShowCaptions(false);
+    fatalRecoveryRef.current = { network: 0, media: 0 };
+
+    // Fully reset previous source state before attaching a new stream.
+    hlsRef.current?.destroy();
+    hlsRef.current = null;
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+
+    const applyStartTime = () => {
+      const requested = Math.max(0, Math.floor(startAtRef.current || 0));
+      if (!requested) return;
+      const maxSeek = Number.isFinite(video.duration) && video.duration > 0 ? Math.max(0, video.duration - 0.25) : requested;
+      const nextTime = Math.min(requested, maxSeek);
+      try {
+        video.currentTime = nextTime;
+        setCurrentTime(nextTime);
+      } catch {}
+    };
+
     if (Hls.isSupported()) {
       const hls = new Hls({ enableWorker: true, startLevel: -1, maxBufferLength: 30, abrBandWidthFactor: 0.95, fragLoadingMaxRetry: 6 });
       hls.loadSource(hlsUrl);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, (_, d) => {
+        if (!mounted) return;
         setLevels(d.levels.map((l, i) => ({ index: i, label: l.height ? `${l.height}p` : `${Math.round(l.bitrate/1000)}k` })));
         setSubtitleTracks((d.subtitleTracks || []).map((track, index) => ({ index, label: track.name || track.lang || `Track ${index + 1}` })));
         setReady(true);
-        if (startAtRef.current > 0) video.currentTime = startAtRef.current;
+        setBuffering(false);
+        applyStartTime();
       });
       hls.on(Hls.Events.LEVEL_SWITCHED, (_, d) => setCurLevel(d.level));
       hls.on(Hls.Events.SUBTITLE_TRACK_SWITCH, (_, d) => setSubtitleTrack(d.id));
       hls.on(Hls.Events.FRAG_LOADED, () => { const b = hls.bandwidthEstimate; setBw(b); setQuality(bwToQ(b)); });
       hls.on(Hls.Events.ERROR, (_, d) => {
         if (d.fatal) {
-          if (d.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
-          else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
-          else { setError('Video failed to load.'); hls.destroy(); }
+          if (d.type === Hls.ErrorTypes.NETWORK_ERROR && fatalRecoveryRef.current.network < 2) {
+            fatalRecoveryRef.current.network += 1;
+            hls.startLoad();
+            return;
+          }
+          if (d.type === Hls.ErrorTypes.MEDIA_ERROR && fatalRecoveryRef.current.media < 2) {
+            fatalRecoveryRef.current.media += 1;
+            hls.recoverMediaError();
+            return;
+          }
+          setBuffering(false);
+          setPlaying(false);
+          setError('Video failed to load. Please try again.');
+          hls.destroy();
         }
       });
       hlsRef.current = hls;
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = hlsUrl;
-      video.addEventListener('loadedmetadata', () => { setReady(true); if (startAtRef.current > 0) video.currentTime = startAtRef.current; });
+      video.load();
     } else {
+      setBuffering(false);
       setError('Your browser does not support video playback.');
     }
 
     const syncMeta = () => {
+      if (!mounted) return;
       setDuration(video.duration || 0);
       setCurrentTime(video.currentTime || 0);
       persistLocalProgress(video.currentTime || 0);
     };
     const syncVolume = () => {
+      if (!mounted) return;
       setMuted(video.muted);
       setVolume(video.volume);
+    };
+    const syncCanPlay = () => {
+      if (!mounted) return;
+      setReady(true);
+      setBuffering(false);
+      applyStartTime();
+    };
+    const syncWaiting = () => {
+      if (!mounted) return;
+      setBuffering(true);
+    };
+    const syncPlaying = () => {
+      if (!mounted) return;
+      setPlaying(true);
+      setBuffering(false);
+    };
+    const syncPause = () => {
+      if (!mounted) return;
+      setPlaying(false);
     };
 
     video.addEventListener('loadedmetadata', syncMeta);
     video.addEventListener('durationchange', syncMeta);
     video.addEventListener('timeupdate', syncMeta);
     video.addEventListener('volumechange', syncVolume);
+    video.addEventListener('loadedmetadata', syncCanPlay);
+    video.addEventListener('canplay', syncCanPlay);
+    video.addEventListener('playing', syncPlaying);
+    video.addEventListener('pause', syncPause);
+    video.addEventListener('ended', syncPause);
+    video.addEventListener('waiting', syncWaiting);
     progRef.current = setInterval(() => {
       if (!video.paused) flushProgress(video.currentTime);
     }, 5000);
@@ -186,11 +262,18 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
     video.addEventListener('ended', handlePauseOrEnd);
     document.addEventListener('visibilitychange', handleVisibility);
     return () => {
+      mounted = false;
       hlsRef.current?.destroy();
       video.removeEventListener('loadedmetadata', syncMeta);
       video.removeEventListener('durationchange', syncMeta);
       video.removeEventListener('timeupdate', syncMeta);
       video.removeEventListener('volumechange', syncVolume);
+      video.removeEventListener('loadedmetadata', syncCanPlay);
+      video.removeEventListener('canplay', syncCanPlay);
+      video.removeEventListener('playing', syncPlaying);
+      video.removeEventListener('pause', syncPause);
+      video.removeEventListener('ended', syncPause);
+      video.removeEventListener('waiting', syncWaiting);
       video.removeEventListener('pause', handlePauseOrEnd);
       video.removeEventListener('ended', handlePauseOrEnd);
       document.removeEventListener('visibilitychange', handleVisibility);
@@ -226,10 +309,23 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
     return () => video.removeEventListener('timeupdate', handleTimeUpdate);
   }, [previewSeconds, onPreviewLimit]);
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     const v = vRef.current;
     if (!v) return;
-    if (v.paused) { v.play(); setPlaying(true); } else { v.pause(); setPlaying(false); }
+    if (v.paused) {
+      try {
+        setError(null);
+        await v.play();
+        setPlaying(true);
+      } catch {
+        setPlaying(false);
+        setBuffering(false);
+        setError('Playback could not start. Please tap play again or refresh the page.');
+      }
+    } else {
+      v.pause();
+      setPlaying(false);
+    }
     activity();
   };
   const handleWrapperKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {

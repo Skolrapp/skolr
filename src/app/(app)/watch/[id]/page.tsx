@@ -118,7 +118,7 @@ function WatchContent() {
     setProgress(seconds);
     if (!user) return;
     const lessonId = activeChapter?.id || 'intro';
-    const courseProgressSeconds = activeChapter ? progress : seconds;
+    const courseProgressSeconds = activeChapter ? Math.max(progress, seconds) : seconds;
 
     try {
       const response = await fetch(`/api/courses/${id}/progress`, {
