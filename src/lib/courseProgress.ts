@@ -8,6 +8,13 @@ type SaveProgressOptions = {
   lessonProgressSeconds?: number;
 };
 
+function isMissingResumeColumn(message?: string) {
+  return !!message && (
+    message.includes('last_lesson_id') ||
+    message.includes('last_lesson_progress_seconds')
+  );
+}
+
 export async function saveCourseProgressForUser(user: User, courseId: string, progressSeconds: number, options: SaveProgressOptions = {}) {
   const { activeLearner } = await getActiveLearnerFromCookies(user);
   const supabase = createSupabaseAdmin();
@@ -45,7 +52,7 @@ export async function saveCourseProgressForUser(user: User, courseId: string, pr
   }
 
   if (existingResult.data?.id) {
-    const updateResult = await supabase
+    let updateResult = await supabase
       .from('enrollments')
       .update({
         progress_seconds: progressSeconds,
@@ -56,6 +63,17 @@ export async function saveCourseProgressForUser(user: User, courseId: string, pr
       })
       .eq('id', existingResult.data.id);
 
+    if (updateResult.error && isMissingResumeColumn(updateResult.error.message)) {
+      updateResult = await supabase
+        .from('enrollments')
+        .update({
+          progress_seconds: progressSeconds,
+          completed,
+          completed_at: completed ? new Date().toISOString() : null,
+        })
+        .eq('id', existingResult.data.id);
+    }
+
     if (updateResult.error) {
       return { success: false as const, error: updateResult.error.message };
     }
@@ -63,7 +81,7 @@ export async function saveCourseProgressForUser(user: User, courseId: string, pr
     return { success: true as const };
   }
 
-  const insertResult = await supabase
+  let insertResult = await supabase
     .from('enrollments')
     .insert({
       id: uuidv4(),
@@ -76,6 +94,20 @@ export async function saveCourseProgressForUser(user: User, courseId: string, pr
       last_lesson_id: options.lessonId || null,
       last_lesson_progress_seconds: Math.max(0, Math.floor(options.lessonProgressSeconds ?? progressSeconds)),
     });
+
+  if (insertResult.error && isMissingResumeColumn(insertResult.error.message)) {
+    insertResult = await supabase
+      .from('enrollments')
+      .insert({
+        id: uuidv4(),
+        user_id: user.id,
+        learner_profile_id: activeLearner?.id || null,
+        course_id: courseId,
+        progress_seconds: progressSeconds,
+        completed,
+        completed_at: completed ? new Date().toISOString() : null,
+      });
+  }
 
   if (insertResult.error) {
     return { success: false as const, error: insertResult.error.message };

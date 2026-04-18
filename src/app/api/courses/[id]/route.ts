@@ -3,6 +3,13 @@ import { validateSession } from '@/lib/auth';
 import { getActiveLearnerFromCookies } from '@/lib/activeLearner';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 
+function isMissingResumeColumn(message?: string) {
+  return !!message && (
+    message.includes('last_lesson_id') ||
+    message.includes('last_lesson_progress_seconds')
+  );
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -47,6 +54,18 @@ export async function GET(
         .order('enrolled_at', { ascending: false })
         .limit(1)
         .maybeSingle();
+
+      if (enrollmentResult.error && isMissingResumeColumn(enrollmentResult.error.message)) {
+        enrollmentResult = await supabase
+          .from('enrollments')
+          .select('progress_seconds, completed')
+          .eq('user_id', session.user.id)
+          .eq('learner_profile_id', activeLearner.id)
+          .eq('course_id', id)
+          .order('enrolled_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+      }
     } else {
       enrollmentResult = await supabase
         .from('enrollments')
@@ -57,6 +76,18 @@ export async function GET(
         .order('enrolled_at', { ascending: false })
         .limit(1)
         .maybeSingle();
+
+      if (enrollmentResult.error && isMissingResumeColumn(enrollmentResult.error.message)) {
+        enrollmentResult = await supabase
+          .from('enrollments')
+          .select('progress_seconds, completed')
+          .eq('user_id', session.user.id)
+          .eq('course_id', id)
+          .is('learner_profile_id', null)
+          .order('enrolled_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+      }
     }
     enrollment = enrollmentResult.data;
   }
