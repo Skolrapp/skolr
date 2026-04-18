@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { validateSession } from '@/lib/auth';
 import { getActiveLearnerFromCookies } from '@/lib/activeLearner';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
@@ -194,6 +195,10 @@ export default async function CourseDetailPage(
   const hasActiveSubscription = !!user && isSubscriptionActive(user.subscription_expires_at);
   const hasAccess = !!user && hasActiveSubscription && canAccessLevel(user.subscription_tier, course.category);
 
+  if (hasAccess) {
+    redirect(`/watch/${course.id}`);
+  }
+
   let primaryHref = '/register';
   let primaryLabel = 'Start free trial';
   let secondaryHref = '/pricing';
@@ -272,8 +277,8 @@ export default async function CourseDetailPage(
           </div>
 
           <aside style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            <div style={{ borderRadius: 24, background: '#fff', border: '1px solid #e6eaf0', boxShadow: '0 18px 50px rgba(15,23,42,0.06)', overflow: 'hidden' }}>
-              <div style={{ padding: 12, background: '#0f172a' }}>
+            <div style={{ borderRadius: 24, background: '#020617', border: '1px solid rgba(148,163,184,0.18)', boxShadow: '0 18px 50px rgba(15,23,42,0.18)', overflow: 'hidden' }}>
+              <div style={{ padding: 12, background: '#020617' }}>
                 <VideoPlayer
                   hlsUrl={course.video_hls_url}
                   posterUrl={course.thumbnail_url}
@@ -285,20 +290,20 @@ export default async function CourseDetailPage(
               <div style={{ padding: 18 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 14, alignItems: 'flex-start' }}>
                   <div>
-                    <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6 }}>Course intro</p>
-                    <p style={{ fontSize: 18, fontWeight: 800, color: '#0a0a0a', marginTop: 3 }}>{course.instructor_name}</p>
+                    <p style={{ fontSize: 12, fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: 0.6 }}>Course intro</p>
+                    <p style={{ fontSize: 18, fontWeight: 800, color: '#f8fafc', marginTop: 3 }}>{course.instructor_name}</p>
                   </div>
-                  <span style={{ display: 'inline-flex', padding: '7px 10px', borderRadius: 999, background: '#f8fafc', color: '#475569', fontSize: 11, fontWeight: 800 }}>
-                    {user ? 'Full intro available' : 'Guest preview available'}
+                  <span style={{ display: 'inline-flex', padding: '7px 10px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', color: '#cbd5e1', fontSize: 11, fontWeight: 800 }}>
+                    Guest preview available
                   </span>
                 </div>
-                <p style={{ fontSize: 14, lineHeight: 1.7, color: '#64748b', marginBottom: 16 }}>
+                <p style={{ fontSize: 14, lineHeight: 1.7, color: '#94a3b8', marginBottom: 16 }}>
                   Guests can listen to the instructor's brief introduction here, then review the chapter flow before deciding to continue.
                 </p>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  <span style={{ padding: '7px 10px', borderRadius: 999, background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 700 }}>Structured path</span>
-                  <span style={{ padding: '7px 10px', borderRadius: 999, background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 700 }}>{chapters.length || 1} chapters</span>
-                  <span style={{ padding: '7px 10px', borderRadius: 999, background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 700 }}>Intro preview</span>
+                  <span style={{ padding: '7px 10px', borderRadius: 999, background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 12, fontWeight: 700 }}>Structured path</span>
+                  <span style={{ padding: '7px 10px', borderRadius: 999, background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 12, fontWeight: 700 }}>{chapters.length || 1} chapters</span>
+                  <span style={{ padding: '7px 10px', borderRadius: 999, background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 12, fontWeight: 700 }}>Intro preview</span>
                 </div>
               </div>
             </div>
