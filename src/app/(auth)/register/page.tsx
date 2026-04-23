@@ -3,6 +3,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { registerAction } from '@/actions/auth';
+import TurnstileWidget from '@/components/auth/TurnstileWidget';
 import { EDUCATION_LEVELS } from '@/lib/constants';
 import type { EducationLevel } from '@/types';
 
@@ -23,6 +24,8 @@ export default function RegisterPage() {
     guardianConsent: false,
   });
   const [error,    setError]    = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const turnstileEnabled = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const selectedLevel = EDUCATION_LEVELS.find((entry) => entry.key === learnerLevel);
   const isMinorFlow = role === 'student' && ['primary', 'secondary', 'highschool'].includes(learnerLevel);
   const accountHeading = role === 'instructor'
@@ -40,6 +43,7 @@ export default function RegisterPage() {
     if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return; }
     if (form.password !== form.confirm) { setError('Passwords do not match.'); return; }
     if (isMinorFlow && !form.guardianConsent) { setError('Parent or guardian consent is required for learners under 18.'); return; }
+    if (turnstileEnabled && !turnstileToken) { setError('Please complete the security check.'); return; }
 
     start(async () => {
       const fd = new FormData();
@@ -53,6 +57,7 @@ export default function RegisterPage() {
         if (learnerSubCategory) fd.set('learner_sub_category', learnerSubCategory);
         if (form.guardianConsent) fd.set('guardian_consent', 'yes');
       }
+      fd.set('turnstile_token', turnstileToken);
       const result = await registerAction(fd);
       if (result?.error) { setError(result.error); }
       else { router.push('/login?registered=1'); }
@@ -196,6 +201,16 @@ export default function RegisterPage() {
                 I confirm that I am the parent or legal guardian of this learner and I consent to creating and managing this account.
               </span>
             </label>
+          )}
+
+          {turnstileEnabled && (
+            <TurnstileWidget
+              onTokenChange={(token) => {
+                setTurnstileToken(token);
+                if (token) setError('');
+              }}
+              onExpire={() => setTurnstileToken('')}
+            />
           )}
 
           {error && (

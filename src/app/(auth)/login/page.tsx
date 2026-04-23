@@ -4,6 +4,7 @@ import { useState, Suspense, useEffect, useTransition } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { loginAction } from '@/actions/auth';
+import TurnstileWidget from '@/components/auth/TurnstileWidget';
 
 const G = '#10B981';
 
@@ -15,6 +16,8 @@ function LoginContent() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [warn, setWarn] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const turnstileEnabled = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   useEffect(() => {
     if (params.get('reason') === 'session_ended') setWarn('Your session was ended because you signed in on another device.');
@@ -24,11 +27,13 @@ function LoginContent() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!phone || !password) { setError('Please enter your phone number and password.'); return; }
+    if (turnstileEnabled && !turnstileToken) { setError('Please complete the security check.'); return; }
     setError('');
     startTransition(async () => {
       const fd = new FormData();
       fd.set('phone', phone);
       fd.set('password', password);
+      fd.set('turnstile_token', turnstileToken);
       const result = await loginAction(fd);
       if (!result) return;
       if ('error' in result) {
@@ -76,6 +81,15 @@ function LoginContent() {
               <input className="inp" type="password" placeholder="••••••••"
                 value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" />
             </div>
+            {turnstileEnabled && (
+              <TurnstileWidget
+                onTokenChange={(token) => {
+                  setTurnstileToken(token);
+                  if (token) setError('');
+                }}
+                onExpire={() => setTurnstileToken('')}
+              />
+            )}
             {error && (
               <div className="rounded-xl p-3 text-sm" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}>
                 {error}

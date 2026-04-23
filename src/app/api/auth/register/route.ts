@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 import type { EducationLevel } from '@/types';
 
 function normalizeTzPhone(rawPhone: string) {
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest) {
       learner_level = 'primary',
       learner_sub_category = null,
       guardian_consent = false,
+      turnstile_token,
     } = await request.json() as {
       name: string;
       phone: string;
@@ -36,6 +38,7 @@ export async function POST(request: NextRequest) {
       learner_level?: EducationLevel;
       learner_sub_category?: string | null;
       guardian_consent?: boolean;
+      turnstile_token?: string;
     };
 
     if (!name?.trim() || !phone?.trim() || !password || password.length < 6) {
@@ -51,6 +54,11 @@ export async function POST(request: NextRequest) {
 
     if (isMinorFlow && !guardian_consent) {
       return NextResponse.json({ success: false, error: 'Parent or guardian consent is required for minors.' }, { status: 400 });
+    }
+
+    const turnstileCheck = await verifyTurnstileToken(turnstile_token, request.headers.get('x-forwarded-for')?.split(',')[0] || null);
+    if (!turnstileCheck.success) {
+      return NextResponse.json({ success: false, error: turnstileCheck.error || 'Security check failed.' }, { status: 400 });
     }
 
     const normalized = normalizeTzPhone(phone);

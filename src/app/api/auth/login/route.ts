@@ -4,11 +4,17 @@ import bcrypt from 'bcryptjs';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import { createSession, getDeviceFingerprint } from '@/lib/auth';
 import { getInitialLearnerProfileId, setActiveLearnerCookie } from '@/lib/activeLearner';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 
 export async function POST(request: NextRequest) {
   try {
-    const { phone, password } = await request.json() as { phone: string; password: string };
+    const { phone, password, turnstile_token } = await request.json() as { phone: string; password: string; turnstile_token?: string };
     if (!phone || !password) return NextResponse.json({ success: false, error: 'Phone and password required.' }, { status: 400 });
+
+    const turnstileCheck = await verifyTurnstileToken(turnstile_token, request.headers.get('x-forwarded-for')?.split(',')[0] || null);
+    if (!turnstileCheck.success) {
+      return NextResponse.json({ success: false, error: turnstileCheck.error || 'Security check failed.' }, { status: 400 });
+    }
 
     const normalized = phone.startsWith('+255') ? phone : `+255${phone.replace(/^0/, '')}`;
     const supabase   = createSupabaseAdmin();

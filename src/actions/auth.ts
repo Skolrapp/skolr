@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import { createSession, invalidateSession } from '@/lib/auth';
 import { ACTIVE_LEARNER_COOKIE, getInitialLearnerProfileId } from '@/lib/activeLearner';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 import type { EducationLevel, SubCategory } from '@/types';
 
 function normalizeTzPhone(rawPhone: string) {
@@ -32,6 +33,7 @@ export async function registerAction(formData: FormData) {
   const learnerLevel = (formData.get('learner_level') as EducationLevel | null) || 'primary';
   const learnerSubCategory = ((formData.get('learner_sub_category') as string)?.trim() || null) as SubCategory;
   const guardianConsent = formData.get('guardian_consent') === 'yes';
+  const turnstileToken = (formData.get('turnstile_token') as string | null)?.trim();
 
   if (!name || !phone || !password || password.length < 6) {
     return { error: 'Please fill in all fields. Password must be at least 6 characters.' };
@@ -63,6 +65,12 @@ export async function registerAction(formData: FormData) {
 
   if (!isMinorFlow && isStudentFlow && (learnerLevel === 'undergraduate' || learnerLevel === 'masters') && !learnerName) {
     return { error: 'Learner details are required.' };
+  }
+
+  const headersList = await headers();
+  const turnstileCheck = await verifyTurnstileToken(turnstileToken, headersList.get('x-forwarded-for')?.split(',')[0] || null);
+  if (!turnstileCheck.success) {
+    return { error: turnstileCheck.error || 'Security check failed. Please try again.' };
   }
 
   const userId = uuidv4();
@@ -104,8 +112,15 @@ export async function registerAction(formData: FormData) {
 export async function loginAction(formData: FormData) {
   const phone    = (formData.get('phone') as string)?.trim();
   const password = formData.get('password') as string;
+  const turnstileToken = (formData.get('turnstile_token') as string | null)?.trim();
 
   if (!phone || !password) return { error: 'Phone and password are required.' };
+
+  const headersList = await headers();
+  const turnstileCheck = await verifyTurnstileToken(turnstileToken, headersList.get('x-forwarded-for')?.split(',')[0] || null);
+  if (!turnstileCheck.success) {
+    return { error: turnstileCheck.error || 'Security check failed. Please try again.' };
+  }
 
   const normalized = phone.startsWith('+255') ? phone : `+255${phone.replace(/^0/, '')}`;
   const supabase   = createSupabaseAdmin();
@@ -123,7 +138,6 @@ export async function loginAction(formData: FormData) {
   if (!validPw) return { error: 'Invalid phone number or password.' };
 
   // Build device fingerprint from headers
-  const headersList = await headers();
   const ua   = headersList.get('user-agent') || '';
   const lang = headersList.get('accept-language') || '';
   const { createHash } = await import('crypto');
