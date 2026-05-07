@@ -338,7 +338,15 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen" style={{ background: '#111111' }}>
       <TopHeader />
-      <div className="page animate-fade-in">
+      <div
+        className="animate-fade-in"
+        style={{
+          width: '100%',
+          maxWidth: 1600,
+          margin: '0 auto',
+          padding: '24px 20px 120px',
+        }}
+      >
         <div className="flex items-center justify-between mb-5">
           <div>
             <h1 className="text-xl font-bold" style={{ color: '#fff' }}>Admin control center</h1>
@@ -358,7 +366,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className="flex gap-2 mb-5">
+        <div className="flex gap-2 mb-5 flex-wrap">
           {([
             ['reviews', 'Review queue'],
             ['tracker', 'Scholar tracker'],
