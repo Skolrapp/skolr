@@ -84,6 +84,18 @@ export default function InstructorPage() {
 
         <h1 className="text-xl font-bold mb-5" style={{ color: '#fff' }}>Earnings dashboard</h1>
 
+        <div className="rounded-2xl p-4 mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+          style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.12), rgba(15,23,42,0.96))', border: '1px solid rgba(16,185,129,0.2)' }}>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#6ee7b7' }}>New instructor tool</p>
+            <p className="text-sm font-bold mt-1" style={{ color: '#fff' }}>Payout calculator</p>
+            <p className="text-xs mt-1" style={{ color: '#a7f3d0' }}>Model Skolr&apos;s 60/40 split and distribute instructor earnings by total watch time.</p>
+          </div>
+          <Link href="/instructor/payout-calculator" className="btn-primary w-auto px-5 text-sm py-2.5">
+            Open calculator
+          </Link>
+        </div>
+
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="sec-head !mb-0">Your courses</h2>
