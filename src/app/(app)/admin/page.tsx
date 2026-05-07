@@ -8,7 +8,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import TopHeader from '@/components/layout/TopHeader';
 
 const G = '#10B981';
-type Tab = 'reviews' | 'tracker' | 'cloning' | 'payments' | 'branding' | 'support';
+type Tab = 'reviews' | 'tracker' | 'cloning' | 'revenue' | 'payments' | 'branding' | 'support';
 const BANNER_SLOTS = [
   { key: 'hero-banner', label: 'Hero banner', size: '1600 x 900 px', ratio: '16:9', description: 'Top homepage hero background.' },
   { key: 'campaign-banner', label: 'Campaign banner', size: '1600 x 760 px', ratio: '21:10', description: 'Large promotional banner in the middle section.' },
@@ -46,6 +46,8 @@ export default function AdminPage() {
   const [paymentStatus, setPaymentStatus] = useState('');
   const [paymentsLoading, setPaymentsLoading] = useState(true);
   const [paymentsData, setPaymentsData] = useState<any>(null);
+  const [revenueLoading, setRevenueLoading] = useState(true);
+  const [revenueData, setRevenueData] = useState<any>(null);
   const [templates, setTemplates] = useState<any[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(true);
   const [cloneForm, setCloneForm] = useState({ sourceCourseId: '', targetSubjects: '', targetSubCategory: '' });
@@ -61,7 +63,7 @@ export default function AdminPage() {
 
     const syncTabFromUrl = () => {
       const requestedTab = new URLSearchParams(window.location.search).get('tab');
-      if (requestedTab === 'reviews' || requestedTab === 'tracker' || requestedTab === 'cloning' || requestedTab === 'payments' || requestedTab === 'branding' || requestedTab === 'support') {
+      if (requestedTab === 'reviews' || requestedTab === 'tracker' || requestedTab === 'cloning' || requestedTab === 'revenue' || requestedTab === 'payments' || requestedTab === 'branding' || requestedTab === 'support') {
         setTab(requestedTab);
       } else {
         setTab('reviews');
@@ -121,6 +123,18 @@ export default function AdminPage() {
   useEffect(() => {
     loadPayments('', '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const loadRevenue = () => {
+    setRevenueLoading(true);
+    fetch('/api/admin/revenue', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setRevenueData(d.data); })
+      .finally(() => setRevenueLoading(false));
+  };
+
+  useEffect(() => {
+    loadRevenue();
   }, []);
 
   const loadStudentDetail = (studentId: string) => {
@@ -348,6 +362,7 @@ export default function AdminPage() {
             ['reviews', 'Review queue'],
             ['tracker', 'Scholar tracker'],
             ['cloning', 'Course cloning'],
+            ['revenue', 'Revenue'],
             ['payments', 'Payments'],
             ['branding', 'Landing media'],
             ['support', 'User support'],
@@ -726,6 +741,106 @@ export default function AdminPage() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </>
+            ) : null}
+          </div>
+        )}
+
+        {tab === 'revenue' && (
+          <div className="space-y-4">
+            <div className="card">
+              <p className="text-sm font-bold" style={{ color: '#fff' }}>Admin revenue split</p>
+              <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                This panel shows the real split already recorded on successful payments: Skolr share as platform fee, and instructor share as instructor pool. Watch-time distribution between instructors can then be finalized using the payout calculator.
+              </p>
+            </div>
+
+            {revenueLoading ? (
+              <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="skel h-24 rounded-2xl" />)}</div>
+            ) : revenueData ? (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    ['Total revenue', `TZS ${revenueData.totals.totalRevenue.toLocaleString('en-TZ')}`],
+                    ['Skolr share', `TZS ${revenueData.totals.skolrShare.toLocaleString('en-TZ')}`],
+                    ['Instructor pool', `TZS ${revenueData.totals.instructorPool.toLocaleString('en-TZ')}`],
+                    ['Successful payments', revenueData.totals.totalTransactions],
+                  ].map(([label, value]) => (
+                    <div key={label} className="card">
+                      <p className="text-xs" style={{ color: '#737373' }}>{label}</p>
+                      <p className="text-xl font-bold mt-2" style={{ color: '#fff' }}>{value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="card">
+                    <p className="text-xs" style={{ color: '#737373' }}>Effective Skolr split</p>
+                    <p className="text-xl font-bold mt-2" style={{ color: '#fff' }}>
+                      {Number(revenueData.split.skolrPercent || 0).toFixed(1)}%
+                    </p>
+                  </div>
+                  <div className="card">
+                    <p className="text-xs" style={{ color: '#737373' }}>Effective instructor split</p>
+                    <p className="text-xl font-bold mt-2" style={{ color: '#fff' }}>
+                      {Number(revenueData.split.instructorPercent || 0).toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+
+                <div className="card">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <p className="text-sm font-bold" style={{ color: '#fff' }}>Successful payment breakdown</p>
+                      <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                        Monthly: {revenueData.totals.monthlyTransactions} • Annual: {revenueData.totals.annualTransactions}
+                      </p>
+                    </div>
+                    <button className="btn-primary w-auto px-4 text-sm" onClick={loadRevenue}>Refresh</button>
+                  </div>
+
+                  <div className="space-y-3 mt-4">
+                    {revenueData.transactions.length === 0 ? (
+                      <div className="rounded-xl p-3" style={{ background: '#1a1a1a', border: '1px solid #222' }}>
+                        <p className="text-sm font-semibold" style={{ color: '#fff' }}>No successful payments yet.</p>
+                      </div>
+                    ) : revenueData.transactions.map((entry: any) => (
+                      <div key={entry.id} className="rounded-xl p-4" style={{ background: '#1a1a1a', border: '1px solid #222' }}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-bold" style={{ color: '#fff' }}>{entry.users?.name || 'Unknown learner'}</p>
+                            <p className="text-xs mt-1" style={{ color: '#a3a3a3' }}>{entry.users?.phone || 'No phone'}</p>
+                            <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                              {entry.subscription_tier} • {entry.billing_cycle}
+                            </p>
+                            <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                              Paid {new Date(entry.created_at).toLocaleString('en-GB')}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold" style={{ color: '#fff' }}>TZS {entry.amount.toLocaleString('en-TZ')}</p>
+                            <p className="text-xs mt-1 font-semibold" style={{ color: '#34d399' }}>Success</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 mt-4">
+                          <div className="rounded-xl p-3" style={{ background: '#111111', border: '1px solid #1f1f1f' }}>
+                            <p className="text-xs" style={{ color: '#737373' }}>Skolr share</p>
+                            <p className="text-base font-bold mt-1" style={{ color: '#fff' }}>
+                              TZS {Number(entry.platform_fee || 0).toLocaleString('en-TZ')}
+                            </p>
+                          </div>
+                          <div className="rounded-xl p-3" style={{ background: '#111111', border: '1px solid #1f1f1f' }}>
+                            <p className="text-xs" style={{ color: '#737373' }}>Instructor pool</p>
+                            <p className="text-base font-bold mt-1" style={{ color: '#fff' }}>
+                              TZS {Number(entry.net_amount || 0).toLocaleString('en-TZ')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </>
             ) : null}
