@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
 import TopHeader from '@/components/layout/TopHeader';
+import PayoutCalculator from '@/components/finance/PayoutCalculator';
 
 const G = '#10B981';
 type Tab = 'reviews' | 'tracker' | 'cloning' | 'revenue' | 'payments' | 'branding' | 'support';
@@ -841,6 +842,92 @@ export default function AdminPage() {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                <div className="card">
+                  <p className="text-sm font-bold" style={{ color: '#fff' }}>Instructor payout estimates by engagement</p>
+                  <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                    Estimated using each instructor&apos;s share of total recorded watch time against the current instructor pool.
+                  </p>
+                  <div className="space-y-3 mt-4">
+                    {(revenueData.instructor_estimates || []).length === 0 ? (
+                      <div className="rounded-xl p-3" style={{ background: '#1a1a1a', border: '1px solid #222' }}>
+                        <p className="text-sm font-semibold" style={{ color: '#fff' }}>No instructor engagement data yet.</p>
+                      </div>
+                    ) : revenueData.instructor_estimates.map((entry: any) => (
+                      <div key={entry.instructor_id} className="rounded-xl p-4" style={{ background: '#1a1a1a', border: '1px solid #222' }}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-bold" style={{ color: '#fff' }}>{entry.instructor_name}</p>
+                            <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                              {entry.courses} courses • {entry.learners} learners • {entry.watch_minutes.toLocaleString('en-TZ')} watched minutes
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-base font-bold" style={{ color: '#fff' }}>TZS {Number(entry.estimated_payout || 0).toLocaleString('en-TZ')}</p>
+                            <p className="text-xs mt-1" style={{ color: '#34d399' }}>{Number(entry.watch_share_percent || 0).toFixed(1)}% watch share</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <div className="card">
+                    <p className="text-sm font-bold" style={{ color: '#fff' }}>Trending content</p>
+                    <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                      Courses with the strongest watch-time pull right now.
+                    </p>
+                    <div className="space-y-3 mt-4">
+                      {(revenueData.top_courses || []).map((course: any, index: number) => (
+                        <div key={course.id} className="rounded-xl p-4" style={{ background: '#1a1a1a', border: '1px solid #222' }}>
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-bold" style={{ color: '#fff' }}>#{index + 1} {course.title}</p>
+                              <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                                {course.subject} • {course.instructor_name}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-bold" style={{ color: '#fff' }}>{course.watch_minutes.toLocaleString('en-TZ')} min</p>
+                              <p className="text-xs mt-1" style={{ color: '#34d399' }}>{Number(course.watch_share_percent || 0).toFixed(1)}%</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="card">
+                    <p className="text-sm font-bold" style={{ color: '#fff' }}>Needs attention</p>
+                    <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                      Published content with the lowest recorded watch time so far.
+                    </p>
+                    <div className="space-y-3 mt-4">
+                      {(revenueData.low_courses || []).map((course: any) => (
+                        <div key={course.id} className="rounded-xl p-4" style={{ background: '#1a1a1a', border: '1px solid #222' }}>
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-bold" style={{ color: '#fff' }}>{course.title}</p>
+                              <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                                {course.subject} • {course.instructor_name}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-bold" style={{ color: '#fff' }}>{course.watch_minutes.toLocaleString('en-TZ')} min</p>
+                              <p className="text-xs mt-1" style={{ color: '#fbbf24' }}>{course.learners} learners</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="card">
+                  <p className="text-sm font-bold mb-3" style={{ color: '#fff' }}>Manual payout calculator</p>
+                  <PayoutCalculator />
                 </div>
               </>
             ) : null}

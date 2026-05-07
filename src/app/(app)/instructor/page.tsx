@@ -17,9 +17,11 @@ export default function InstructorPage() {
   const { user, logout } = useAuth();
   const [data,    setData]    = useState<EarningsSummary | null>(null);
   const [courses, setCourses] = useState<any[]>([]);
+  const [engagement, setEngagement] = useState<any>(null);
   const [period,  setPeriod]  = useState<Period>('month');
   const [loading, setLoading] = useState(true);
   const [coursesLoading, setCoursesLoading] = useState(true);
+  const [engagementLoading, setEngagementLoading] = useState(true);
   const [courseActionMessage, setCourseActionMessage] = useState('');
 
   useEffect(() => {
@@ -36,6 +38,14 @@ export default function InstructorPage() {
       .then(r => r.json())
       .then(d => { if (d.success) setCourses(d.data); })
       .finally(() => setCoursesLoading(false));
+  }, []);
+
+  useEffect(() => {
+    setEngagementLoading(true);
+    fetch('/api/instructor/engagement', { credentials: 'include' })
+      .then(r => r.json())
+      .then(d => { if (d.success) setEngagement(d.data); })
+      .finally(() => setEngagementLoading(false));
   }, []);
 
   const submitForReview = async (courseId: string) => {
@@ -94,6 +104,55 @@ export default function InstructorPage() {
           <Link href="/instructor/payout-calculator" className="btn-primary w-auto px-5 text-sm py-2.5">
             Open calculator
           </Link>
+        </div>
+
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="sec-head !mb-0">Content engagement</h2>
+          </div>
+          {engagementLoading ? (
+            <div className="space-y-2">{[1, 2, 3].map(i => <div key={i} className="skel h-20 rounded-2xl" />)}</div>
+          ) : engagement ? (
+            <>
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="card">
+                  <p className="text-xs leading-tight mb-1" style={{ color: '#737373' }}>Watched minutes</p>
+                  <p className="text-base font-bold leading-tight" style={{ color: '#fff' }}>{fmt(engagement.total_watch_minutes || 0)}</p>
+                </div>
+                <div className="card">
+                  <p className="text-xs leading-tight mb-1" style={{ color: '#737373' }}>Learners reached</p>
+                  <p className="text-base font-bold leading-tight" style={{ color: '#fff' }}>{fmt(engagement.total_learners || 0)}</p>
+                </div>
+                <div className="card-glow">
+                  <p className="text-xs leading-tight mb-1" style={{ color: G }}>Estimated payout</p>
+                  <p className="text-base font-bold leading-tight" style={{ color: G }}>TZS {fmt(engagement.estimated_payout || 0)}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {(engagement.courses || []).length === 0 ? (
+                  <div className="card">
+                    <p className="text-sm" style={{ color: '#fff' }}>No engagement data yet.</p>
+                  </div>
+                ) : engagement.courses.map((course: any) => (
+                  <div key={course.id} className="card">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-bold" style={{ color: '#fff' }}>{course.title}</p>
+                        <p className="text-xs mt-1" style={{ color: '#737373' }}>
+                          {course.subject} • {course.learners} learners • {course.completion_rate}% completion
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold" style={{ color: '#fff' }}>{fmt(course.watch_minutes || 0)} min</p>
+                        <p className="text-xs mt-1" style={{ color: G }}>TZS {fmt(course.estimated_payout || 0)} est.</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : null}
         </div>
 
         <div className="mb-6">
