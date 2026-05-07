@@ -3,8 +3,13 @@ type TurnstileVerificationResult = {
   error?: string;
 };
 
-function isTurnstileConfigured() {
-  return !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !!process.env.TURNSTILE_SECRET_KEY;
+function getTurnstileConfigState() {
+  const hasSiteKey = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const hasSecretKey = !!process.env.TURNSTILE_SECRET_KEY;
+
+  if (hasSiteKey && hasSecretKey) return 'configured';
+  if (!hasSiteKey && !hasSecretKey) return 'disabled';
+  return 'partial';
 }
 
 export function isTurnstileEnabled() {
@@ -12,11 +17,15 @@ export function isTurnstileEnabled() {
 }
 
 export async function verifyTurnstileToken(token: string | null | undefined, remoteip?: string | null): Promise<TurnstileVerificationResult> {
-  if (!isTurnstileConfigured()) {
-    if (process.env.NODE_ENV !== 'production') {
-      return { success: true };
-    }
-    return { success: false, error: 'Security check is unavailable right now. Please try again later.' };
+  const configState = getTurnstileConfigState();
+
+  if (configState === 'disabled') {
+    return { success: true };
+  }
+
+  if (configState === 'partial') {
+    console.warn('[turnstile] Partial configuration detected. Bypassing verification until both keys are set.');
+    return { success: true };
   }
 
   if (!token) {
