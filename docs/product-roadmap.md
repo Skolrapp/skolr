@@ -26,7 +26,11 @@ Scope:
 - conversion step before watch/subscribe
 
 4. Learning analytics
-Status: pending
+Status: in progress
+Scope:
+- learner dashboard progress summaries
+- parent multi-learner snapshots
+- continue learning and per-course resume visibility
 
 5. Admin polish
 Status: pending
