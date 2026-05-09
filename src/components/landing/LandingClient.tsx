@@ -545,7 +545,7 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
           </div>
           <div>
             <h4 style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', marginBottom: 14 }}>Support</h4>
-            {[['Help','#'],['Contact','#'],['Privacy','#'],['Terms','#']].map(([l,h]) => (
+            {[['Help','/help'],['Contact','/contact'],['Privacy','/privacy'],['Terms','/terms']].map(([l,h]) => (
               <Link key={l} href={h} style={{ display: 'block', fontSize: 13, color: 'rgba(255,255,255,0.55)', textDecoration: 'none', marginBottom: 9 }}>{l}</Link>
             ))}
           </div>

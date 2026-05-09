@@ -24,7 +24,7 @@ export default function Footer() {
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#525252', textTransform: 'uppercase', marginBottom: 10 }}>Skolr</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[{href:'/dashboard',label:'My Dashboard'},{href:'/courses',label:'Browse Courses'},{href:'/settings',label:'Subscription'},{href:'/instructor',label:'Teach on Skolr'}].map(l=>(
+              {[{href:'/dashboard',label:'My Dashboard'},{href:'/courses',label:'Browse Courses'},{href:'/pricing',label:'Subscription'},{href:'/login',label:'Teach on Skolr'}].map(l=>(
                 <Link key={l.href} href={l.href} style={{ fontSize: 13, color: '#a3a3a3', textDecoration: 'none' }}>{l.label}</Link>
               ))}
             </div>
@@ -34,7 +34,9 @@ export default function Footer() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <p style={{ fontSize: 12, color: '#333' }}>© {year} Skolr. All rights reserved.</p>
           <div style={{ display: 'flex', gap: 16 }}>
-            {['Privacy','Terms','Contact'].map(l=>(<Link key={l} href="#" style={{ fontSize: 12, color: '#333', textDecoration: 'none' }}>{l}</Link>))}
+            {[['Privacy','/privacy'],['Terms','/terms'],['Contact','/contact']].map(([label,href])=>(
+              <Link key={label} href={href} style={{ fontSize: 12, color: '#333', textDecoration: 'none' }}>{label}</Link>
+            ))}
           </div>
         </div>
       </div>
