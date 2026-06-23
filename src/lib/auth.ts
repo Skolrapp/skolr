@@ -49,13 +49,16 @@ export async function createSession(
   deviceInfo: { fingerprint: string; deviceName: string; os: string; browser: string; ipAddress: string }
 ): Promise<{ token: string; sessionId: string }> {
   const supabase = createSupabaseAdmin();
+  const bypassAdminSessionRestriction = role === 'admin';
 
-  // SINGLE-SESSION: invalidate all prior sessions
-  await supabase
-    .from('user_sessions')
-    .update({ is_valid: false })
-    .eq('user_id', userId)
-    .eq('is_valid', true);
+  if (!bypassAdminSessionRestriction) {
+    // Non-admin accounts keep the single-session behavior.
+    await supabase
+      .from('user_sessions')
+      .update({ is_valid: false })
+      .eq('user_id', userId)
+      .eq('is_valid', true);
+  }
 
   // Register or update device
   const { data: existingDevice } = await supabase
@@ -80,7 +83,7 @@ export async function createSession(
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId);
 
-    if ((count ?? 0) >= MAX_DEVICES) {
+    if (!bypassAdminSessionRestriction && (count ?? 0) >= MAX_DEVICES) {
       throw new Error('DEVICE_LIMIT_EXCEEDED');
     }
 
