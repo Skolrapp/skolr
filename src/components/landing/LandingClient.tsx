@@ -1,9 +1,19 @@
 'use client';
+
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import {
+  FORM_FOUR_CLASS,
+  FORM_FOUR_PRICE_TZS,
+  FORM_FOUR_SUBJECTS,
+  LAUNCH_NAV_ITEMS,
+} from '@/lib/launchCatalog';
 import type { Course } from '@/types';
 
-const G = '#10B981';
+const HERO_BG = '#27363c';
+const TEAL = '#04959d';
+const GREEN = '#24d366';
+const LIGHT_BG = '#f6f7f9';
 const LANDING_COURSES_CACHE_KEY = 'skolr:landing:courses';
 const LANDING_BRANDING_CACHE_KEY = 'skolr:landing:branding';
 let landingCoursesCache: Course[] | null = null;
@@ -14,21 +24,101 @@ type LandingClientProps = {
   initialBanners: Record<string, string | null>;
 };
 
-const LEVELS = [
-  { label: 'Primary',      sub: 'Standard 1 - 7',   level: 'primary',       color: '#3b82f6', bg: '#eff6ff', count: '120+ lessons', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-  { label: 'Secondary',    sub: 'Form 1 - 4',        level: 'secondary',     color: '#8b5cf6', bg: '#f5f3ff', count: '180+ lessons', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z' },
-  { label: 'High School',  sub: 'Form 5 - 6',        level: 'highschool',    color: '#f59e0b', bg: '#fffbeb', count: '90+ lessons',  icon: 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z' },
-  { label: 'University',   sub: 'Undergraduate',     level: 'undergraduate', color: '#10b981', bg: '#ecfdf5', count: '60+ lessons',  icon: 'M12 14l9-5-9-5-9 5 9 5z' },
-  { label: 'Masters',      sub: 'Postgraduate',      level: 'masters',       color: '#ef4444', bg: '#fef2f2', count: '40+ lessons',  icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
-  { label: 'Professional', sub: 'CPA, ACCA and more', level: '',             color: '#6366f1', bg: '#eef2ff', count: 'Coming soon', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
-];
+const TRUST_POINTS = [
+  'Structured learning paths',
+  'Qualified instructors',
+  'Exam-focused teaching',
+  'Progress tracking',
+] as const;
 
-const INSTRUCTORS = [
-  { name: 'Dr. James Kiromo',     subject: 'Mathematics & Physics',  students: 2341, courses: 8, initial: 'J', color: '#3b82f6', bg: '#eff6ff' },
-  { name: 'Prof. Sarah Ali',      subject: 'Chemistry & Biology',    students: 1874, courses: 6, initial: 'S', color: '#8b5cf6', bg: '#f5f3ff' },
-  { name: 'Mr. Hassan Mwanga',    subject: 'Geography & History',    students: 1203, courses: 5, initial: 'H', color: '#10b981', bg: '#ecfdf5' },
-  { name: 'Mwalimu Amina Rashid', subject: 'Kiswahili & Literature', students: 987,  courses: 4, initial: 'A', color: '#f59e0b', bg: '#fffbeb' },
-];
+const BENEFIT_CARDS = [
+  {
+    title: 'Structured learning paths',
+    copy: 'Move topic by topic in an academic flow that feels ordered and manageable.',
+    icon: 'path',
+  },
+  {
+    title: 'Qualified instructors',
+    copy: 'Learn from calm, subject-focused teachers who explain with seriousness and clarity.',
+    icon: 'user',
+  },
+  {
+    title: 'Exam-focused teaching',
+    copy: 'Every lesson is shaped to prepare students for real Form Four exam performance.',
+    icon: 'target',
+  },
+  {
+    title: 'Progress tracking',
+    copy: 'Parents and students can see consistency build over time instead of guessing.',
+    icon: 'chart',
+  },
+] as const;
+
+const HOW_IT_WORKS = [
+  { step: '01', title: 'Choose a subject', copy: 'Start with the Form Four subject that needs the most attention right now.' },
+  { step: '02', title: 'Learn with clear lessons', copy: 'Follow focused explanations built to reduce confusion and build confidence.' },
+  { step: '03', title: 'Practice for exams', copy: 'Use revision guidance and mock-focused study to prepare with purpose.' },
+] as const;
+
+const STUDY_PARTNER_POINTS = [
+  'Short post-lesson check-ins that feel supportive, not distracting.',
+  'Instant feedback that helps students spot what actually landed.',
+  'A calmer revision rhythm between lessons, quizzes, and exam prep.',
+] as const;
+
+const REASSURANCE_BANNERS = [
+  {
+    eyebrow: 'For Families',
+    title: 'Personalised paths for every Form 4 student',
+    copy: 'Give each learner a clearer route through lessons, revision, and exam preparation without losing momentum.',
+    href: '#free-trial',
+    cta: 'Start learning today',
+  },
+  {
+    eyebrow: 'For Students',
+    title: 'Real-time updates that put parents at ease',
+    copy: 'Parents can stay informed with progress visibility that feels reassuring, supportive, and easy to follow.',
+    href: '#subjects',
+    cta: 'Learn More',
+  },
+] as const;
+
+const PARENT_ASSURANCE = [
+  'Students move through a clear sequence instead of jumping between disconnected videos.',
+  'Parents can trust that Skolr is serious, academic, and built around exam readiness.',
+  'Lessons are designed to help consistency grow week by week, not only before exams.',
+] as const;
+
+const SUCCESS_STORIES = [
+  {
+    name: 'Amina, Form Four student',
+    quote: 'The lessons break topics down clearly. I stopped feeling lost and started revising with confidence.',
+  },
+  {
+    name: 'Mr. Joseph, parent',
+    quote: 'Skolr feels structured and reliable. It gives me confidence that revision time is being used well.',
+  },
+] as const;
+
+function getTeachers(courses: Course[]) {
+  const grouped = new Map<string, { name: string; subject: string; courseCount: number }>();
+
+  courses.forEach((course) => {
+    const name = course.instructor_name || 'Skolr instructor';
+    const current = grouped.get(name);
+    if (current) {
+      current.courseCount += 1;
+      return;
+    }
+    grouped.set(name, {
+      name,
+      subject: course.subject,
+      courseCount: 1,
+    });
+  });
+
+  return Array.from(grouped.values()).slice(0, 3);
+}
 
 export default function LandingClient({ initialCourses, initialBanners }: LandingClientProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -82,7 +172,7 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
     }
 
     const pendingRequests: Array<Promise<unknown>> = [];
-    if (shouldFetchCourses) pendingRequests.push(fetch('/api/courses?per_page=6').then((r) => r.json()));
+    if (shouldFetchCourses) pendingRequests.push(fetch('/api/courses?level=secondary&sub=Form%204&per_page=7').then((r) => r.json()));
     if (shouldFetchBranding) pendingRequests.push(fetch('/api/site/branding').then((r) => r.json()));
     if (!pendingRequests.length) return;
 
@@ -90,8 +180,10 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
       const coursesResult = shouldFetchCourses ? results.shift() : null;
       const brandingResult = shouldFetchBranding ? results.shift() : null;
 
-      if (coursesResult && coursesResult.status === 'fulfilled' && (coursesResult.value as any).success) {
-        const nextCourses = (coursesResult.value as any).data.items || [];
+      if (coursesResult && coursesResult.status === 'fulfilled' && (coursesResult.value as { success?: boolean }).success) {
+        const nextCourses = ((coursesResult.value as { data?: { items?: Course[] } }).data?.items || []).filter(
+          (course) => course.category === FORM_FOUR_CLASS.level && course.sub_category === FORM_FOUR_CLASS.subCategory
+        );
         landingCoursesCache = nextCourses;
         setCourses(nextCourses);
         if (typeof window !== 'undefined') {
@@ -99,8 +191,8 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         }
       }
 
-      if (brandingResult && brandingResult.status === 'fulfilled' && (brandingResult.value as any).success) {
-        const nextBanners = (brandingResult.value as any).data.banners || {};
+      if (brandingResult && brandingResult.status === 'fulfilled' && (brandingResult.value as { success?: boolean }).success) {
+        const nextBanners = (brandingResult.value as { data?: { banners?: Record<string, string | null> } }).data?.banners || {};
         landingBrandingCache = nextBanners;
         setBanners(nextBanners);
         if (typeof window !== 'undefined') {
@@ -109,109 +201,260 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
       }
     });
   }, [initialBanners, initialCourses]);
-  return (
-    <div style={{ fontFamily: "'Inter',-apple-system,sans-serif", background: '#fff', color: '#0a0a0a' }}>
 
-      <header className="sk-header">
-        <div className="sk-header-inner">
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ width: 32, height: 32, background: G, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+  const teachers = getTeachers(courses);
+
+  return (
+    <div style={{ fontFamily: "'Inter',-apple-system,sans-serif", background: '#fcfcfa', color: '#121212' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(252,252,250,0.94)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #ecece7' }}>
+        <div className="launch-shell launch-header" style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 16, minHeight: 74, padding: '0 24px' }}>
+          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: '#121212', flexShrink: 0 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: GREEN, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
             </div>
-            <span style={{ fontWeight: 800, fontSize: 20, color: '#0a0a0a' }}>Skolr</span>
+            <div>
+              <p style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}>Skolr</p>
+              <p style={{ fontSize: 11, color: '#5f6a64' }}>Master Form Four. Pass with Confidence.</p>
+            </div>
           </Link>
-          <nav className="desktop-only" style={{ display: 'flex', gap: 4, flex: 1 }}>
-            <Link href="/login" style={{ padding: '7px 12px', fontSize: 14, fontWeight: 500, color: '#6b7280', textDecoration: 'none', borderRadius: 6 }}>Teach</Link>
-            <Link href="/pricing" style={{ padding: '7px 12px', fontSize: 14, fontWeight: 500, color: '#6b7280', textDecoration: 'none', borderRadius: 6 }}>Pricing</Link>
+
+          <nav className="launch-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 'auto' }}>
+            {LAUNCH_NAV_ITEMS.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                style={{ padding: '10px 14px', fontSize: 14, fontWeight: 700, color: '#34423c', textDecoration: 'none', borderRadius: 999 }}
+              >
+                {item.label}
+              </Link>
+            ))}
+            <Link href="/login" style={{ marginLeft: 8, padding: '10px 16px', fontSize: 14, fontWeight: 800, color: '#fff', background: '#121212', borderRadius: 999, textDecoration: 'none' }}>
+              Login
+            </Link>
           </nav>
-          <div className="sk-header-search desktop-only">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f9fafb', border: '1.5px solid #e5e7eb', borderRadius: 999, padding: '7px 14px' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="Search courses..." style={{ background: 'none', border: 'none', outline: 'none', fontSize: 13, color: '#0a0a0a', width: '100%', fontFamily: 'inherit' }} />
-            </div>
-          </div>
-          <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <Link href="/login" style={{ padding: '8px 16px', fontSize: 14, fontWeight: 600, color: '#0a0a0a', textDecoration: 'none', border: '1.5px solid #e5e7eb', borderRadius: 8 }}>Log in</Link>
-            <Link href="/register" style={{ padding: '8px 18px', fontSize: 14, fontWeight: 700, color: '#fff', background: G, textDecoration: 'none', borderRadius: 8 }}>Get started free</Link>
-          </div>
-          <button className="sk-hamburger" onClick={() => setMenuOpen(m => !m)}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" strokeWidth="2">
-              {menuOpen ? <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></> : <><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>}
+
+          <button
+            type="button"
+            className="launch-mobile-toggle"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-label="Open navigation"
+            style={{ marginLeft: 'auto', display: 'none', border: '1px solid #d9ddd9', borderRadius: 10, background: '#fff', width: 46, height: 46, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#121212" strokeWidth="2">
+              {menuOpen ? <><path d="M18 6 6 18" /><path d="M6 6l12 12" /></> : <><path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" /></>}
             </svg>
           </button>
         </div>
-        <div className="sk-mobile-search">
-          <div className="sk-mobile-search-inner">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Search courses..." />
-          </div>
-        </div>
+
         {menuOpen && (
-          <div className="sk-drawer open">
-            <div className="sk-drawer-overlay" onClick={() => setMenuOpen(false)} />
-            <div className="sk-drawer-panel">
-              <div style={{ padding: '16px 20px 20px', borderBottom: '1px solid #f3f4f6', marginBottom: 8 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 28, height: 28, background: G, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                  </div>
-                  <span style={{ fontWeight: 800, fontSize: 18, color: '#0a0a0a' }}>Skolr</span>
-                </div>
-              </div>
-              <Link href="/courses" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Browse Courses</Link>
-              <Link href="/courses?level=primary" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Primary (choose Std first)</Link>
-              <Link href="/courses?level=secondary" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Secondary (choose Form first)</Link>
-              <Link href="/courses?level=highschool" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>High School (choose Form first)</Link>
-              <Link href="/courses?level=undergraduate" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>University (choose Year first)</Link>
-              <Link href="/pricing" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Pricing</Link>
-              <Link href="/login" className="sk-drawer-item" onClick={() => setMenuOpen(false)}>Teach on Skolr</Link>
-              <div style={{ margin: '12px 20px', borderTop: '1px solid #f3f4f6', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Link href="/login" style={{ display: 'block', padding: '11px', fontSize: 14, fontWeight: 600, color: '#0a0a0a', textDecoration: 'none', border: '1.5px solid #e5e7eb', borderRadius: 8, textAlign: 'center' }}>Log in</Link>
-                <Link href="/register" style={{ display: 'block', padding: '11px', fontSize: 14, fontWeight: 700, color: '#fff', background: G, textDecoration: 'none', borderRadius: 8, textAlign: 'center' }}>Get started free</Link>
-              </div>
+          <div className="launch-mobile-drawer" style={{ borderTop: '1px solid #ecece7', background: '#fcfcfa', padding: '14px 24px 22px' }}>
+            <div style={{ display: 'grid', gap: 8 }}>
+              {LAUNCH_NAV_ITEMS.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  style={{ padding: '12px 14px', borderRadius: 14, textDecoration: 'none', color: '#1f2937', background: '#fff', border: '1px solid #ecece7', fontSize: 14, fontWeight: 700 }}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <Link href="/login" onClick={() => setMenuOpen(false)} style={{ padding: '12px 14px', borderRadius: 14, textDecoration: 'none', color: '#fff', background: '#121212', fontSize: 14, fontWeight: 800, textAlign: 'center' }}>
+                Login
+              </Link>
             </div>
           </div>
         )}
       </header>
 
-      <section className="sk-hero-section" style={{ position: 'relative', minHeight: 600, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            zIndex: 0,
-            background: banners['hero-banner']
-              ? `url(${banners['hero-banner']}) center/cover no-repeat`
-              : 'linear-gradient(135deg,#08110e,#101725 48%,#0d2a1d)',
-          }}
-        />
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(135deg,rgba(3,8,18,0.36),rgba(7,15,28,0.22) 42%,rgba(8,31,23,0.24))' }} />
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(4,8,14,0.12),rgba(4,8,14,0.06) 28%,rgba(4,8,14,0.34) 100%)' }} />
-        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, opacity: 0.14 }} viewBox="0 0 1280 520" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="900" cy="100" r="300" fill="#10B981"/><circle cx="1100" cy="400" r="200" fill="#3b82f6"/>
-          <circle cx="800" cy="350" r="150" fill="#8b5cf6"/><circle cx="1050" cy="150" r="80" fill="#10B981"/>
-        </svg>
-        <div className="sk-shell sk-hero-shell" style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 24px', width: '100%', position: 'relative', zIndex: 2 }}>
-          <div style={{ maxWidth: 760, background: 'linear-gradient(135deg,rgba(4,10,18,0.76),rgba(4,10,18,0.4))', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 24px 70px rgba(2,6,23,0.34)', backdropFilter: 'blur(10px)', borderRadius: 30, padding: '28px 28px 30px' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 999, padding: '5px 14px', marginBottom: 20 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: G }} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: G }}>Tanzania No.1 Learning Platform</span>
+      <section style={{ background: LIGHT_BG }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto', padding: '70px 24px 34px', position: 'relative' }}>
+          <div
+            className="launch-hero-banner"
+            style={{
+              position: 'relative',
+              minHeight: 620,
+              overflow: 'hidden',
+              borderRadius: 32,
+              background: banners['hero-banner']
+                ? `url(${banners['hero-banner']}) center/cover no-repeat`
+                : `linear-gradient(135deg,${HERO_BG} 0%,#1f2a2f 58%,#31454d 100%)`,
+              boxShadow: '0 32px 80px rgba(8,14,14,0.14)',
+              border: '1px solid rgba(4,149,157,0.12)',
+            }}
+          >
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(7,20,24,0.58) 0%, rgba(7,20,24,0.34) 46%, rgba(7,20,24,0.1) 100%)' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))' }} />
+            <div className="launch-hero-content" style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', minHeight: 620, padding: '54px 54px 50px' }}>
+              <div style={{ maxWidth: 680, display: 'grid', gap: 18 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 999, background: 'rgba(4,149,157,0.12)', border: '1px solid rgba(4,149,157,0.2)', color: '#d9ffff', fontSize: 12, fontWeight: 800, width: 'fit-content' }}>
+                  Form Four launch focus
+                </div>
+                <h1 style={{ fontSize: 58, lineHeight: 1.02, fontWeight: 900, color: '#fff', letterSpacing: '-0.05em', marginBottom: 0 }}>
+                  Empowering every learner on their journey to success.
+                </h1>
+                <p style={{ maxWidth: 620, fontSize: 18, lineHeight: 1.8, color: 'rgba(255,255,255,0.82)', marginBottom: 0 }}>
+                  Skolr delivers tailored lessons, clear explanations and real-time progress tracking - keeping both parents and students confident every step of the way.
+                </p>
+                <div className="launch-hero-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 2 }}>
+                  <Link href="/register" style={{ minHeight: 54, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '14px 24px', borderRadius: 16, background: GREEN, color: '#fff', fontSize: 14, fontWeight: 900, textDecoration: 'none', letterSpacing: 0.2, boxShadow: '0 18px 40px rgba(36,211,102,0.18)' }}>
+                    Try Skolr for Free
+                  </Link>
+                  <Link href="#subjects" style={{ minHeight: 54, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '14px 24px', borderRadius: 16, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>
+                    Learn more
+                  </Link>
+                </div>
+                <div className="launch-hero-meta" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 6 }}>
+                  <div style={{ padding: '10px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', fontSize: 13, fontWeight: 700 }}>
+                    7 visible Form Four subjects
+                  </div>
+                  <div style={{ padding: '10px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', fontSize: 13, fontWeight: 700 }}>
+                    {FORM_FOUR_PRICE_TZS.toLocaleString()} TZS monthly access
+                  </div>
+                </div>
+              </div>
             </div>
-            <h1 className="sk-hero-h1" style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1, color: '#fff', marginBottom: 18, textShadow: '0 10px 30px rgba(0,0,0,0.45)' }}>
-              Learn at your <span style={{ color: G }}>pace</span>,<br />in your <span style={{ color: G }}>space</span>
-            </h1>
-            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.82)', lineHeight: 1.7, marginBottom: 32, maxWidth: 560, textShadow: '0 8px 24px rgba(0,0,0,0.32)' }}>
-              HD lessons for Primary through University, aligned to Tanzania NECTA curriculum.
-            </p>
-            <div className="sk-hero-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 40 }}>
-              <Link className="sk-hero-action-primary" href="/register" style={{ padding: '14px 32px', fontSize: 15, fontWeight: 700, color: '#0a0a0a', background: '#fff', borderRadius: 10, textDecoration: 'none' }}>Start for free</Link>
-              <Link className="sk-hero-action-secondary" href="/courses" style={{ padding: '14px 32px', fontSize: 15, fontWeight: 700, color: '#fff', border: '2px solid rgba(255,255,255,0.3)', borderRadius: 10, textDecoration: 'none' }}>Explore with preview</Link>
+          </div>
+
+          <div style={{ marginTop: 32 }}>
+            <div className="launch-parent-panel" style={{ display: 'grid', gridTemplateColumns: 'minmax(220px,0.42fr) minmax(0,1fr)', gap: 22, alignItems: 'center', borderRadius: 26, background: '#f4f7f8', border: '1px solid rgba(255,255,255,0.16)', padding: 24, boxShadow: '0 24px 60px rgba(7,14,15,0.14)' }}>
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 10 }}>Parent Trust</p>
+                <h3 style={{ fontSize: 26, lineHeight: 1.2, fontWeight: 900, color: '#172126', marginBottom: 8 }}>Built to feel serious, structured, and visible.</h3>
+                <p style={{ fontSize: 14, lineHeight: 1.7, color: '#51606a' }}>
+                  A calmer learning environment for students, and clearer academic signals for parents.
+                </p>
+              </div>
+              <div className="launch-parent-points" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 12 }}>
+                {[
+                  'Lessons follow a serious academic flow.',
+                  'Students build confidence with clear explanations.',
+                  'Progress habits and consistency stay visible over time.',
+                ].map((item) => (
+                  <div key={item} style={{ borderRadius: 18, background: '#fff', padding: 16, boxShadow: '0 10px 26px rgba(18,18,18,0.05)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <span style={{ width: 24, height: 24, borderRadius: 999, background: 'rgba(36,211,102,0.14)', color: '#0a7b3b', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, flexShrink: 0 }}>✓</span>
+                    <span style={{ fontSize: 13, lineHeight: 1.6, color: '#334249' }}>{item}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="sk-banner-stats" style={{ display: 'flex', gap: 28 }}>
-              {[['10K+','Students'],['500+','Lessons'],['50+','Instructors']].map(([n,l]) => (
-                <div key={l}>
-                  <p style={{ fontSize: 22, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{n}</p>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 3 }}>{l}</p>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: '36px 24px 34px', background: LIGHT_BG }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div className="launch-section-head" style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 24 }}>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Why families choose Skolr</p>
+              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Support for Every Student.</h2>
+              <p style={{ maxWidth: 700, fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>
+                Skolr is designed to feel serious, calm, and academically grounded from the first lesson onward.
+              </p>
+            </div>
+          </div>
+          <div className="launch-benefit-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 14 }}>
+            {BENEFIT_CARDS.map((point) => (
+              <div key={point.title} style={{ borderRadius: 22, border: '1px solid #e6e8e3', background: '#fff', padding: 20, boxShadow: '0 12px 28px rgba(18,18,18,0.04)' }}>
+                <div style={{ width: 42, height: 42, borderRadius: 14, background: '#e9fbfc', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  {point.icon === 'path' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="1.8"><path d="M4 18c4 0 4-12 8-12s4 12 8 12" /><path d="M4 18h3" /><path d="M17 18h3" /></svg>}
+                  {point.icon === 'user' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="1.8"><path d="M20 21a8 8 0 0 0-16 0" /><circle cx="12" cy="8" r="4" /></svg>}
+                  {point.icon === 'target' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="1.8"><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" /><path d="M12 2v3" /></svg>}
+                  {point.icon === 'chart' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="1.8"><path d="M4 19h16" /><path d="M7 16v-4" /><path d="M12 16V8" /><path d="M17 16v-6" /></svg>}
+                </div>
+                <p style={{ fontSize: 16, lineHeight: 1.55, fontWeight: 800, color: '#121212', marginBottom: 8 }}>{point.title}</p>
+                <p style={{ fontSize: 14, lineHeight: 1.7, color: '#5b666f' }}>{point.copy}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: '0 24px 34px', background: LIGHT_BG }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div style={{ borderRadius: 22, border: '1px solid #dfe6e3', background: '#fff', padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', boxShadow: '0 12px 28px rgba(18,18,18,0.04)' }}>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: TEAL, marginBottom: 6 }}>{REASSURANCE_BANNERS[0].eyebrow}</p>
+              <h3 style={{ fontSize: 22, lineHeight: 1.2, fontWeight: 900, color: '#121212', marginBottom: 4 }}>{REASSURANCE_BANNERS[0].title}</h3>
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: '#5a645f' }}>{REASSURANCE_BANNERS[0].copy}</p>
+            </div>
+            <Link href={REASSURANCE_BANNERS[0].href} style={{ fontSize: 13, fontWeight: 800, color: '#047857', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              {REASSURANCE_BANNERS[0].cta}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section id="subjects" style={{ padding: '34px 24px 70px', background: LIGHT_BG }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div className="launch-section-head" style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 24 }}>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Form Four subjects</p>
+              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Progress You Can Trust.</h2>
+              <p style={{ maxWidth: 700, fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>
+                Every public subject on Skolr right now is focused on Form Four exam preparation and confidence building.
+              </p>
+            </div>
+            <Link href="/courses?level=secondary&sub=Form%204" style={{ fontSize: 13, fontWeight: 800, color: '#047857', textDecoration: 'none' }}>
+              View all Form Four subjects
+            </Link>
+          </div>
+
+          <div className="launch-subject-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 16 }}>
+            {FORM_FOUR_SUBJECTS.map((subject) => {
+              const matchingCourse = courses.find((course) => course.subject.toLowerCase() === subject.catalogSubject.toLowerCase());
+              return (
+                <div key={subject.id} style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 22 }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 108, padding: '6px 10px', borderRadius: 999, background: '#ecfdf5', color: '#047857', fontSize: 11, fontWeight: 800, marginBottom: 16 }}>
+                    {FORM_FOUR_CLASS?.name}
+                  </div>
+                  <h3 style={{ fontSize: 22, lineHeight: 1.15, fontWeight: 900, color: '#121212', marginBottom: 10 }}>{subject.name}</h3>
+                  <p style={{ fontSize: 14, lineHeight: 1.75, color: '#54615a', marginBottom: 12 }}>{subject.description}</p>
+                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#1f4036', marginBottom: 20, fontWeight: 700 }}>{subject.confidenceLine}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                    <Link href={subject.href} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 16px', borderRadius: 16, background: '#121212', color: '#fff', fontSize: 13, fontWeight: 800, textDecoration: 'none' }}>
+                      Explore Subject
+                    </Link>
+                    <span style={{ fontSize: 12, color: '#738079' }}>
+                      {matchingCourse ? 'Live lessons available' : 'Subject ready for launch content'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {banners['campaign-banner'] && (
+        <section style={{ padding: '0 24px 70px', background: LIGHT_BG }}>
+          <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+            <div style={{ aspectRatio: '1600 / 520', borderRadius: 28, overflow: 'hidden', background: `url(${banners['campaign-banner']}) center/cover no-repeat`, boxShadow: '0 28px 70px rgba(18,18,18,0.08)' }} />
+          </div>
+        </section>
+      )}
+
+      <section style={{ padding: '0 24px 72px', background: LIGHT_BG }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div className="launch-how-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,0.9fr) minmax(0,1.1fr)', gap: 22 }}>
+            <div style={{ borderRadius: 28, background: '#121212', color: '#fff', padding: 28 }}>
+              <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: '#baf5d3', marginBottom: 10 }}>How Skolr works</p>
+              <h2 style={{ fontSize: 34, lineHeight: 1.08, fontWeight: 900, marginBottom: 12 }}>Learning Support That Builds Confidence.</h2>
+              <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.72)', marginBottom: 18 }}>
+                Students need clarity. Parents need structure. Skolr is built to deliver both without overwhelming the learner.
+              </p>
+            </div>
+
+            <div style={{ display: 'grid', gap: 14 }}>
+              {HOW_IT_WORKS.map((item) => (
+                <div key={item.step} style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 22, display: 'grid', gridTemplateColumns: '72px minmax(0,1fr)', gap: 18, alignItems: 'start' }}>
+                  <div style={{ width: 72, height: 72, borderRadius: 22, background: '#e9fbfc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEAL, fontSize: 22, fontWeight: 900 }}>
+                    {item.step}
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: 20, fontWeight: 900, color: '#121212', marginBottom: 8 }}>{item.title}</h3>
+                    <p style={{ fontSize: 14, lineHeight: 1.75, color: '#57635d' }}>{item.copy}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -219,440 +462,427 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         </div>
       </section>
 
-      <div style={{ borderBottom: '1px solid #f3f4f6', padding: '14px 24px' }}>
-        <div className="sk-shell sk-alignment-strip" style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <p style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500 }}>Aligned to:</p>
-          {['NECTA','PSLE','CSEE','ACSEE','HESLB'].map(b => (
-            <span key={b} style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', padding: '3px 10px', border: '1px solid #e5e7eb', borderRadius: 5 }}>{b}</span>
-          ))}
-        </div>
-      </div>
-
-      <div className="sk-shell sk-section-shell" style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 24px' }}>
-        <div className="sk-section-header">
-          <div><h2 className="sk-section-title">Browse by level</h2><p className="sk-section-sub">Choose your level, then pick a class before previewing lessons</p></div>
-          <Link href="/courses" className="sk-section-link">View guided catalog</Link>
-        </div>
-        <div className="sk-level-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
-          {LEVELS.map(lv => (
-            <Link key={lv.label} href={lv.level ? '/courses?level='+lv.level : '#'}
-              style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 22px', background: lv.bg, borderRadius: 14, textDecoration: 'none', border: '1px solid '+lv.color+'22', color: 'inherit', opacity: lv.level ? 1 : 0.6 }}>
-              <div style={{ width: 50, height: 50, borderRadius: 13, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 10px '+lv.color+'25' }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={lv.color} strokeWidth="1.8"><path d={lv.icon}/></svg>
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 15, fontWeight: 800, color: '#0a0a0a', marginBottom: 2 }}>{lv.label}</p>
-                <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 5 }}>{lv.sub}</p>
-                <span style={{ fontSize: 11, fontWeight: 700, color: lv.color }}>{lv.level ? 'Choose class + preview' : lv.count}</span>
-              </div>
-              {lv.level && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={lv.color} strokeWidth="2.5" style={{ flexShrink: 0 }}><path d="M9 18l6-6-6-6"/></svg>}
+      <section style={{ padding: '0 24px 34px', background: LIGHT_BG }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div style={{ borderRadius: 22, border: '1px solid #cfe7da', background: 'linear-gradient(135deg,#f7fcf9 0%,#ffffff 100%)', padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', boxShadow: '0 12px 28px rgba(18,18,18,0.04)' }}>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: TEAL, marginBottom: 6 }}>{REASSURANCE_BANNERS[1].eyebrow}</p>
+              <h3 style={{ fontSize: 22, lineHeight: 1.2, fontWeight: 900, color: '#121212', marginBottom: 4 }}>{REASSURANCE_BANNERS[1].title}</h3>
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: '#5a645f' }}>{REASSURANCE_BANNERS[1].copy}</p>
+            </div>
+            <Link href={REASSURANCE_BANNERS[1].href} style={{ fontSize: 13, fontWeight: 800, color: '#047857', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              {REASSURANCE_BANNERS[1].cta}
             </Link>
-          ))}
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div style={{ padding: '0 24px 56px' }}>
-        <div className="sk-shell" style={{ maxWidth: 1280, margin: '0 auto' }}>
+      <section style={{ padding: '0 0 72px', background: LIGHT_BG }}>
+        <div style={{ width: '100%' }}>
           <div
-            className="sk-hook-banner"
+            className="launch-study-partner"
             style={{
               position: 'relative',
               overflow: 'hidden',
-              borderRadius: 30,
-              padding: '34px 36px',
-              background: 'linear-gradient(135deg,#07111f 0%,#0d2034 48%,#0d3726 100%)',
-              boxShadow: '0 30px 80px rgba(15,23,42,0.12)',
+              borderRadius: 0,
+              padding: '42px 24px',
+              background: 'linear-gradient(120deg,#0f1c20 0%,#17363d 38%,#136a62 100%)',
+              boxShadow: '0 28px 72px rgba(15,23,42,0.14)',
             }}
           >
-            <div style={{ position: 'absolute', top: -80, right: -40, width: 240, height: 240, borderRadius: '50%', background: 'rgba(16,185,129,0.18)' }} />
-            <div style={{ position: 'absolute', bottom: -120, left: '28%', width: 220, height: 220, borderRadius: '50%', background: 'rgba(59,130,246,0.12)' }} />
-            <div className="sk-hook-banner-grid" style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(280px,0.8fr)', gap: 22, alignItems: 'center' }}>
-              <div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', marginBottom: 18 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: G }} />
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#d1fae5' }}>Why parents and learners stay on Skolr</span>
+            <div style={{ position: 'absolute', top: -90, right: -10, width: 280, height: 280, borderRadius: '50%', background: 'rgba(36,211,102,0.14)' }} />
+            <div style={{ position: 'absolute', bottom: -130, left: '18%', width: 320, height: 320, borderRadius: '50%', background: 'rgba(4,149,157,0.18)' }} />
+            <div style={{ position: 'absolute', inset: 0, opacity: 0.22, background: 'radial-gradient(circle at 78% 30%, rgba(255,255,255,0.22), transparent 22%), linear-gradient(135deg, transparent 0%, transparent 52%, rgba(255,255,255,0.08) 52%, rgba(255,255,255,0.08) 54%, transparent 54%, transparent 100%)' }} />
+            <div className="launch-shell launch-study-grid" style={{ maxWidth: 1240, margin: '0 auto', position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'minmax(0,1.05fr) minmax(320px,0.95fr)', gap: 28, alignItems: 'center' }}>
+              <div style={{ paddingRight: 8 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', marginBottom: 18 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: GREEN }} />
+                  <span style={{ fontSize: 12, fontWeight: 800, color: '#d7fff1', textTransform: 'uppercase', letterSpacing: 0.5 }}>Virtual Study Partner</span>
                 </div>
-                <h2 style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.08, color: '#fff', marginBottom: 12 }}>
-                  Give every learner a sharper start before the next exam window opens.
+                <h2 style={{ fontSize: 34, fontWeight: 900, lineHeight: 1.08, color: '#fff', marginBottom: 12 }}>
+                  A smarter study companion for calmer, stronger revision.
                 </h2>
-                <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.72)', maxWidth: 620, marginBottom: 24 }}>
-                  Preview lessons instantly, move from class to class with confidence, and turn revision time into a steady study routine that feels easier to keep.
+                <p style={{ maxWidth: 620, fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.74)', marginBottom: 22 }}>
+                  Zeal helps students check understanding right after each lesson, build momentum between topics, and stay engaged without making revision feel heavy or confusing.
                 </p>
-                <div className="sk-hook-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                  <Link href="/register" style={{ padding: '13px 26px', borderRadius: 12, background: '#fff', color: '#0a0a0a', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>
-                    Start free trial
+                <div className="launch-final-actions" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                  <Link href="/register" style={{ padding: '14px 22px', borderRadius: 16, background: '#fff', color: '#121212', fontSize: 14, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    Start for Free
                   </Link>
-                  <Link href="/pricing" style={{ padding: '13px 26px', borderRadius: 12, border: '1.5px solid rgba(255,255,255,0.18)', color: '#fff', fontSize: 14, fontWeight: 700, textDecoration: 'none', background: 'rgba(255,255,255,0.04)' }}>
-                    See plans
+                  <Link href="/#mock-exams" style={{ padding: '14px 22px', borderRadius: 16, border: '1px solid rgba(255,255,255,0.16)', color: '#fff', fontSize: 14, fontWeight: 800, textDecoration: 'none', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    See how it works
                   </Link>
                 </div>
               </div>
-              <div className="sk-hook-proof-grid" style={{ display: 'grid', gap: 12 }}>
-                {[
-                  ['Free lesson previews', 'Let visitors feel the teaching quality before they commit.'],
-                  ['Class-by-class guidance', 'Parents can choose the exact level that fits the learner today.'],
-                  ['Study momentum', 'Short, focused lessons help learners come back consistently.'],
-                ].map(([title, copy], index) => (
+
+              <div className="launch-study-proof" style={{ display: 'grid', gap: 12 }}>
+                {STUDY_PARTNER_POINTS.map((item, index) => (
                   <div
-                    key={title}
+                    key={item}
                     style={{
-                      padding: '18px 18px 16px',
-                      borderRadius: 20,
-                      background: index === 1 ? 'rgba(16,185,129,0.16)' : 'rgba(255,255,255,0.08)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      backdropFilter: 'blur(10px)',
+                      padding: '20px 20px 18px',
+                      borderRadius: 22,
+                      background: index === 1 ? 'rgba(36,211,102,0.18)' : 'rgba(255,255,255,0.09)',
+                      border: '1px solid rgba(255,255,255,0.14)',
+                      backdropFilter: 'blur(12px)',
+                      boxShadow: '0 14px 30px rgba(4,10,18,0.14)',
                     }}
                   >
-                    <p style={{ fontSize: 14, fontWeight: 800, color: '#fff', marginBottom: 6 }}>{title}</p>
-                    <p style={{ fontSize: 12, lineHeight: 1.7, color: 'rgba(255,255,255,0.68)' }}>{copy}</p>
+                    <p style={{ fontSize: 14, fontWeight: 800, color: '#fff', marginBottom: 6 }}>{index === 0 ? 'Instant understanding checks' : index === 1 ? 'Motivation between lessons' : 'Better exam readiness'}</p>
+                    <p style={{ fontSize: 13, lineHeight: 1.7, color: 'rgba(255,255,255,0.72)' }}>{item}</p>
                   </div>
                 ))}
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div style={{ background: '#f9fafb', padding: '56px 24px' }}>
-        <div className="sk-shell sk-section-shell" style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div className="sk-section-header">
-            <div><h2 className="sk-section-title">Featured courses</h2><p className="sk-section-sub">Most popular this month</p></div>
-            <Link href="/courses" className="sk-section-link">View all</Link>
+      <section style={{ padding: '0 24px 72px', background: LIGHT_BG }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div style={{ borderRadius: 30, background: 'linear-gradient(135deg,#f7fbf8 0%,#ffffff 40%,#eef8f2 100%)', border: '1px solid #dfe6df', padding: 30 }}>
+            <div className="launch-assurance-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,0.95fr) minmax(0,1.05fr)', gap: 24, alignItems: 'center' }}>
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Parent assurance</p>
+                <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 12 }}>
+                  Reassurance Built Into Every Step.
+                </h2>
+                <p style={{ fontSize: 15, lineHeight: 1.8, color: '#5a645f' }}>
+                  At launch, that promise is focused tightly on Form Four so the experience remains disciplined, trustworthy, and outcome-driven.
+                </p>
+              </div>
+              <div style={{ display: 'grid', gap: 12 }}>
+                {PARENT_ASSURANCE.map((item) => (
+                  <div key={item} style={{ borderRadius: 20, background: '#fff', border: '1px solid #e6e8e3', padding: 18, display: 'flex', gap: 12 }}>
+                    <span style={{ width: 28, height: 28, borderRadius: 999, background: '#ecfdf5', color: '#047857', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, flexShrink: 0 }}>✓</span>
+                    <p style={{ fontSize: 14, lineHeight: 1.75, color: '#4f5b55' }}>{item}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="sk-course-grid">
-            {courses.map((course,i) => {
-              const levelMeta = LEVELS.find((item) => item.level === course.category) || LEVELS[0];
-              return (
-              <Link key={course.id || i} href={'/courses/'+course.id} className="sk-course-card">
-                <div className="sk-course-thumb" style={{ width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg,'+levelMeta.bg+','+levelMeta.color+'22)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
-                  {course.thumbnail_url ? (
-                    <img src={course.thumbnail_url} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <>
-                      <div style={{ position: 'absolute', top: -10, right: -10, width: 70, height: 70, borderRadius: '50%', background: levelMeta.color+'15' }} />
-                      <div style={{ width: 42, height: 42, borderRadius: 10, background: levelMeta.color, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
-                        <span style={{ color: '#fff', fontSize: 17, fontWeight: 800 }}>{course.subject.charAt(0)}</span>
-                      </div>
-                    </>
-                  )}
+        </div>
+      </section>
+
+      <section id="teachers" style={{ padding: '0 24px 72px', background: LIGHT_BG }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div className="launch-section-head" style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 22 }}>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Teachers</p>
+              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Teaching Families Can Rely On.</h2>
+              <p style={{ maxWidth: 720, fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>
+                Instructors on Skolr are presented as calm academic guides, not noisy personalities.
+              </p>
+            </div>
+          </div>
+          <div className="launch-teacher-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 16 }}>
+            {(teachers.length ? teachers : [
+              { name: 'Mathematics instructor', subject: 'Mathematics', courseCount: 1 },
+              { name: 'Science instructor', subject: 'Physics and Chemistry', courseCount: 1 },
+              { name: 'Language instructor', subject: 'English', courseCount: 1 },
+            ]).map((teacher, index) => (
+              <div key={teacher.name} style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 22 }}>
+                <div style={{ width: 62, height: 62, borderRadius: 20, background: index === 1 ? '#f0fdf4' : '#f5f7f3', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
+                  <span style={{ fontSize: 24, fontWeight: 900, color: '#047857' }}>{teacher.name.charAt(0)}</span>
                 </div>
-                <div className="sk-course-body" style={{ padding: '12px 14px' }}>
-                  <div style={{ display: 'flex', gap: 5, marginBottom: 7, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: levelMeta.color+'15', color: levelMeta.color }}>{course.sub_category || course.category}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#f3f4f6', color: '#6b7280' }}>{course.subject}</span>
+                <h3 style={{ fontSize: 19, fontWeight: 900, color: '#121212', marginBottom: 8 }}>{teacher.name}</h3>
+                <p style={{ fontSize: 14, lineHeight: 1.75, color: '#58655e', marginBottom: 14 }}>
+                  Teaching focus: {teacher.subject}. Designed to help Form Four learners understand, revise, and stay consistent.
+                </p>
+                <p style={{ fontSize: 12, fontWeight: 800, color: '#047857' }}>{teacher.courseCount} live subject stream{teacher.courseCount === 1 ? '' : 's'}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="mock-exams" style={{ padding: '0 24px 72px', background: LIGHT_BG }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div style={{ borderRadius: 30, background: '#121212', padding: 30, color: '#fff' }}>
+            <div className="launch-mock-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,0.9fr) minmax(0,1.1fr)', gap: 24, alignItems: 'center' }}>
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: '#86efac', marginBottom: 8 }}>Mock exams</p>
+                <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, marginBottom: 12 }}>Exam Preparation You Can Trust.</h2>
+                <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.72)' }}>
+                  Mock exams and revision planning are part of the Form Four direction from day one, helping learners move from lessons into exam confidence.
+                </p>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 12 }}>
+                {[
+                  ['Timed practice', 'Know how each paper feels under exam conditions.'],
+                  ['Topic revision', 'Spot weak areas before they become final gaps.'],
+                  ['Performance review', 'Turn every attempt into a clearer next step.'],
+                ].map(([title, copy]) => (
+                  <div key={title} style={{ borderRadius: 22, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', padding: 18 }}>
+                    <h3 style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 900, marginBottom: 8 }}>{title}</h3>
+                    <p style={{ fontSize: 13, lineHeight: 1.7, color: 'rgba(255,255,255,0.65)' }}>{copy}</p>
                   </div>
-                  <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4, marginBottom: 5, color: '#0a0a0a' }}>{course.title}</p>
-                  <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 8 }}>{course.instructor_name}</p>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                      <span style={{ color: '#f59e0b', fontSize: 11 }}>★★★★★</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: '#92400e' }}>4.8</span>
-                    </div>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: G }}>Preview first</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="free-trial" style={{ padding: '0 24px 26px', background: LIGHT_BG }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div style={{ borderRadius: 28, background: '#ffffff', border: '1px solid #e1e6e9', padding: 28, boxShadow: '0 20px 48px rgba(18,18,18,0.05)' }}>
+            <div className="launch-trial-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(280px,0.62fr)', gap: 20, alignItems: 'center' }}>
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Start for free</p>
+                <h2 style={{ fontSize: 32, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 10 }}>Start with a free trial before committing to the full Form Four plan.</h2>
+                <p style={{ fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>
+                  Review the structure, explore the subject flow, and get a feel for how Skolr teaches before moving into full monthly access.
+                </p>
+              </div>
+              <div style={{ display: 'grid', gap: 10 }}>
+                {[
+                  'Explore the Form Four subject catalog',
+                  'Understand the teaching structure before payment',
+                  'Move into full access when ready',
+                ].map((item) => (
+                  <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10, borderRadius: 16, background: '#f6f7f9', padding: '12px 14px' }}>
+                    <span style={{ width: 22, height: 22, borderRadius: 999, background: 'rgba(36,211,102,0.14)', color: '#0a7b3b', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, flexShrink: 0 }}>✓</span>
+                    <span style={{ fontSize: 13, color: '#3a464d' }}>{item}</span>
                   </div>
+                ))}
+                <Link href="/register" style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 52, borderRadius: 16, background: GREEN, color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+                  Start for Free
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" style={{ padding: '0 24px 72px', background: LIGHT_BG }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center', marginBottom: 24 }}>
+            <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Pricing</p>
+            <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 10 }}>Simple, Secure Access for Every Learner.</h2>
+            <p style={{ fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>One calm subscription. All visible Form Four subjects included.</p>
+          </div>
+          <div style={{ maxWidth: 520, margin: '0 auto', borderRadius: 30, background: '#fff', border: '1px solid #e6e8e3', padding: 30, boxShadow: '0 24px 60px rgba(18,18,18,0.05)' }}>
+            <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 10 }}>Form Four Monthly Access</p>
+            <p style={{ fontSize: 46, fontWeight: 900, color: '#121212', marginBottom: 6 }}>
+              {FORM_FOUR_PRICE_TZS.toLocaleString()} <span style={{ fontSize: 18, color: '#5f6a64', fontWeight: 700 }}>TZS/month</span>
+            </p>
+            <p style={{ fontSize: 14, lineHeight: 1.75, color: '#5a645f', marginBottom: 18 }}>
+              Includes all visible Form Four subjects: Mathematics, Physics, Chemistry, Biology, Bookkeeping, Computer Studies, and English.
+            </p>
+            <div style={{ display: 'grid', gap: 10, marginBottom: 22 }}>
+              {[
+                'All public Form Four subject access',
+                'Clear lesson progression and revision flow',
+                'Progress tracking for consistency and confidence',
+              ].map((item) => (
+                <div key={item} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', textAlign: 'left' }}>
+                  <span style={{ width: 22, height: 22, borderRadius: 999, background: '#ecfdf5', color: '#047857', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, flexShrink: 0 }}>✓</span>
+                  <span style={{ fontSize: 14, lineHeight: 1.7, color: '#4e5b54' }}>{item}</span>
                 </div>
+              ))}
+            </div>
+            <Link href="/register" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 52, borderRadius: 16, background: GREEN, color: '#fff', textDecoration: 'none', fontSize: 15, fontWeight: 900 }}>
+              Start for Free
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section id="success-stories" style={{ padding: '0 24px 72px', background: LIGHT_BG }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div className="launch-section-head" style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 22 }}>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Success stories</p>
+              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Results Families Can Feel Good About.</h2>
+            </div>
+          </div>
+          <div className="launch-story-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 16 }}>
+            {SUCCESS_STORIES.map((story) => (
+              <div key={story.name} style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 24 }}>
+                <p style={{ fontSize: 18, lineHeight: 1.7, color: '#1f2d27', marginBottom: 20 }}>&ldquo;{story.quote}&rdquo;</p>
+                <p style={{ fontSize: 13, fontWeight: 900, color: '#121212' }}>{story.name}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: '0 24px 78px', background: LIGHT_BG }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div style={{ borderRadius: 30, background: 'linear-gradient(135deg,#121212 0%,#10231c 100%)', color: '#fff', padding: 34, textAlign: 'center' }}>
+            <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: '#86efac', marginBottom: 10 }}>Final step</p>
+            <h2 style={{ fontSize: 38, lineHeight: 1.05, fontWeight: 900, marginBottom: 12 }}>Begin Form Four Learning</h2>
+            <p style={{ maxWidth: 700, margin: '0 auto 22px', fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.74)' }}>
+              Give students the clarity to start, and the confidence to keep going until exam season.
+            </p>
+            <div className="launch-final-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <Link href="/register" style={{ padding: '14px 22px', borderRadius: 16, background: '#fff', color: '#121212', fontSize: 15, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                Start Learning
               </Link>
-            );})}
+              <Link href="#free-trial" style={{ padding: '14px 22px', borderRadius: 16, border: '1px solid rgba(255,255,255,0.16)', color: '#fff', fontSize: 15, fontWeight: 800, textDecoration: 'none', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                Start for Free
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="sk-shell sk-section-shell" style={{ maxWidth: 1280, margin: '0 auto', padding: '64px 24px' }}>
-        <div
-          className="sk-campaign-banner"
-          style={{
-            width: '100%',
-            aspectRatio: '1600 / 760',
-            borderRadius: 30,
-            overflow: 'hidden',
-            position: 'relative',
-            background: banners['campaign-banner']
-              ? `url(${banners['campaign-banner']}) center/cover no-repeat`
-              : 'linear-gradient(135deg,#0b1324,#11253b 48%,#103d2b)',
-            boxShadow: '0 30px 80px rgba(15,23,42,0.12)',
-          }}
-        >
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,rgba(7,10,20,0.28),rgba(7,10,20,0.12) 48%,rgba(8,27,19,0.18))' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(7,10,20,0.16),rgba(7,10,20,0.08) 38%,rgba(8,27,19,0.24) 100%)' }} />
-        </div>
-      </div>
-
-      <div style={{ background: '#fff', padding: '0 24px 64px' }}>
-        <div className="sk-shell" style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div className="sk-conviction-strip" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18 }}>
-            {[
-              {
-                slot: 'message-placeholder-1',
-                title: <>Stay in <span style={{ color: '#2f6a5f' }}>control</span><br />of your child&apos;s<br />education</>,
-                copy: 'Skolr organizes your child’s learning so they never fall behind.',
-                action: 'Start Learning Now',
-                href: '/register',
-                fallback: 'linear-gradient(180deg,#f3f0f2 0%,#efedf0 100%)',
-                color: '#1f2937',
-                buttonBackground: '#2f6a5f',
-                buttonColor: '#fff',
-                buttonBorder: 'none',
-              },
-              {
-                slot: 'message-placeholder-2',
-                title: <>From <span style={{ color: '#2f6a5f' }}>confusion</span><br />to clear<br /><span style={{ color: '#2f6a5f' }}>learning paths</span></>,
-                copy: 'Every topic is structured step by step so your child knows what to learn next.',
-                action: 'See How It Works',
-                href: '/courses',
-                fallback: 'linear-gradient(180deg,#eef7f3 0%,#dceee8 100%)',
-                color: '#1f2937',
-                buttonBackground: 'rgba(255,255,255,0.72)',
-                buttonColor: '#2f6a5f',
-                buttonBorder: '1.5px solid rgba(47,106,95,0.65)',
-              },
-              {
-                slot: 'message-placeholder-3',
-                title: <>Not more<br />content.<br /><span style={{ color: '#b9e2d1' }}>Better structure.</span></>,
-                copy: 'No scattered videos — just a clear path from topic to mastery.',
-                action: 'Get Started',
-                href: '/register',
-                fallback: 'linear-gradient(180deg,#1d2d29 0%,#203733 100%)',
-                color: '#f8fafc',
-                buttonBackground: 'linear-gradient(135deg,#d8f5e8,#b8e6d4)',
-                buttonColor: '#22433b',
-                buttonBorder: 'none',
-              },
-            ].map((card, index) => (
-              <div
-                key={card.slot}
-                style={{
-                  minHeight: 605,
-                  borderRadius: 0,
-                  padding: '42px 26px 28px',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  background: banners[card.slot]
-                    ? `linear-gradient(180deg,rgba(255,255,255,${index === 2 ? 0.06 : 0.4}) 0%,rgba(255,255,255,${index === 2 ? 0.04 : 0.18}) 100%), url(${banners[card.slot]}) center/cover`
-                    : card.fallback,
-                  color: card.color,
-                  border: index === 0 ? '1px solid #ece7ea' : 'none',
-                }}
-              >
-                {index === 2 && (
-                  <svg
-                    viewBox="0 0 400 220"
-                    preserveAspectRatio="none"
-                    style={{ position: 'absolute', left: 0, right: 0, bottom: 0, width: '100%', height: 220, opacity: 0.45 }}
-                  >
-                    <path d="M-20 200 C 40 160, 70 160, 120 120 S 220 70, 280 110 S 360 165, 430 130" stroke="rgba(210,235,226,0.8)" strokeWidth="3" fill="none" />
-                    <path d="M-30 235 C 25 210, 70 170, 120 180 S 220 230, 300 190 S 360 130, 430 145" stroke="rgba(210,235,226,0.38)" strokeWidth="2" fill="none" />
-                    {[70, 145, 225, 300].map((x, circleIndex) => (
-                      <circle key={x} cx={x} cy={[176, 126, 145, 102][circleIndex]} r="5" fill="rgba(210,235,226,0.72)" />
-                    ))}
-                  </svg>
-                )}
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                  <h3 style={{ fontSize: 28, lineHeight: 1.22, fontWeight: 800, marginBottom: 28, letterSpacing: '-0.03em' }}>{card.title}</h3>
-                  <p style={{ fontSize: 15, lineHeight: 1.75, maxWidth: 240, color: index === 2 ? 'rgba(248,250,252,0.78)' : '#374151' }}>{card.copy}</p>
+      <footer style={{ background: '#121212', color: '#fff', padding: '34px 24px 28px' }}>
+        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div className="launch-footer-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr 0.8fr 0.8fr', gap: 18, paddingBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: GREEN, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
                 </div>
-                <div style={{ position: 'relative', zIndex: 1, marginTop: 26 }}>
-                  <Link
-                    href={card.href}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      minHeight: 42,
-                      padding: '0 18px',
-                      borderRadius: 8,
-                      background: card.buttonBackground,
-                      color: card.buttonColor,
-                      fontSize: 13,
-                      fontWeight: 800,
-                      textDecoration: 'none',
-                      border: card.buttonBorder,
-                      boxShadow: index === 2 ? '0 12px 25px rgba(8,31,23,0.22)' : 'none',
-                    }}
-                  >
-                    {card.action}
-                    {index === 1 && (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M9 18l6-6-6-6" />
-                      </svg>
-                    )}
-                  </Link>
+                <div>
+                  <p style={{ fontSize: 18, fontWeight: 900 }}>Skolr</p>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.42)' }}>Master Form Four. Pass with Confidence.</p>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="sk-shell sk-section-shell" style={{ maxWidth: 1280, margin: '0 auto', padding: '56px 24px' }}>
-        <div className="sk-section-header">
-          <div><h2 className="sk-section-title">Meet our instructors</h2><p className="sk-section-sub">Expert teachers from Tanzania top institutions</p></div>
-        </div>
-        <div className="sk-instructor-grid">
-          {INSTRUCTORS.map(inst => (
-            <div key={inst.name} style={{ background: '#fff', borderRadius: 14, padding: 22, border: '1px solid #e5e7eb', textAlign: 'center' }}>
-              <div style={{ width: 64, height: 64, borderRadius: '50%', background: inst.bg, border: '3px solid '+inst.color+'30', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                <span style={{ fontSize: 24, fontWeight: 800, color: inst.color }}>{inst.initial}</span>
-              </div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 3 }}>{inst.name}</p>
-              <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 14 }}>{inst.subject}</p>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 16, padding: '10px 0', borderTop: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6', marginBottom: 14 }}>
-                <div><p style={{ fontSize: 15, fontWeight: 800, color: '#0a0a0a' }}>{inst.courses}</p><p style={{ fontSize: 10, color: '#9ca3af' }}>Courses</p></div>
-                <div><p style={{ fontSize: 15, fontWeight: 800, color: '#0a0a0a' }}>{inst.students.toLocaleString()}</p><p style={{ fontSize: 10, color: '#9ca3af' }}>Students</p></div>
-              </div>
-              <Link href="/courses" style={{ display: 'block', padding: '9px', fontSize: 12, fontWeight: 700, color: inst.color, background: inst.bg, borderRadius: 8, textDecoration: 'none' }}>View courses</Link>
+              <p style={{ maxWidth: 330, fontSize: 13, lineHeight: 1.8, color: 'rgba(255,255,255,0.56)' }}>
+                A focused Form Four learning platform built for calm revision, serious instruction, and exam confidence.
+              </p>
             </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="sk-cta-band" style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a1a2e)', padding: '64px 24px', textAlign: 'center' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 34, fontWeight: 900, color: '#fff', marginBottom: 12 }}>Start your free trial today</h2>
-          <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.55)', marginBottom: 28, lineHeight: 1.6 }}>7 days free. No credit card, no M-Pesa required.</p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/register" style={{ padding: '13px 32px', fontSize: 15, fontWeight: 700, color: '#0a0a0a', background: '#fff', borderRadius: 10, textDecoration: 'none' }}>Get started free</Link>
-            <Link href="/pricing" style={{ padding: '13px 32px', fontSize: 15, fontWeight: 700, color: '#fff', border: '2px solid rgba(255,255,255,0.2)', borderRadius: 10, textDecoration: 'none' }}>View pricing</Link>
-          </div>
-        </div>
-      </div>
-
-      <footer className="sk-footer">
-        <div className="sk-footer-grid">
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
-              <div style={{ width: 28, height: 28, background: G, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-              </div>
-              <span style={{ fontWeight: 800, fontSize: 17 }}>Skolr</span>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(255,255,255,0.34)', marginBottom: 12 }}>Launch focus</p>
+              <Link href="/courses?level=secondary&sub=Form%204" style={{ display: 'block', marginBottom: 9, fontSize: 13, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Form Four Subjects</Link>
+              <Link href="/#mock-exams" style={{ display: 'block', marginBottom: 9, fontSize: 13, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Mock Exams</Link>
+              <Link href="/#pricing" style={{ display: 'block', marginBottom: 9, fontSize: 13, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Pricing</Link>
             </div>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, maxWidth: 220 }}>Your pace, your space.</p>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(255,255,255,0.34)', marginBottom: 12 }}>Future ready</p>
+              {['Form One', 'Form Two', 'Form Three', 'A-Level', 'Professional Courses'].map((item) => (
+                <p key={item} style={{ marginBottom: 9, fontSize: 13, color: 'rgba(255,255,255,0.48)' }}>{item}</p>
+              ))}
+            </div>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(255,255,255,0.34)', marginBottom: 12 }}>Support</p>
+              {[
+                ['Login', '/login'],
+                ['Privacy', '/privacy'],
+                ['Terms', '/terms'],
+                ['Contact', '/contact'],
+              ].map(([label, href]) => (
+                <Link key={label} href={href} style={{ display: 'block', marginBottom: 9, fontSize: 13, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>{label}</Link>
+              ))}
+            </div>
           </div>
-          <div>
-            <h4 style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', marginBottom: 14 }}>Learn</h4>
-            {[['Primary','/courses?level=primary'],['Secondary','/courses?level=secondary'],['High School','/courses?level=highschool'],['University','/courses?level=undergraduate']].map(([l,h]) => (
-              <Link key={l} href={h} style={{ display: 'block', fontSize: 13, color: 'rgba(255,255,255,0.55)', textDecoration: 'none', marginBottom: 9 }}>{l}</Link>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', paddingTop: 18, fontSize: 12, color: 'rgba(255,255,255,0.42)' }}>
+            <span>2026 Skolr. All rights reserved.</span>
+            <span>Focused launch for Tanzania Form Four learners.</span>
           </div>
-          <div>
-            <h4 style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', marginBottom: 14 }}>Skolr</h4>
-            {[['All Courses','/courses'],['Teach on Skolr','/login'],['Free Trial','/register'],['Pricing','/pricing']].map(([l,h]) => (
-              <Link key={l} href={h} style={{ display: 'block', fontSize: 13, color: 'rgba(255,255,255,0.55)', textDecoration: 'none', marginBottom: 9 }}>{l}</Link>
-            ))}
-          </div>
-          <div>
-            <h4 style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', marginBottom: 14 }}>Support</h4>
-            {[['Help','/help'],['Contact','/contact'],['Privacy','/privacy'],['Terms','/terms']].map(([l,h]) => (
-              <Link key={l} href={h} style={{ display: 'block', fontSize: 13, color: 'rgba(255,255,255,0.55)', textDecoration: 'none', marginBottom: 9 }}>{l}</Link>
-            ))}
-          </div>
-        </div>
-        <div className="sk-footer-bottom">
-          <span>2025 Skolr. All rights reserved.</span>
-          <span>Made in Tanzania</span>
         </div>
       </footer>
 
       <style>{`
-        .sk-shell {
-          width: 100%;
-          padding-left: 24px;
-          padding-right: 24px;
-          box-sizing: border-box;
-        }
-        @media (max-width: 900px) {
-          .sk-premium-placeholder-grid,
-          .sk-conviction-strip,
-          .sk-hook-banner-grid,
-          .sk-level-grid,
-          .sk-campaign-banner-grid {
+        @media (max-width: 1024px) {
+          .launch-hero-grid,
+          .launch-how-grid,
+          .launch-study-grid,
+          .launch-assurance-grid,
+          .launch-mock-grid,
+          .launch-footer-grid,
+          .launch-subject-grid,
+          .launch-teacher-grid,
+          .launch-parent-panel,
+          .launch-trial-grid {
             grid-template-columns: 1fr !important;
           }
-          .sk-hero-section {
-            min-height: auto !important;
+
+          .launch-story-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
           }
-          .sk-hero-shell,
-          .sk-section-shell {
-            padding-top: 40px !important;
-            padding-bottom: 40px !important;
-          }
-          .sk-banner-stats {
-            display: grid !important;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 14px !important;
-          }
-          .sk-hook-proof-grid {
+
+          .launch-parent-points {
             grid-template-columns: 1fr !important;
+          }
+
+          .launch-hero-content {
+            padding: 42px 34px 38px !important;
+            min-height: 560px !important;
           }
         }
-        @media (max-width: 480px) {
-          .sk-shell {
-            padding-left: 16px;
-            padding-right: 16px;
+
+        @media (max-width: 860px) {
+          .launch-desktop-nav {
+            display: none !important;
           }
-          .sk-hero-h1 {
-            font-size: 34px !important;
-            line-height: 1.05 !important;
+
+          .launch-mobile-toggle {
+            display: inline-flex !important;
           }
-          .sk-hero-shell {
-            padding-top: 28px !important;
-            padding-bottom: 28px !important;
-          }
-          .sk-hero-shell > div:first-child {
-            padding: 22px 18px 24px !important;
-            border-radius: 24px !important;
-          }
-          .sk-hero-actions {
-            display: grid !important;
-            grid-template-columns: 1fr;
-          }
-          .sk-hero-action-primary,
-          .sk-hero-action-secondary {
-            width: 100%;
-            text-align: center;
-          }
-          .sk-banner-stats {
-            grid-template-columns: 1fr !important;
-            gap: 10px !important;
-          }
-          .sk-banner-stats > div,
-          .sk-campaign-banner,
-          .sk-conviction-strip > div,
-          .sk-course-grid > a,
-          .sk-instructor-grid > div {
-            border-radius: 20px !important;
-          }
-          .sk-alignment-strip {
-            gap: 8px !important;
-          }
-          .sk-level-grid > a {
-            padding: 16px !important;
-          }
-          .sk-hook-banner {
-            padding: 24px 18px !important;
-            border-radius: 24px !important;
-          }
-          .sk-hook-actions {
-            display: grid !important;
+
+          .launch-hero-grid,
+          .launch-how-grid,
+          .launch-study-grid,
+          .launch-assurance-grid,
+          .launch-mock-grid,
+          .launch-story-grid,
+          .launch-footer-grid,
+          .launch-parent-panel {
             grid-template-columns: 1fr !important;
           }
-          .sk-hook-actions a {
-            width: 100%;
-            text-align: center;
+
+          .launch-benefit-grid,
+          .launch-subject-grid,
+          .launch-teacher-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
           }
-          .sk-campaign-banner {
-            aspect-ratio: 1600 / 760 !important;
+        }
+
+        @media (max-width: 640px) {
+          .launch-shell,
+          .launch-header {
+            padding-left: 16px !important;
+            padding-right: 16px !important;
           }
-          .sk-conviction-strip > div {
-            min-height: auto !important;
-            padding: 28px 20px 22px !important;
+
+          .launch-hero-banner {
+            min-height: 540px !important;
             border-radius: 24px !important;
           }
-          .sk-cta-band {
-            padding: 48px 16px !important;
+
+          .launch-hero-content {
+            min-height: 540px !important;
+            padding: 28px 22px 28px !important;
+            align-items: flex-end !important;
+          }
+
+          .launch-hero-grid h1,
+          .launch-hero-content h1 {
+            font-size: 40px !important;
+          }
+
+          .launch-hero-actions,
+          .launch-final-actions {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+          }
+
+          .launch-benefit-grid,
+          .launch-subject-grid,
+          .launch-teacher-grid,
+          .launch-story-grid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .launch-parent-points {
+            grid-template-columns: 1fr !important;
+          }
+
+          .launch-hero-meta {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+          }
+
+          .launch-mock-grid > div:last-child {
+            grid-template-columns: 1fr !important;
+          }
+
+          .launch-how-grid > div:last-child > div {
+            grid-template-columns: 58px minmax(0, 1fr) !important;
           }
         }
       `}</style>
