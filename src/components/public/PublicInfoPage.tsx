@@ -28,12 +28,12 @@ export default function PublicInfoPage({ eyebrow, title, description, sections, 
             </div>
             <div>
               <p style={{ fontSize: 15, fontWeight: 800, lineHeight: 1 }}>Skolr</p>
-              <p style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>Your pace, your space</p>
+              <p style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>Master Form Four. Pass with Confidence.</p>
             </div>
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <Link href="/pricing" style={{ padding: '9px 14px', borderRadius: 999, border: '1px solid #d1d5db', color: '#334155', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Pricing</Link>
-            <Link href="/register" style={{ padding: '9px 14px', borderRadius: 999, background: G, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Start free trial</Link>
+            <Link href="/register" style={{ padding: '9px 14px', borderRadius: 999, background: G, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Start for Free</Link>
           </div>
         </div>
       </div>

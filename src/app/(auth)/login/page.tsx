@@ -59,7 +59,7 @@ function LoginContent() {
               </svg>
             </div>
             <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#fff' }}>Skolr</h1>
-            <p className="text-sm mt-1 font-medium" style={{ color: '#737373' }}>Your pace, your space</p>
+            <p className="text-sm mt-1 font-medium" style={{ color: '#737373' }}>Master Form Four. Pass with Confidence.</p>
           </div>
 
           {warn && (
@@ -110,7 +110,7 @@ function LoginContent() {
             New to Skolr?{' '}
             <Link href="/register" className="font-semibold !min-h-0 !min-w-0 inline" style={{ color: G }}>Create account</Link>
           </p>
-          <p className="text-center text-xs mt-8" style={{ color: '#333333' }}>Your pace, your space</p>
+          <p className="text-center text-xs mt-8" style={{ color: '#333333' }}>Focused access for Tanzania Form Four learners.</p>
         </div>
       </div>
       <style jsx>{`

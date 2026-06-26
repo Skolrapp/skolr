@@ -6,6 +6,7 @@ import { registerAction } from '@/actions/auth';
 import TurnstileWidget from '@/components/auth/TurnstileWidget';
 import SkolrLoader from '@/components/ui/SkolrLoader';
 import { EDUCATION_LEVELS } from '@/lib/constants';
+import { FORM_FOUR_CLASS } from '@/lib/launchCatalog';
 import type { EducationLevel } from '@/types';
 
 const G = '#10B981';
@@ -14,8 +15,8 @@ export default function RegisterPage() {
   const router  = useRouter();
   const [pending, start] = useTransition();
   const [role,     setRole]     = useState<'student'|'instructor'>('student');
-  const [learnerLevel, setLearnerLevel] = useState<EducationLevel>('primary');
-  const [learnerSubCategory, setLearnerSubCategory] = useState('Std 1');
+  const [learnerLevel] = useState<EducationLevel>(FORM_FOUR_CLASS.level);
+  const [learnerSubCategory] = useState(FORM_FOUR_CLASS.subCategory || 'Form 4');
   const [form, setForm] = useState({
     accountName: '',
     learnerName: '',
@@ -103,44 +104,21 @@ export default function RegisterPage() {
             <>
               <div>
                 <label className="lbl">Learner stage</label>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {EDUCATION_LEVELS.map((level) => (
-                    <button
-                      key={level.key}
-                      type="button"
-                      onClick={() => {
-                        setLearnerLevel(level.key);
-                        setLearnerSubCategory(level.sub_categories[0] || '');
-                      }}
-                      className="p-3 rounded-xl border text-left !min-h-0 !min-w-0 transition-all"
-                      style={learnerLevel === level.key
-                        ? { border: `2px solid ${G}`, background: 'rgba(16,185,129,0.1)', color: '#fff' }
-                        : { border: '1px solid #2a2a2a', background: '#1a1a1a', color: '#a3a3a3' }}
-                    >
-                      <p className="text-sm font-semibold">{level.label}</p>
-                      <p className="text-xs mt-1" style={{ color: learnerLevel === level.key ? '#a7f3d0' : '#737373' }}>{level.description}</p>
-                    </button>
-                  ))}
+                <div className="rounded-2xl p-4" style={{ background: '#151515', border: '1px solid #222' }}>
+                  <p className="text-sm font-semibold" style={{ color: '#fff' }}>Form Four</p>
+                  <p className="text-xs mt-1" style={{ color: '#a7f3d0' }}>Public registration is currently focused on Tanzania Form Four learners only.</p>
                 </div>
                 <p className="text-xs mt-2" style={{ color: '#737373' }}>
-                  {isMinorFlow
-                    ? 'Learners up to Form 6 must be managed by a parent or guardian because they are minors.'
-                    : 'Undergraduate and masters learners can create their own accounts directly.'}
+                  Learners registering now will be placed into the Form Four learning path. Parent or guardian consent is required for minors.
                 </p>
               </div>
 
               {selectedLevel?.sub_categories.length ? (
                 <div>
                   <label className="lbl">Class / year</label>
-                  <select
-                    className="inp"
-                    value={learnerSubCategory}
-                    onChange={(e) => setLearnerSubCategory(e.target.value)}
-                  >
-                    {selectedLevel.sub_categories.map((option) => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
+                  <div className="inp" style={{ display: 'flex', alignItems: 'center', color: '#fff' }}>
+                    {learnerSubCategory}
+                  </div>
                 </div>
               ) : null}
             </>
