@@ -228,6 +228,7 @@ export default function HomePage() {
       : 0;
     const totalMinutes = matchingRows.reduce((sum, row) => sum + Math.round(row.progress_seconds / 60), 0);
     const nextCourse = matchingRows[0] || launchCourses.find((course) => course.subject.toLowerCase() === subject.catalogSubject.toLowerCase()) || null;
+    const nextCourseId = nextCourse ? ('course_id' in nextCourse ? nextCourse.course_id : nextCourse.id) : null;
 
     return {
       subject,
@@ -235,6 +236,7 @@ export default function HomePage() {
       totalMinutes,
       activeRows: matchingRows.length,
       nextCourse,
+      nextCourseId,
     };
   });
   const dashboardTitle = isParentAccount ? 'Form Four Family Dashboard' : 'Form Four Dashboard';
@@ -530,7 +532,7 @@ export default function HomePage() {
                     <span>{entry.nextCourse ? 'Continue available' : 'Start subject'}</span>
                   </div>
                   <Link
-                    href={entry.nextCourse ? `/watch/${entry.nextCourse.id}` : entry.subject.href}
+                    href={entry.nextCourseId ? `/watch/${entry.nextCourseId}` : entry.subject.href}
                     style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '10px 14px', borderRadius: 10, textDecoration: 'none', background: '#0a0a0a', color: '#fff', fontSize: 12, fontWeight: 800 }}
                   >
                     {entry.nextCourse ? 'Continue Subject' : 'Explore Subject'}
