@@ -127,6 +127,11 @@ function LoginContent() {
             width: 18rem;
             height: 18rem;
           }
+
+          .phone-prefix {
+            min-width: 64px;
+            justify-content: center;
+          }
         }
       `}</style>
     </div>

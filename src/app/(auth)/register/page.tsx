@@ -211,6 +211,14 @@ export default function RegisterPage() {
           <Link href="/login" className="font-semibold !min-h-0 !min-w-0 inline" style={{ color: G }}>Sign in</Link>
         </p>
       </div>
+      <style jsx>{`
+        @media (max-width: 640px) {
+          .phone-prefix {
+            min-width: 64px;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </div>
   );
 }
