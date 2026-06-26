@@ -10,13 +10,13 @@ export default function Footer() {
           <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={G} strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           </div>
-          <div><p style={{ fontSize: 15, fontWeight: 800, color: '#fff', lineHeight: 1 }}>Skolr</p><p style={{ fontSize: 11, color: '#525252', marginTop: 2 }}>Your pace, your space</p></div>
+          <div><p style={{ fontSize: 15, fontWeight: 800, color: '#fff', lineHeight: 1 }}>Skolr</p><p style={{ fontSize: 11, color: '#525252', marginTop: 2 }}>Master Form Four. Pass with Confidence.</p></div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px 16px', marginBottom: 28 }}>
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#525252', textTransform: 'uppercase', marginBottom: 10 }}>Learn</p>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#525252', textTransform: 'uppercase', marginBottom: 10 }}>Launch focus</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[{href:'/courses?level=primary',label:'Primary (Std 1–7)'},{href:'/courses?level=secondary',label:'Secondary (Form 1–4)'},{href:'/courses?level=highschool',label:'High School (Form 5–6)'},{href:'/courses?level=undergraduate',label:'Undergraduate'},{href:'/courses?level=masters',label:'Masters'}].map(l=>(
+              {[{href:'/courses?level=secondary&sub=Form%204',label:'Form Four Subjects'},{href:'/pricing',label:'Form Four Access'},{href:'/register',label:'Start for Free'},{href:'/login',label:'Student Login'}].map(l=>(
                 <Link key={l.href} href={l.href} style={{ fontSize: 13, color: '#a3a3a3', textDecoration: 'none' }}>{l.label}</Link>
               ))}
             </div>
@@ -24,7 +24,7 @@ export default function Footer() {
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#525252', textTransform: 'uppercase', marginBottom: 10 }}>Skolr</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[{href:'/dashboard',label:'My Dashboard'},{href:'/courses',label:'Browse Courses'},{href:'/pricing',label:'Subscription'},{href:'/login',label:'Teach on Skolr'}].map(l=>(
+              {[{href:'/dashboard',label:'Form Four Dashboard'},{href:'/courses',label:'Browse Courses'},{href:'/privacy',label:'Privacy'},{href:'/contact',label:'Contact'}].map(l=>(
                 <Link key={l.href} href={l.href} style={{ fontSize: 13, color: '#a3a3a3', textDecoration: 'none' }}>{l.label}</Link>
               ))}
             </div>

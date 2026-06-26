@@ -233,7 +233,7 @@ function WatchContent() {
   const isGuestPreview = !user;
   const hasPaidAccess = !!user && isSubscriptionActive(user.subscription_expires_at) && canAccessLevel(user.subscription_tier, course.category);
   const hasCourseAccess = canManageCourse || hasPaidAccess;
-  const accessPromptTitle = isGuestPreview ? 'Sign up free to continue' : 'Upgrade to continue learning';
+  const accessPromptTitle = isGuestPreview ? 'Start for free to continue' : 'Upgrade to continue learning';
   const accessPromptBody = isGuestPreview
     ? 'This introduction is free to watch. Create a free account to unlock the lesson chapters and continue deeper into the class.'
     : `Your intro is unlocked. Upgrade your ${course.category} access to open the full lesson chapters for this class.`;
@@ -534,7 +534,7 @@ function WatchContent() {
                   <p style={{ fontSize: 16, fontWeight: 800, color: '#0a0a0a', marginBottom: 8 }}>Quiz unlocks when you proceed</p>
                   <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 14 }}>{accessPromptBody}</p>
                   <button onClick={() => setAccessPromptOpen(true)} style={{ display: 'inline-block', padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, border: 'none', borderRadius: 999, cursor: 'pointer' }}>
-                    {isGuestPreview ? 'Sign up free' : 'View plans'}
+                    {isGuestPreview ? 'Start for Free' : 'View plans'}
                   </button>
                 </div>
               ) : <ZealQuiz course={{ ...course, title: currentTitle }} />
@@ -548,7 +548,7 @@ function WatchContent() {
                   <p style={{ fontSize: 16, fontWeight: 800, color: '#0a0a0a', marginBottom: 8 }}>Q&A opens after you proceed</p>
                   <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 14 }}>{accessPromptBody}</p>
                   <button onClick={() => setAccessPromptOpen(true)} style={{ display: 'inline-block', padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, border: 'none', borderRadius: 999, cursor: 'pointer' }}>
-                    {isGuestPreview ? 'Sign up free' : 'View plans'}
+                    {isGuestPreview ? 'Start for Free' : 'View plans'}
                   </button>
                 </div>
               ) : (
@@ -711,7 +711,7 @@ function WatchContent() {
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {isGuestPreview ? (
                 <>
-                  <Link href="/register" style={{ padding: '11px 16px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Sign up free</Link>
+                  <Link href="/register" style={{ padding: '11px 16px', fontSize: 13, fontWeight: 700, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>Start for Free</Link>
                   <Link href="/login" style={{ padding: '11px 16px', fontSize: 13, fontWeight: 700, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 999, textDecoration: 'none' }}>Log in</Link>
                 </>
               ) : (
@@ -732,7 +732,7 @@ function WatchContent() {
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
             </div>
             <span style={{ fontWeight: 800, fontSize: 14 }}>Skolr</span>
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginLeft: 6 }}>Your pace, your space</span>
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginLeft: 6 }}>Master Form Four. Pass with Confidence.</span>
           </div>
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>2025 Skolr. All rights reserved.</span>
         </div>

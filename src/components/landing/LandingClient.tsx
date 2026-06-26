@@ -291,17 +291,14 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
                   Form Four launch focus
                 </div>
                 <h1 style={{ fontSize: 58, lineHeight: 1.02, fontWeight: 900, color: '#fff', letterSpacing: '-0.05em', marginBottom: 0 }}>
-                  Empowering every learner on their journey to success.
+                  Master Form Four. Pass with Confidence.
                 </h1>
                 <p style={{ maxWidth: 620, fontSize: 18, lineHeight: 1.8, color: 'rgba(255,255,255,0.82)', marginBottom: 0 }}>
-                  Skolr delivers tailored lessons, clear explanations and real-time progress tracking - keeping both parents and students confident every step of the way.
+                  Skolr empowers Form 4 students with personalised learning paths, crystal-clear explanations and progress updates that give parents confidence and assurance.
                 </p>
                 <div className="launch-hero-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 2 }}>
                   <Link href="/register" style={{ minHeight: 54, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '14px 24px', borderRadius: 16, background: GREEN, color: '#fff', fontSize: 14, fontWeight: 900, textDecoration: 'none', letterSpacing: 0.2, boxShadow: '0 18px 40px rgba(36,211,102,0.18)' }}>
-                    Try Skolr for Free
-                  </Link>
-                  <Link href="#subjects" style={{ minHeight: 54, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '14px 24px', borderRadius: 16, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>
-                    Learn more
+                    Start for Free
                   </Link>
                 </div>
                 <div className="launch-hero-meta" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 6 }}>
@@ -718,9 +715,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
             </p>
             <div className="launch-final-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
               <Link href="/register" style={{ padding: '14px 22px', borderRadius: 16, background: '#fff', color: '#121212', fontSize: 15, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                Start Learning
-              </Link>
-              <Link href="#free-trial" style={{ padding: '14px 22px', borderRadius: 16, border: '1px solid rgba(255,255,255,0.16)', color: '#fff', fontSize: 15, fontWeight: 800, textDecoration: 'none', textTransform: 'uppercase', letterSpacing: 0.5 }}>
                 Start for Free
               </Link>
             </div>
