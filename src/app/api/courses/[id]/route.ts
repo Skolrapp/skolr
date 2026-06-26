@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth';
 import { getActiveLearnerFromCookies } from '@/lib/activeLearner';
+import { ensureBunnyPlaybackReady } from '@/lib/bunny/status';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 
 function isMissingResumeColumn(message?: string) {
@@ -116,14 +117,18 @@ export async function GET(
     enrollment = enrollmentResult.data;
   }
 
-  const { data: review } = await supabase
-    .from('course_review_requests')
-    .select('status, admin_notes, reviewed_at')
-    .eq('course_id', id)
-    .order('reviewed_at', { ascending: false, nullsFirst: false })
-    .order('submitted_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  let review: { status?: string | null; admin_notes?: string | null; reviewed_at?: string | null } | null = null;
+  if (canViewDraft) {
+    const { data } = await supabase
+      .from('course_review_requests')
+      .select('status, admin_notes, reviewed_at')
+      .eq('course_id', id)
+      .order('reviewed_at', { ascending: false, nullsFirst: false })
+      .order('submitted_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    review = data;
+  }
 
   return NextResponse.json({
     success: true,
@@ -201,6 +206,11 @@ export async function PATCH(
 
   if (!body.video_hls_url?.trim() || !body.video_hls_url.endsWith('.m3u8')) {
     return NextResponse.json({ success: false, error: 'A valid intro video is required.' }, { status: 400 });
+  }
+
+  const bunnyPlaybackError = await ensureBunnyPlaybackReady(body.video_hls_url.trim());
+  if (bunnyPlaybackError) {
+    return NextResponse.json({ success: false, error: bunnyPlaybackError }, { status: 400 });
   }
 
   const { data, error } = await supabase

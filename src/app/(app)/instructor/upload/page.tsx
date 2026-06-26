@@ -4,9 +4,10 @@ import { ChangeEvent, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
+import SkolrLoader from '@/components/ui/SkolrLoader';
 import { EDUCATION_LEVELS, SUBJECTS } from '@/lib/constants';
 import { uploadCourseAction } from '@/actions/courses';
-import { uploadVideoToBunny } from '@/lib/bunny/client';
+import { uploadVideoToBunny, waitForBunnyPlaybackReady } from '@/lib/bunny/client';
 import type { EducationLevel } from '@/types';
 
 const G = '#10B981';
@@ -62,7 +63,10 @@ export default function UploadPage() {
       } else {
         setDurationSeconds(String(uploaded.durationSeconds));
       }
-      setUploadProgress('Upload complete. Bunny is processing the stream.');
+      const status = await waitForBunnyPlaybackReady(uploaded, setUploadProgress);
+      if (!status.ready) {
+        setVideoMetaError(status.message);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Upload failed.';
       setVideoMetaError(message);
@@ -326,7 +330,7 @@ export default function UploadPage() {
               )}
               {(videoMetaError || errors.hls) && <p className="text-xs mt-2" style={{ color: '#f87171' }}>{videoMetaError || errors.hls}</p>}
               <p className="text-xs mt-2" style={{ color: '#525252' }}>
-                Instructors upload directly from the browser to Bunny. The course saves the generated HLS playlist automatically.
+                Skolr now checks Bunny playback readiness before the draft can be saved, so the intro video is less likely to fail on first watch.
               </p>
             </div>
 
@@ -367,7 +371,7 @@ export default function UploadPage() {
             <button type="submit" className="btn-primary" disabled={pending || uploadingVideo}>
               {pending ? (
                 <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full border-2 border-black/30 border-t-black animate-spin" />
+                  <SkolrLoader size="sm" tone="light" inline />
                   Saving...
                 </span>
               ) : uploadingVideo ? (
@@ -377,7 +381,7 @@ export default function UploadPage() {
               )}
             </button>
             <p className="text-xs text-center mt-2" style={{ color: '#525252' }}>
-              Courses save as drafts. Publish them from your Supabase dashboard after Bunny finishes processing.
+              Courses save as drafts. If Bunny is still processing the stream, Skolr will ask you to wait before saving.
             </p>
           </div>
         </form>

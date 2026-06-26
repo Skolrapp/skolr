@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth';
+import { ensureBunnyPlaybackReady } from '@/lib/bunny/status';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 
 function isMissingReleaseAt(message?: string) {
@@ -19,6 +20,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (course.instructor_id !== session.user.id && session.user.role !== 'admin') return NextResponse.json({ success: false, error: 'Not your chapter.' }, { status: 403 });
   if (session.user.role !== 'admin' && course.is_published) {
     return NextResponse.json({ success: false, error: 'Published course videos can only be changed by an admin.' }, { status: 403 });
+  }
+  if (body.video_hls_url) {
+    const bunnyPlaybackError = await ensureBunnyPlaybackReady(body.video_hls_url);
+    if (bunnyPlaybackError) {
+      return NextResponse.json({ success: false, error: bunnyPlaybackError }, { status: 400 });
+    }
   }
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (body.title) updates.title = body.title.trim();

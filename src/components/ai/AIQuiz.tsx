@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import SkolrLoader from '@/components/ui/SkolrLoader';
 import type { Course } from '@/types';
 
 const G = '#10B981';
@@ -139,7 +140,7 @@ export default function AIQuiz({ course }: Props) {
   // ── Loading ──────────────────────────────────────────────────
   if (state === 'loading') return (
     <div className="rounded-2xl p-5 mt-4 flex items-center gap-3" style={{ background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.2)' }}>
-      <div className="w-5 h-5 rounded-full border-2 animate-spin flex-shrink-0" style={{ borderColor: '#2a2a2a', borderTopColor: G }} />
+      <SkolrLoader size="sm" tone="dark" inline />
       <p className="text-sm" style={{ color: '#a3a3a3' }}>Generating quiz questions...</p>
     </div>
   );
@@ -229,7 +230,7 @@ export default function AIQuiz({ course }: Props) {
         <button onClick={submitAnswer} disabled={!selected || feedbackLoad}
           className="btn-primary text-sm py-2.5">
           {feedbackLoad
-            ? <span className="flex items-center gap-2"><span className="w-4 h-4 rounded-full border-2 border-black/30 border-t-black animate-spin"/>Getting feedback...</span>
+            ? <span className="flex items-center gap-2"><SkolrLoader size="sm" tone="light" inline />Getting feedback...</span>
             : 'Submit Answer'}
         </button>
       )}

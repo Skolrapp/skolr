@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
 import Link from 'next/link';
-import { uploadVideoToBunny } from '@/lib/bunny/client';
+import { uploadVideoToBunny, waitForBunnyPlaybackReady } from '@/lib/bunny/client';
 import type { CourseResource } from '@/types';
 
 const G = '#10B981';
@@ -27,6 +27,7 @@ const EMPTY_FORM: ChapterForm = {
 };
 
 type UploadedVideo = {
+  videoId?: string;
   hlsUrl: string;
   durationSeconds: number;
   fileName: string;
@@ -220,6 +221,7 @@ export default function ChaptersPage() {
     try {
       const uploaded = await uploadVideoToBunny(file, setAddUploadProgress);
       setAddUploadedVideo({
+        videoId: uploaded.videoId,
         hlsUrl: uploaded.hlsUrl,
         durationSeconds: uploaded.durationSeconds,
         fileName: uploaded.fileName,
@@ -229,7 +231,10 @@ export default function ChaptersPage() {
         video_hls_url: uploaded.hlsUrl,
         duration_seconds: uploaded.durationSeconds ? String(uploaded.durationSeconds) : current.duration_seconds,
       }));
-      setAddUploadProgress('Upload complete. Bunny is processing this chapter.');
+      const status = await waitForBunnyPlaybackReady(uploaded, setAddUploadProgress);
+      if (!status.ready) {
+        setAddVideoError(status.message);
+      }
     } catch (error) {
       setAddVideoError(error instanceof Error ? error.message : 'Upload failed.');
       setAddUploadProgress('');
@@ -244,6 +249,7 @@ export default function ChaptersPage() {
     try {
       const uploaded = await uploadVideoToBunny(file, setEditUploadProgress);
       setEditUploadedVideo({
+        videoId: uploaded.videoId,
         hlsUrl: uploaded.hlsUrl,
         durationSeconds: uploaded.durationSeconds,
         fileName: uploaded.fileName,
@@ -253,7 +259,10 @@ export default function ChaptersPage() {
         video_hls_url: uploaded.hlsUrl,
         duration_seconds: uploaded.durationSeconds ? String(uploaded.durationSeconds) : current.duration_seconds,
       }));
-      setEditUploadProgress('Upload complete. Bunny is processing this chapter.');
+      const status = await waitForBunnyPlaybackReady(uploaded, setEditUploadProgress);
+      if (!status.ready) {
+        setEditVideoError(status.message);
+      }
     } catch (error) {
       setEditVideoError(error instanceof Error ? error.message : 'Upload failed.');
       setEditUploadProgress('');

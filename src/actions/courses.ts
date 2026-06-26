@@ -1,6 +1,7 @@
 'use server';
 
 import { getCurrentUser } from '@/lib/auth';
+import { ensureBunnyPlaybackReady } from '@/lib/bunny/status';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import { saveCourseProgressForUser } from '@/lib/courseProgress';
 import { v4 as uuidv4 } from 'uuid';
@@ -36,6 +37,9 @@ export async function uploadCourseAction(formData: FormData) {
   if (!category) return { error: 'Education level is required.' };
   if (!subject)  return { error: 'Subject is required.' };
   if (!hlsUrl || !hlsUrl.endsWith('.m3u8')) return { error: 'A valid .m3u8 HLS URL is required.' };
+
+  const bunnyPlaybackError = await ensureBunnyPlaybackReady(hlsUrl);
+  if (bunnyPlaybackError) return { error: bunnyPlaybackError };
 
   const supabase = createSupabaseAdmin();
   const { data, error } = await supabase

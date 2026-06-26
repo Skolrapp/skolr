@@ -7,7 +7,8 @@ import { useAuth } from '@/hooks/useAuth';
 import Footer from '@/components/layout/Footer';
 import TopHeader from '@/components/layout/TopHeader';
 import ParentLearnerManager from '@/components/parent/ParentLearnerManager';
-import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
+import { FORM_FOUR_CLASS, FORM_FOUR_SUBJECTS } from '@/lib/launchCatalog';
+import { isSubscriptionActive } from '@/lib/subscriptions';
 import type { Course, EducationLevel, SubCategory } from '@/types';
 
 const G = '#10B981';
@@ -112,6 +113,10 @@ function levelLabel(level: EducationLevel, subCategory?: string | null) {
   return subCategory ? `${meta.label} · ${subCategory}` : meta.label;
 }
 
+function isLaunchCourse(row: { category: EducationLevel; sub_category?: SubCategory | null }) {
+  return row.category === FORM_FOUR_CLASS.level && row.sub_category === FORM_FOUR_CLASS.subCategory;
+}
+
 function buildSummaryMetrics(analytics: DashboardAnalytics | null, isParentAccount: boolean): SummaryMetric[] {
   if (!analytics) return [];
 
@@ -182,7 +187,7 @@ export default function HomePage() {
     if (!user || user.role === 'admin') return;
 
     setFetching(true);
-    fetch('/api/courses?per_page=6', { credentials: 'include' })
+    fetch('/api/courses?level=secondary&sub=Form%204&per_page=6', { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setCourses(d.data.items || []);
@@ -209,9 +214,30 @@ export default function HomePage() {
   const firstName = user.name?.split(' ')[0] || 'there';
   const isParentAccount = user.account_type === 'parent_guardian';
   const summaryMetrics = buildSummaryMetrics(analytics, isParentAccount);
-  const continueLearning = isParentAccount ? analytics?.active_learner?.continue_learning || null : analytics?.continue_learning || null;
-  const progressRows = analytics?.course_progress || [];
+  const continueLearningSource = isParentAccount ? analytics?.active_learner?.continue_learning || null : analytics?.continue_learning || null;
+  const continueLearning = continueLearningSource && isLaunchCourse(continueLearningSource) ? continueLearningSource : null;
+  const progressRows = (analytics?.course_progress || []).filter(isLaunchCourse);
   const learnerSnapshots = analytics?.learner_snapshots || [];
+  const launchCourses = courses.filter((course) => isLaunchCourse(course));
+  const recommendedLesson = continueLearning || progressRows.find((row) => !row.completed) || progressRows[0] || null;
+  const revisionPlanRows = [...progressRows].sort((a, b) => a.completion_percent - b.completion_percent).slice(0, 3);
+  const subjectProgressRows = FORM_FOUR_SUBJECTS.map((subject) => {
+    const matchingRows = progressRows.filter((row) => row.subject.toLowerCase() === subject.catalogSubject.toLowerCase());
+    const averageCompletion = matchingRows.length
+      ? Math.round(matchingRows.reduce((sum, row) => sum + row.completion_percent, 0) / matchingRows.length)
+      : 0;
+    const totalMinutes = matchingRows.reduce((sum, row) => sum + Math.round(row.progress_seconds / 60), 0);
+    const nextCourse = matchingRows[0] || launchCourses.find((course) => course.subject.toLowerCase() === subject.catalogSubject.toLowerCase()) || null;
+
+    return {
+      subject,
+      averageCompletion,
+      totalMinutes,
+      activeRows: matchingRows.length,
+      nextCourse,
+    };
+  });
+  const dashboardTitle = isParentAccount ? 'Form Four Family Dashboard' : 'Form Four Dashboard';
 
   return (
     <div style={{ background: '#fff', minHeight: '100vh', fontFamily: "'Inter',-apple-system,sans-serif", color: '#0a0a0a' }}>
@@ -220,12 +246,12 @@ export default function HomePage() {
       <div className="dashboard-hero" style={{ background: 'linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 60%,#0d2818 100%)', padding: '32px 24px' }}>
         <div className="dashboard-hero-inner" style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>Welcome back,</p>
-            <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fff', marginBottom: 6 }}>{firstName}</h1>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>Welcome back, {firstName}</p>
+            <h1 style={{ fontSize: 30, fontWeight: 900, color: '#fff', marginBottom: 6 }}>{dashboardTitle}</h1>
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>
               {isParentAccount
-                ? (isActive ? 'Track every learner, continue the right course, and see who needs attention next.' : 'Start a family subscription to unlock classes for your learner.')
-                : (isActive ? 'Your classes, progress, and next lesson are ready below.' : 'Start your free trial to access all courses.')}
+                ? (isActive ? 'Track progress, revision consistency, and mock readiness for Form Four learners.' : 'Start Form Four access to unlock the full revision path for your learner.')
+                : (isActive ? 'Your next Form Four lesson, revision focus, and exam preparation live here.' : 'Start your Form Four access to unlock every visible subject.')}
             </p>
             {user.active_learner_name && (
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '8px 12px', borderRadius: 999, background: 'rgba(16,185,129,0.14)', border: '1px solid rgba(16,185,129,0.3)', color: '#d1fae5', fontSize: 12, fontWeight: 700 }}>
@@ -257,9 +283,9 @@ export default function HomePage() {
         <section style={{ marginBottom: 32 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 18 }}>
             <div>
-              <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Progress analytics</h2>
+              <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Performance Summary</h2>
               <p style={{ fontSize: 14, color: '#6b7280' }}>
-                {isParentAccount ? 'See how each learner is moving and who should continue next.' : 'Pick up where you left off and see how your learning is growing.'}
+                {isParentAccount ? 'See how each learner is moving and who should continue next.' : 'A focused snapshot of how your Form Four study plan is progressing.'}
               </p>
             </div>
             {isParentAccount && analytics?.active_learner && (
@@ -345,7 +371,7 @@ export default function HomePage() {
 
           <div style={{ borderRadius: 20, border: '1px solid #e5e7eb', background: '#f8fafc', padding: 20 }}>
             <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: '#10B981', marginBottom: 10 }}>
-              {isParentAccount ? 'Household momentum' : 'Progress focus'}
+              {isParentAccount ? 'Household momentum' : 'Today’s recommended lesson'}
             </p>
             {isParentAccount ? (
               <>
@@ -378,31 +404,35 @@ export default function HomePage() {
               </>
             ) : (
               <>
-                <h3 style={{ fontSize: 22, lineHeight: 1.2, fontWeight: 800, marginBottom: 10 }}>Keep your progress moving every session.</h3>
-                <p style={{ fontSize: 14, lineHeight: 1.6, color: '#6b7280', marginBottom: 18 }}>
-                  {analytics?.summary.focus_subject
-                    ? `You are spending the most time in ${analytics.summary.focus_subject}. Keep building consistency and turn that attention into completed lessons.`
-                    : 'Once you begin classes, your strongest subject focus and study rhythm will show here.'}
-                </p>
-                <div style={{ display: 'grid', gap: 12 }}>
-                  {progressRows.slice(0, 3).map((row) => (
-                    <div key={row.course_id} style={{ borderRadius: 16, border: '1px solid #e5e7eb', background: '#fff', padding: 14 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 6 }}>
-                        <p style={{ fontSize: 14, fontWeight: 800 }}>{row.title}</p>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: '#047857' }}>{row.completion_percent}%</span>
+                {recommendedLesson ? (
+                  <div style={{ display: 'grid', gap: 14 }}>
+                    <div style={{ borderRadius: 18, border: '1px solid #e5e7eb', background: '#fff', padding: 16 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+                        <span style={{ fontSize: 11, fontWeight: 800, padding: '4px 8px', borderRadius: 999, background: '#ecfdf5', color: '#047857' }}>{recommendedLesson.subject}</span>
+                        <span style={{ fontSize: 11, color: '#6b7280' }}>{formatRelativeDate(recommendedLesson.last_activity_at)}</span>
                       </div>
-                      <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 10 }}>{row.subject} · {formatMinutes(Math.round(row.progress_seconds / 60))}</p>
-                      <div style={{ height: 8, borderRadius: 999, background: '#e5e7eb', overflow: 'hidden' }}>
-                        <div style={{ width: `${Math.max(4, row.completion_percent)}%`, height: '100%', borderRadius: 999, background: 'linear-gradient(90deg,#10B981,#86efac)' }} />
+                      <h3 style={{ fontSize: 22, lineHeight: 1.25, fontWeight: 800, marginBottom: 8 }}>{recommendedLesson.title}</h3>
+                      <p style={{ fontSize: 14, lineHeight: 1.6, color: '#6b7280', marginBottom: 14 }}>
+                        {recommendedLesson.completion_percent}% complete with {formatMinutes(Math.round(recommendedLesson.progress_seconds / 60))} already invested. Continue from where you stopped and keep your revision flow steady.
+                      </p>
+                      <div style={{ height: 8, borderRadius: 999, background: '#e5e7eb', overflow: 'hidden', marginBottom: 14 }}>
+                        <div style={{ width: `${Math.max(4, recommendedLesson.completion_percent)}%`, height: '100%', borderRadius: 999, background: 'linear-gradient(90deg,#10B981,#86efac)' }} />
+                      </div>
+                      <div className="continue-actions" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        <Link href={`/watch/${recommendedLesson.course_id}`} style={{ padding: '10px 16px', borderRadius: 10, textDecoration: 'none', background: '#0a0a0a', color: '#fff', fontSize: 13, fontWeight: 800 }}>
+                          Open lesson
+                        </Link>
+                        <Link href={`/courses/${recommendedLesson.course_id}`} style={{ padding: '10px 16px', borderRadius: 10, textDecoration: 'none', border: '1px solid #d1d5db', color: '#111827', fontSize: 13, fontWeight: 700 }}>
+                          View overview
+                        </Link>
                       </div>
                     </div>
-                  ))}
-                  {progressRows.length === 0 && (
-                    <div style={{ borderRadius: 16, border: '1px dashed #d1d5db', padding: 18, color: '#6b7280', fontSize: 13 }}>
-                      Start a class and your live course progress will appear here automatically.
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div style={{ borderRadius: 16, border: '1px dashed #d1d5db', background: '#fff', padding: 18, color: '#6b7280', fontSize: 13 }}>
+                    Start one Form Four lesson and your recommended next step will appear here automatically.
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -478,42 +508,35 @@ export default function HomePage() {
           <section style={{ marginBottom: 40 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 18 }}>
               <div>
-                <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Course progress</h2>
-                <p style={{ fontSize: 14, color: '#6b7280' }}>See every active class, how far you have gone, and which one to continue next.</p>
+                <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Subject Progress</h2>
+                <p style={{ fontSize: 14, color: '#6b7280' }}>A clean subject-by-subject view of your Form Four consistency and revision depth.</p>
               </div>
             </div>
-            <div style={{ borderRadius: 20, border: '1px solid #e5e7eb', overflow: 'hidden', background: '#fff' }}>
-              {progressRows.length === 0 ? (
-                <div style={{ padding: 28, textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
-                  Your course progress will appear here after you start learning.
-                </div>
-              ) : (
-                <div>
-                  {progressRows.map((row, index) => (
-                    <div key={`${row.course_id}-${index}`} className="progress-row" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) minmax(120px,0.7fr) minmax(150px,0.8fr)', gap: 14, alignItems: 'center', padding: '16px 18px', borderTop: index === 0 ? 'none' : '1px solid #f1f5f9' }}>
-                      <div style={{ minWidth: 0 }}>
-                        <p style={{ fontSize: 14, fontWeight: 800, marginBottom: 4 }}>{row.title}</p>
-                        <p style={{ fontSize: 12, color: '#6b7280' }}>{row.subject} · {levelLabel(row.category, row.sub_category)}</p>
-                      </div>
-                      <div>
-                        <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 6 }}>{row.completion_percent}% complete</p>
-                        <div style={{ width: '100%', height: 8, borderRadius: 999, background: '#e5e7eb', overflow: 'hidden' }}>
-                          <div style={{ width: `${Math.max(4, row.completion_percent)}%`, height: '100%', borderRadius: 999, background: row.completed ? 'linear-gradient(90deg,#0f766e,#14b8a6)' : 'linear-gradient(90deg,#10B981,#86efac)' }} />
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                        <div style={{ fontSize: 12, color: '#6b7280' }}>
-                          <p style={{ marginBottom: 4 }}>{formatMinutes(Math.round(row.progress_seconds / 60))}</p>
-                          <p>{formatRelativeDate(row.last_activity_at)}</p>
-                        </div>
-                        <Link href={`/watch/${row.course_id}`} style={{ padding: '10px 14px', borderRadius: 10, textDecoration: 'none', background: '#0a0a0a', color: '#fff', fontSize: 12, fontWeight: 800 }}>
-                          {row.completed ? 'Review' : 'Resume'}
-                        </Link>
-                      </div>
+            <div className="subject-progress-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 14 }}>
+              {subjectProgressRows.map((entry) => (
+                <div key={entry.subject.id} style={{ borderRadius: 18, border: '1px solid #e5e7eb', background: '#fff', padding: 18 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
+                    <div>
+                      <p style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>{entry.subject.name}</p>
+                      <p style={{ fontSize: 12, color: '#6b7280' }}>{entry.activeRows > 0 ? `${entry.activeRows} active lesson${entry.activeRows === 1 ? '' : 's'}` : 'Ready when you are'}</p>
                     </div>
-                  ))}
+                    <span style={{ fontSize: 12, fontWeight: 800, color: '#047857' }}>{entry.averageCompletion}%</span>
+                  </div>
+                  <div style={{ height: 8, borderRadius: 999, background: '#e5e7eb', overflow: 'hidden', marginBottom: 12 }}>
+                    <div style={{ width: `${Math.max(4, entry.averageCompletion)}%`, height: '100%', borderRadius: 999, background: 'linear-gradient(90deg,#10B981,#86efac)' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 12, color: '#6b7280', marginBottom: 14 }}>
+                    <span>{formatMinutes(entry.totalMinutes)}</span>
+                    <span>{entry.nextCourse ? 'Continue available' : 'Start subject'}</span>
+                  </div>
+                  <Link
+                    href={entry.nextCourse ? `/watch/${entry.nextCourse.id}` : entry.subject.href}
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '10px 14px', borderRadius: 10, textDecoration: 'none', background: '#0a0a0a', color: '#fff', fontSize: 12, fontWeight: 800 }}
+                  >
+                    {entry.nextCourse ? 'Continue Subject' : 'Explore Subject'}
+                  </Link>
                 </div>
-              )}
+              ))}
             </div>
           </section>
         )}
@@ -521,34 +544,64 @@ export default function HomePage() {
         <div style={{ marginBottom: 48 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 20 }}>
             <div>
-              <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Browse by level</h2>
-              <p style={{ fontSize: 14, color: '#6b7280' }}>Choose your education level to find the right courses</p>
+              <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Mock Exams</h2>
+              <p style={{ fontSize: 14, color: '#6b7280' }}>Practice in a way that feels closer to the final exam, with a clear purpose for each session.</p>
             </div>
           </div>
-          <div className="level-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 14 }}>
-            {LEVELS.map((level) => {
-              const hasAccess = isActive && canAccessLevel(user.subscription_tier, level.id as EducationLevel);
-              return (
-                <Link key={level.id} href={`/courses?level=${level.id}`} className="level-card" style={{ display: 'block', padding: '20px 16px', background: level.bg, borderRadius: 12, textDecoration: 'none', border: `1px solid ${level.color}22`, position: 'relative' }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 10, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={level.color} strokeWidth="1.8"><path d={level.icon} /></svg>
-                  </div>
-                  <p style={{ fontSize: 14, fontWeight: 800, color: '#0a0a0a', marginBottom: 3 }}>{level.label}</p>
-                  <p style={{ fontSize: 12, color: '#6b7280' }}>{level.sub}</p>
-                  {hasAccess && <div style={{ position: 'absolute', top: 10, right: 10, width: 8, height: 8, borderRadius: '50%', background: G }} />}
-                </Link>
-              );
-            })}
+          <div className="mock-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 14 }}>
+            {[
+              ['Timed practice', 'Simulate real exam pressure with guided timing and focus.'],
+              ['Topic revision', 'Target weaker areas before moving into full-paper practice.'],
+              ['Performance review', 'Use your results to shape the next revision plan.'],
+            ].map(([title, copy]) => (
+              <div key={title} style={{ borderRadius: 18, border: '1px solid #e5e7eb', background: '#fff', padding: 18 }}>
+                <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: '#10B981', marginBottom: 10 }}>Form Four Exam Prep</p>
+                <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>{title}</h3>
+                <p style={{ fontSize: 14, lineHeight: 1.6, color: '#6b7280' }}>{copy}</p>
+              </div>
+            ))}
           </div>
         </div>
 
         <div style={{ marginBottom: 48 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 20 }}>
             <div>
-              <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Recommended for you</h2>
-              <p style={{ fontSize: 14, color: '#6b7280' }}>Courses matched to your level</p>
+              <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Revision Plan</h2>
+              <p style={{ fontSize: 14, color: '#6b7280' }}>The clearest next subjects to revisit based on your current progress.</p>
             </div>
-            <Link href="/courses" style={{ fontSize: 13, fontWeight: 600, color: G, textDecoration: 'none' }}>View all</Link>
+          </div>
+          {revisionPlanRows.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '32px 24px', background: '#f9fafb', borderRadius: 16, border: '1px solid #e5e7eb' }}>
+              <p style={{ fontSize: 14, color: '#6b7280' }}>Your revision plan will begin appearing here after your first study session.</p>
+            </div>
+          ) : (
+            <div className="course-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
+              {revisionPlanRows.map((row) => (
+                <div key={row.course_id} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 16, padding: 18 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, padding: '4px 8px', borderRadius: 999, background: '#ecfdf5', color: '#047857' }}>{row.subject}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#6b7280' }}>{row.completion_percent}% complete</span>
+                  </div>
+                  <p style={{ fontSize: 16, fontWeight: 800, lineHeight: 1.4, marginBottom: 8 }}>{row.title}</p>
+                  <p style={{ fontSize: 13, lineHeight: 1.6, color: '#6b7280', marginBottom: 14 }}>
+                    Return to this lesson to strengthen a weaker area before your next mock exam session.
+                  </p>
+                  <Link href={`/watch/${row.course_id}`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '10px 14px', borderRadius: 10, textDecoration: 'none', background: '#0a0a0a', color: '#fff', fontSize: 12, fontWeight: 800 }}>
+                    Resume Revision
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginBottom: 48 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
+            <div>
+              <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Form Four Subjects</h2>
+              <p style={{ fontSize: 14, color: '#6b7280' }}>Explore the subjects available in your launch access plan.</p>
+            </div>
+            <Link href="/courses?level=secondary&sub=Form%204" style={{ fontSize: 13, fontWeight: 700, color: G, textDecoration: 'none' }}>View subject catalog</Link>
           </div>
           {fetching ? (
             <div className="course-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
@@ -562,26 +615,26 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-          ) : courses.length === 0 ? (
+          ) : launchCourses.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px', background: '#f9fafb', borderRadius: 12, border: '1px solid #e5e7eb' }}>
-              <p style={{ fontSize: 14, color: '#6b7280' }}>No courses yet. Check back soon.</p>
+              <p style={{ fontSize: 14, color: '#6b7280' }}>Form Four courses will appear here as soon as they are published.</p>
             </div>
           ) : (
             <div className="course-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
-              {courses.map((c) => (
+              {launchCourses.map((c) => (
                 <Link key={c.id} href={`/courses/${c.id}`} className="course-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden' }}>
-                  <Thumb color="#3b82f6" bg="#eff6ff" title={c.title} thumbnailUrl={c.thumbnail_url} />
+                  <Thumb color="#10B981" bg="#ecfdf5" title={c.title} thumbnailUrl={c.thumbnail_url} />
                   <div style={{ padding: '14px 16px' }}>
-                    <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#eff6ff', color: '#3b82f6' }}>{c.category}</span>
+                    <div style={{ display: 'flex', gap: 5, marginBottom: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#ecfdf5', color: '#047857' }}>{c.sub_category || 'Form Four'}</span>
                       <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#f3f4f6', color: '#6b7280' }}>{c.subject}</span>
                     </div>
                     <p style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4, marginBottom: 6 }}>{c.title}</p>
                     <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 10 }}>{c.instructor_name}</p>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 12, color: '#f59e0b' }}>★★★★★</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: G }}>
-                        {canAccessLevel(user.subscription_tier, c.category) && isActive ? 'Watch now' : 'Free trial'}
+                      <span style={{ fontSize: 12, color: '#6b7280' }}>{FORM_FOUR_CLASS.name}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: isActive ? '#0a0a0a' : G }}>
+                        {isActive ? 'Watch now' : 'Start access'}
                       </span>
                     </div>
                   </div>
@@ -614,16 +667,17 @@ export default function HomePage() {
         }
 
         @media (max-width: 900px) {
-          .level-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-          }
-
           .course-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
           }
 
           .dashboard-progress-shell {
             grid-template-columns: minmax(0, 1fr) !important;
+          }
+
+          .subject-progress-grid,
+          .mock-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
           }
         }
 
@@ -649,14 +703,10 @@ export default function HomePage() {
           .analytics-grid,
           .analytics-loading-grid,
           .learner-snapshot-grid,
-          .level-grid,
+          .subject-progress-grid,
+          .mock-grid,
           .course-grid {
             grid-template-columns: minmax(0, 1fr) !important;
-          }
-
-          .level-card {
-            padding: 16px 12px !important;
-            min-width: 0;
           }
 
           .course-card,

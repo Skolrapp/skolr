@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateSession } from '@/lib/auth';
+import { validateSession, verifyToken } from '@/lib/auth';
+import { ensureBunnyPlaybackReady } from '@/lib/bunny/status';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -9,7 +10,8 @@ function isMissingReleaseAt(message?: string) {
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const token = request.cookies.get('sk_token')?.value;
-  const session = token ? await validateSession(token) : null;
+  const payload = token ? await verifyToken(token) : null;
+  const canViewScheduledChapters = payload?.role === 'admin' || payload?.role === 'instructor';
   const { id } = await params;
   const supabase = createSupabaseAdmin();
   let query = supabase
@@ -19,7 +21,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     .eq('is_published', true)
     .order('order_index', { ascending: true });
 
-  if (!session || session.user.role === 'student') {
+  if (!canViewScheduledChapters) {
     query = query.or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
   }
 
@@ -49,6 +51,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { title, description, video_hls_url, duration_seconds, release_at } = await request.json();
   if (!title?.trim()) return NextResponse.json({ success: false, error: 'Title is required.' }, { status: 400 });
   if (!video_hls_url?.endsWith('.m3u8')) return NextResponse.json({ success: false, error: 'Valid .m3u8 URL required.' }, { status: 400 });
+  const bunnyPlaybackError = await ensureBunnyPlaybackReady(video_hls_url.trim());
+  if (bunnyPlaybackError) return NextResponse.json({ success: false, error: bunnyPlaybackError }, { status: 400 });
   const supabase = createSupabaseAdmin();
   const { data: course } = await supabase.from('courses').select('instructor_id, total_chapters').eq('id', id).single();
   if (!course) return NextResponse.json({ success: false, error: 'Course not found.' }, { status: 404 });

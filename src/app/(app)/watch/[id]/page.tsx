@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import VideoPlayer from '@/components/player/VideoPlayer';
 import ZealQuiz from '@/components/ai/ZealQuiz';
 import Reviews from '@/components/ui/Reviews';
+import SkolrLoader from '@/components/ui/SkolrLoader';
 import { useAuth } from '@/hooks/useAuth';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
 import { LEVEL_COLORS } from '@/lib/constants';
@@ -45,7 +46,8 @@ function WatchContent() {
   const [progress, setProgress] = useState(0);
   const [resumeLessonId, setResumeLessonId] = useState('intro');
   const [resumeLessonProgress, setResumeLessonProgress] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [courseLoading, setCourseLoading] = useState(true);
+  const [chaptersLoading, setChaptersLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('overview');
   const [resources, setResources] = useState<any[]>([]);
   const [resLoading, setResLoading] = useState(false);
@@ -60,31 +62,68 @@ function WatchContent() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/courses/' + id, { credentials: 'include' }).then(r => r.json()),
-      fetch('/api/courses/' + id + '/chapters', { credentials: 'include' }).then(r => r.json()),
-    ])
-      .then(([courseData, chaptersData]) => {
-        if (!courseData.success) { router.push('/courses'); return; }
+    let cancelled = false;
+
+    setCourseLoading(true);
+    setChaptersLoading(true);
+    setCourse(null);
+    setChapters([]);
+    setActiveChapter(null);
+
+    fetch('/api/courses/' + id, { credentials: 'include' })
+      .then(r => r.json())
+      .then((courseData) => {
+        if (cancelled) return null;
+        if (!courseData.success) {
+          router.push('/courses');
+          return null;
+        }
+
         setCourse(courseData.data.course);
         setProgress(courseData.data.progress_seconds || 0);
         setResumeLessonId(courseData.data.last_lesson_id || 'intro');
         setResumeLessonProgress(courseData.data.last_lesson_progress_seconds || courseData.data.progress_seconds || 0);
 
-        if (chaptersData.success && chaptersData.data.length > 0) {
-          const nextChapters = chaptersData.data as Chapter[];
-          setChapters(nextChapters);
-          const resumedChapter = nextChapters.find((chapter) => chapter.id === (courseData.data.last_lesson_id || ''));
-          setActiveChapter(resumedChapter || null);
-        }
-
         if (courseData.data.course?.instructor_id) {
           fetch('/api/instructors/' + courseData.data.course.instructor_id, { credentials: 'include' })
             .then(r => r.json())
-            .then(profileData => { if (profileData.success) setInstructorProfile(profileData.data); });
+            .then(profileData => {
+              if (!cancelled && profileData.success) setInstructorProfile(profileData.data);
+            })
+            .catch(() => {});
         }
+
+        return {
+          shouldLoadChapters: true,
+          lastLessonId: courseData.data.last_lesson_id || '',
+        };
       })
-      .finally(() => setLoading(false));
+      .then((courseState) => {
+        if (cancelled || !courseState?.shouldLoadChapters) {
+          if (!cancelled) setChaptersLoading(false);
+          return;
+        }
+
+        fetch('/api/courses/' + id + '/chapters', { credentials: 'include' })
+          .then(r => r.json())
+          .then((chaptersData) => {
+            if (cancelled || !chaptersData.success || chaptersData.data.length === 0) return;
+            const nextChapters = chaptersData.data as Chapter[];
+            setChapters(nextChapters);
+            const resumedChapter = nextChapters.find((chapter) => chapter.id === courseState.lastLessonId);
+            setActiveChapter(resumedChapter || null);
+          })
+          .finally(() => {
+            if (!cancelled) setChaptersLoading(false);
+          });
+      })
+      .finally(() => {
+        if (!cancelled) setCourseLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [id, router]);
 
   useEffect(() => {
@@ -158,10 +197,9 @@ function WatchContent() {
     });
   };
 
-  if (loading) return (
+  if (courseLoading) return (
     <div style={{ background: '#fff', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid #e5e7eb', borderTopColor: G, animation: 'spin 0.8s linear infinite' }} />
-      <style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style>
+      <SkolrLoader size="lg" tone="light" label="Preparing your lesson..." />
     </div>
   );
 
@@ -377,6 +415,18 @@ function WatchContent() {
               </div>
             </div>
           )}
+          {chaptersLoading && (
+            <div className="watch-mobile-content" style={{ background: '#fff', padding: '10px 0 0' }}>
+              <div style={{ border: '1px solid #e5e7eb', borderRadius: 18, overflow: 'hidden', background: '#fcfcfd', boxShadow: '0 10px 24px rgba(15,23,42,0.05)', padding: 16 }}>
+                <div style={{ height: 14, width: 140, borderRadius: 999, background: '#e5e7eb', marginBottom: 14 }} />
+                <div style={{ display: 'grid', gap: 10 }}>
+                  {[1, 2, 3].map((item) => (
+                    <div key={item} style={{ height: 74, borderRadius: 14, background: '#f3f4f6' }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="watch-meta" style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '18px 0 16px', maxWidth: 1080 }}>
             <h1 style={{ fontSize: 18, fontWeight: 800, color: '#0a0a0a', marginBottom: 10 }}>{currentTitle}</h1>
@@ -461,6 +511,16 @@ function WatchContent() {
                       <div key={lbl} style={{ padding: 14, background: '#f9fafb', borderRadius: 10, border: '1px solid #e5e7eb', textAlign: 'center' }}>
                         <p style={{ fontSize: 18, fontWeight: 800, color: '#0a0a0a', marginBottom: 4 }}>{val}</p>
                         <p style={{ fontSize: 11, color: '#9ca3af' }}>{lbl}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {chaptersLoading && (
+                  <div className="watch-overview-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+                    {[1, 2, 3].map((item) => (
+                      <div key={item} style={{ padding: 14, background: '#f9fafb', borderRadius: 10, border: '1px solid #e5e7eb', minHeight: 82 }}>
+                        <div style={{ height: 22, width: 64, borderRadius: 999, background: '#e5e7eb', margin: '0 auto 10px' }} />
+                        <div style={{ height: 10, width: 74, borderRadius: 999, background: '#f3f4f6', margin: '0 auto' }} />
                       </div>
                     ))}
                   </div>
@@ -626,6 +686,17 @@ function WatchContent() {
                 </button>
               );
             })}
+          </aside>
+        )}
+        {chaptersLoading && (
+          <aside className="watch-sidebar" style={{ width: 356, flexShrink: 0, background: '#fff', position: 'sticky', top: 78, maxHeight: 'calc(100vh - 96px)', overflow: 'hidden', border: '1px solid #e5e7eb', borderRadius: 24, boxShadow: '0 18px 40px rgba(15,23,42,0.06)', padding: 16 }}>
+            <div style={{ height: 16, width: 150, borderRadius: 999, background: '#e5e7eb', marginBottom: 8 }} />
+            <div style={{ height: 10, width: 110, borderRadius: 999, background: '#f3f4f6', marginBottom: 18 }} />
+            <div style={{ display: 'grid', gap: 10 }}>
+              {[1, 2, 3, 4].map((item) => (
+                <div key={item} style={{ height: 66, borderRadius: 16, background: '#f9fafb', border: '1px solid #f3f4f6' }} />
+              ))}
+            </div>
           </aside>
         )}
       </div>

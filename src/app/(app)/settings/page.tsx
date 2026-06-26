@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
 import TopHeader from '@/components/layout/TopHeader';
 import ParentLearnerManager from '@/components/parent/ParentLearnerManager';
+import SkolrLoader from '@/components/ui/SkolrLoader';
 import { SUBSCRIPTION_BUNDLES } from '@/lib/subscriptions';
 import { MOBILE_MONEY_PROVIDERS, BILLING_CYCLES } from '@/lib/constants';
 import { startFreeTrialAction } from '@/actions/trial';
@@ -136,7 +137,7 @@ function SettingsContent() {
                 )}
                 <button onClick={startTrial} disabled={trialPending} className="btn-primary text-sm py-2.5">
                   {trialPending
-                    ? <span className="flex items-center gap-2"><span className="w-4 h-4 rounded-full border-2 border-black/30 border-t-black animate-spin"/>Activating...</span>
+                    ? <span className="flex items-center gap-2"><SkolrLoader size="sm" tone="light" inline />Activating...</span>
                     : `Start free trial — ${selectedBundle?.name}`}
                 </button>
                 <p className="text-xs text-center mt-2" style={{ color: '#525252' }}>
@@ -268,7 +269,7 @@ function SettingsContent() {
 
             <button className="btn-primary" onClick={pay} disabled={paying}>
               {paying
-                ? <span className="flex items-center gap-2"><span className="w-4 h-4 rounded-full border-2 border-black/30 border-t-black animate-spin"/>Processing...</span>
+                ? <span className="flex items-center gap-2"><SkolrLoader size="sm" tone="light" inline />Processing...</span>
                 : payButtonLabel}
             </button>
             <p className="text-xs text-center" style={{ color: '#525252' }}>

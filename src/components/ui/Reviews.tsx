@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import SkolrLoader from '@/components/ui/SkolrLoader';
 const G = '#10B981';
 function Stars({ rating, interactive=false, onRate }: { rating: number; interactive?: boolean; onRate?: (r: number) => void }) {
   const [hover, setHover] = useState(0);
@@ -70,7 +71,7 @@ export default function Reviews({ courseId, userId }: { courseId: string; userId
           <textarea className="inp resize-none text-sm" rows={3} placeholder="Share your experience (optional)..." value={comment} onChange={e => setComment(e.target.value)} />
           {error && <p className="text-xs" style={{ color: '#f87171' }}>{error}</p>}
           <button className="btn-primary text-sm py-2.5" onClick={submit} disabled={submitting}>
-            {submitting ? <span className="flex items-center gap-2"><span className="w-4 h-4 rounded-full border-2 border-black/30 border-t-black animate-spin"/>Submitting...</span> : 'Submit review'}
+            {submitting ? <span className="flex items-center gap-2"><SkolrLoader size="sm" tone="light" inline />Submitting...</span> : 'Submit review'}
           </button>
         </div>
       ) : (

@@ -126,8 +126,6 @@ function CoursesContent(){
     ? `Choose a class first, then preview real lessons before signing up.`
     : 'Choose a level to explore classes, chapters, and preview lessons before signing up.';
 
-  // guests can browse freely
-
   return(
     <div style={{background:'#fff',minHeight:'100vh',fontFamily:"'Inter',-apple-system,sans-serif",color:'#0a0a0a'}}>
       {user ? <TopHeader /> : (
@@ -141,7 +139,7 @@ function CoursesContent(){
             </Link>
             <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:10}}>
               <Link href="/login" style={{padding:'7px 14px',fontSize:13,fontWeight:700,color:'#0a0a0a',textDecoration:'none',border:'1px solid #e5e7eb',borderRadius:999}}>Log in</Link>
-              <Link href="/register" style={{padding:'7px 14px',fontSize:13,fontWeight:700,color:'#fff',background:G,textDecoration:'none',borderRadius:999}}>Sign up free</Link>
+              <Link href="/register" style={{padding:'7px 14px',fontSize:13,fontWeight:700,color:'#fff',background:G,textDecoration:'none',borderRadius:999}}>Start for Free</Link>
             </div>
           </div>
         </header>
@@ -234,7 +232,7 @@ function CoursesContent(){
                 </div>
                 {!user && (
                   <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-                    <Link href="/register" style={{padding:'9px 14px',fontSize:12,fontWeight:700,color:'#fff',background:G,textDecoration:'none',borderRadius:999}}>Create free account</Link>
+                    <Link href="/register" style={{padding:'9px 14px',fontSize:12,fontWeight:700,color:'#fff',background:G,textDecoration:'none',borderRadius:999}}>Start for Free</Link>
                     <Link href="/pricing" style={{padding:'9px 14px',fontSize:12,fontWeight:700,color:'#374151',background:'#fff',textDecoration:'none',border:'1px solid #e5e7eb',borderRadius:999}}>View plans</Link>
                   </div>
                 )}
@@ -274,7 +272,7 @@ function CoursesContent(){
                 <p style={{fontSize:13,color:'#6b7280'}}>Guests can open any class here and watch a short preview before signing up.</p>
               </div>
               {!user && (
-                <Link href="/register" style={{padding:'9px 14px',fontSize:12,fontWeight:700,color:'#fff',background:G,borderRadius:999,textDecoration:'none'}}>Sign up free</Link>
+                <Link href="/register" style={{padding:'9px 14px',fontSize:12,fontWeight:700,color:'#fff',background:G,borderRadius:999,textDecoration:'none'}}>Start for Free</Link>
               )}
             </div>
           )}

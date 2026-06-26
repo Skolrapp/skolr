@@ -1,10 +1,8 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
 import '@/styles/globals.css';
 import '@/styles/responsive.css';
 import { getSiteUrl } from '@/lib/site';
 
-const inter = Inter({ subsets: ['latin'], display: 'swap' });
 const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
@@ -55,7 +53,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.className}>
+    <html lang="en">
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <link rel="icon" href="/icons/icon-192.png" />

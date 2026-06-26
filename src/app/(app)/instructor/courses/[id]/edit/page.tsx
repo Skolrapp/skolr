@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import BottomNav from '@/components/layout/BottomNav';
 import { EDUCATION_LEVELS, SUBJECTS } from '@/lib/constants';
-import { uploadVideoToBunny } from '@/lib/bunny/client';
+import { uploadVideoToBunny, waitForBunnyPlaybackReady } from '@/lib/bunny/client';
 import type { EducationLevel } from '@/types';
 
 const G = '#10B981';
@@ -18,6 +18,7 @@ const LEVEL_COLORS_DARK: Record<EducationLevel, { color: string; bg: string }> =
 };
 
 type UploadedVideo = {
+  videoId?: string;
   hlsUrl: string;
   durationSeconds: number;
   fileName: string;
@@ -96,7 +97,10 @@ export default function EditCoursePage() {
       const uploaded = await uploadVideoToBunny(file, setUploadProgress);
       setUploadedVideo(uploaded);
       setDurationSeconds(uploaded.durationSeconds ? String(uploaded.durationSeconds) : '');
-      setUploadProgress('Upload complete. Bunny is processing the stream.');
+      const status = await waitForBunnyPlaybackReady(uploaded, setUploadProgress);
+      if (!status.ready) {
+        setVideoMetaError(status.message);
+      }
     } catch (error) {
       setVideoMetaError(error instanceof Error ? error.message : 'Upload failed.');
       setUploadProgress('');

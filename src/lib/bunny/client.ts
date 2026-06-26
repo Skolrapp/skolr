@@ -18,6 +18,11 @@ export type UploadedVideo = {
   fileName: string;
 };
 
+export type BunnyPlaybackCheck = {
+  ready: boolean;
+  message: string;
+};
+
 export function formatUploadProgress(bytesUploaded: number, bytesTotal: number) {
   if (!bytesTotal) return 'Preparing upload...';
   const percent = Math.round((bytesUploaded / bytesTotal) * 100);
@@ -110,5 +115,55 @@ export async function uploadVideoToBunny(
     embedUrl: config.embedUrl,
     durationSeconds,
     fileName: file.name,
+  };
+}
+
+export async function checkBunnyPlaybackReady(video: Pick<UploadedVideo, 'videoId' | 'hlsUrl'>): Promise<BunnyPlaybackCheck> {
+  const params = new URLSearchParams({
+    videoId: video.videoId,
+    hlsUrl: video.hlsUrl,
+  });
+
+  const response = await fetch(`/api/instructor/bunny-video-status?${params.toString()}`, {
+    method: 'GET',
+    credentials: 'include',
+    cache: 'no-store',
+  });
+
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || 'Could not verify Bunny playback status.');
+  }
+
+  return {
+    ready: !!data.data?.ready,
+    message: data.data?.message || 'Bunny status updated.',
+  };
+}
+
+export async function waitForBunnyPlaybackReady(
+  video: Pick<UploadedVideo, 'videoId' | 'hlsUrl'>,
+  onProgress?: (message: string) => void,
+  options?: { attempts?: number; intervalMs?: number }
+): Promise<BunnyPlaybackCheck> {
+  const attempts = options?.attempts ?? 15;
+  const intervalMs = options?.intervalMs ?? 5000;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const status = await checkBunnyPlaybackReady(video);
+    if (status.ready) {
+      onProgress?.('Upload complete. Bunny stream is ready to play.');
+      return status;
+    }
+
+    onProgress?.(status.message);
+    if (attempt < attempts - 1) {
+      await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    }
+  }
+
+  return {
+    ready: false,
+    message: 'Bunny is still processing this video. Wait a little longer, then save again once the stream is ready.',
   };
 }

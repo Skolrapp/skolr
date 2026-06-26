@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState, useCallback, type KeyboardEvent } from 'react';
 import Hls from 'hls.js';
+import SkolrLoader from '@/components/ui/SkolrLoader';
 
 interface Props {
   hlsUrl: string;
@@ -171,8 +172,16 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
       } catch {}
     };
 
+    video.preload = 'metadata';
+
     if (Hls.isSupported()) {
-      const hls = new Hls({ enableWorker: true, startLevel: -1, maxBufferLength: 30, abrBandWidthFactor: 0.95, fragLoadingMaxRetry: 6 });
+      const hls = new Hls({
+        enableWorker: true,
+        startLevel: -1,
+        maxBufferLength: 20,
+        abrBandWidthFactor: 0.95,
+        fragLoadingMaxRetry: 4,
+      });
       hls.loadSource(hlsUrl);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, (_, d) => {
@@ -216,8 +225,10 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
     const syncMeta = () => {
       if (!mounted) return;
       setDuration(video.duration || 0);
+    };
+    const syncTime = () => {
+      if (!mounted) return;
       setCurrentTime(video.currentTime || 0);
-      persistLocalProgress(video.currentTime || 0);
     };
     const syncVolume = () => {
       if (!mounted) return;
@@ -257,7 +268,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
 
     video.addEventListener('loadedmetadata', syncMeta);
     video.addEventListener('durationchange', syncMeta);
-    video.addEventListener('timeupdate', syncMeta);
+    video.addEventListener('timeupdate', syncTime);
     video.addEventListener('volumechange', syncVolume);
     video.addEventListener('loadedmetadata', syncCanPlay);
     video.addEventListener('canplay', syncCanPlay);
@@ -282,7 +293,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
       hlsRef.current?.destroy();
       video.removeEventListener('loadedmetadata', syncMeta);
       video.removeEventListener('durationchange', syncMeta);
-      video.removeEventListener('timeupdate', syncMeta);
+      video.removeEventListener('timeupdate', syncTime);
       video.removeEventListener('volumechange', syncVolume);
       video.removeEventListener('loadedmetadata', syncCanPlay);
       video.removeEventListener('canplay', syncCanPlay);
@@ -296,7 +307,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
       if (progRef.current) clearInterval(progRef.current);
       flushProgress(video.currentTime);
     };
-  }, [autoPlay, flushProgress, hlsUrl, persistLocalProgress]);
+  }, [autoPlay, flushProgress, hlsUrl]);
 
   useEffect(() => {
     const video = vRef.current;
@@ -379,6 +390,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
     if (!video) return;
     video.currentTime = value;
     setCurrentTime(value);
+    persistLocalProgress(value);
     activity();
   };
   const handleVolume = (value: number) => {
@@ -430,7 +442,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
     <div ref={wrapperRef} className="relative rounded-2xl overflow-hidden aspect-video select-none focus:outline-none focus:ring-2 focus:ring-emerald-400/70"
       style={{ background: 'linear-gradient(180deg,#0f172a,#111827)' }}
       onMouseMove={activity} onTouchStart={activity} onKeyDown={handleWrapperKeyDown} tabIndex={0}>
-      <video ref={vRef} className="w-full h-full object-cover cursor-pointer" poster={posterUrl} playsInline muted={muted}
+      <video ref={vRef} className="w-full h-full object-cover cursor-pointer" poster={posterUrl} playsInline muted={muted} preload="metadata"
         onClick={(e) => {
           e.stopPropagation();
           togglePlay();
@@ -442,7 +454,7 @@ export default function VideoPlayer({ hlsUrl, posterUrl, title, startAt = 0, rem
 
       {buffering && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
-          <div className="w-10 h-10 rounded-full border-4 border-white/20 border-t-white animate-spin" />
+          <SkolrLoader size="md" tone="dark" />
         </div>
       )}
 

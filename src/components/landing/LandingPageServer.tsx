@@ -1,4 +1,5 @@
 import LandingClient from '@/components/landing/LandingClient';
+import { FORM_FOUR_CLASS, PUBLIC_LAUNCH_SUBJECT_NAMES } from '@/lib/launchCatalog';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import type { Course } from '@/types';
 
@@ -42,8 +43,11 @@ async function getInitialCourses() {
     .from('courses')
     .select('*, users!instructor_id(name)')
     .eq('is_published', true)
+    .eq('category', FORM_FOUR_CLASS.level)
+    .eq('sub_category', FORM_FOUR_CLASS.subCategory || null)
+    .in('subject', PUBLIC_LAUNCH_SUBJECT_NAMES)
     .order('created_at', { ascending: false })
-    .limit(6);
+    .limit(7);
 
   return ((data || []) as Array<Record<string, unknown> & { users?: { name: string } | null }>).map((course) => ({
     ...course,

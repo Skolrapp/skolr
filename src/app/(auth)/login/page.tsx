@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { loginAction } from '@/actions/auth';
 import TurnstileWidget from '@/components/auth/TurnstileWidget';
+import SkolrLoader from '@/components/ui/SkolrLoader';
 
 const G = '#10B981';
 
@@ -98,7 +99,7 @@ function LoginContent() {
             <button type="submit" className="btn-primary" disabled={pending}>
               {pending ? (
                 <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full border-2 border-black/30 border-t-black animate-spin" />
+                  <SkolrLoader size="sm" tone="light" inline />
                   Signing in...
                 </span>
               ) : 'Sign in'}

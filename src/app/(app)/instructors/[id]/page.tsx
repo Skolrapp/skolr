@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import TopHeader from '@/components/layout/TopHeader';
 import BottomNav from '@/components/layout/BottomNav';
+import SkolrLoader from '@/components/ui/SkolrLoader';
 import { useAuth } from '@/hooks/useAuth';
 
 const G = '#10B981';
@@ -28,8 +29,7 @@ export default function InstructorProfilePage() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
-        <div style={{ width: 34, height: 34, borderRadius: '50%', border: '3px solid #e5e7eb', borderTopColor: G, animation: 'spin 0.8s linear infinite' }} />
-        <style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style>
+        <SkolrLoader size="lg" tone="light" label="Loading instructor profile..." />
       </div>
     );
   }

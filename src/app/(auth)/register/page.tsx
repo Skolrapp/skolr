@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { registerAction } from '@/actions/auth';
 import TurnstileWidget from '@/components/auth/TurnstileWidget';
+import SkolrLoader from '@/components/ui/SkolrLoader';
 import { EDUCATION_LEVELS } from '@/lib/constants';
 import type { EducationLevel } from '@/types';
 
@@ -220,7 +221,7 @@ export default function RegisterPage() {
           )}
 
           <button type="submit" className="btn-primary" disabled={pending}>
-            {pending ? <span className="flex items-center gap-2"><span className="w-4 h-4 rounded-full border-2 border-black/30 border-t-black animate-spin"/>Creating...</span> : role === 'student' && isMinorFlow ? 'Create parent account' : 'Create account'}
+            {pending ? <span className="flex items-center gap-2"><SkolrLoader size="sm" tone="light" inline />Creating...</span> : role === 'student' && isMinorFlow ? 'Create parent account' : 'Create account'}
           </button>
           <p className="text-xs text-center" style={{ color: '#525252' }}>
             By creating an account you agree to our Terms of Service and, for minors, confirm guardian consent.
