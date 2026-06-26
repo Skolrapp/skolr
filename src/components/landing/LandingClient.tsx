@@ -7,7 +7,7 @@ import {
   FORM_FOUR_PRICE_TZS,
   FORM_FOUR_SUBJECTS,
   LAUNCH_NAV_ITEMS,
-} from '@/lib/launchCatalog';
+} from '../../lib/launchCatalog';
 import type { Course } from '@/types';
 
 const HERO_BG = '#27363c';

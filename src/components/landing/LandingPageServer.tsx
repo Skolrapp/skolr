@@ -1,5 +1,5 @@
 import LandingClient from '@/components/landing/LandingClient';
-import { FORM_FOUR_CLASS, PUBLIC_LAUNCH_SUBJECT_NAMES } from '@/lib/launchCatalog';
+import { FORM_FOUR_CLASS, PUBLIC_LAUNCH_SUBJECT_NAMES } from '../../lib/launchCatalog';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import type { Course } from '@/types';
 

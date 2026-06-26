@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Footer from '@/components/layout/Footer';
 import TopHeader from '@/components/layout/TopHeader';
 import ParentLearnerManager from '@/components/parent/ParentLearnerManager';
-import { FORM_FOUR_CLASS, FORM_FOUR_SUBJECTS } from '@/lib/launchCatalog';
+import { FORM_FOUR_CLASS, FORM_FOUR_SUBJECTS } from '../../../lib/launchCatalog';
 import { isSubscriptionActive } from '@/lib/subscriptions';
 import type { Course, EducationLevel, SubCategory } from '@/types';
 
