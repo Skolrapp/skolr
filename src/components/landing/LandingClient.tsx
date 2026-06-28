@@ -417,14 +417,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         </div>
       </section>
 
-      {banners['campaign-banner'] && (
-        <section style={{ padding: '0 24px 70px', background: LIGHT_BG }}>
-          <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
-            <div style={{ aspectRatio: '1600 / 520', borderRadius: 28, overflow: 'hidden', background: `url(${banners['campaign-banner']}) center/cover no-repeat`, boxShadow: '0 28px 70px rgba(18,18,18,0.08)' }} />
-          </div>
-        </section>
-      )}
-
       <section style={{ padding: '0 24px 72px', background: LIGHT_BG }}>
         <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
           <div className="launch-how-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,0.9fr) minmax(0,1.1fr)', gap: 22 }}>
