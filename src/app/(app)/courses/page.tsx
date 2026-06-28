@@ -9,7 +9,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import Footer from '@/components/layout/Footer';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
 import { EDUCATION_LEVELS } from '@/lib/constants';
-import { FORM_FOUR_CLASS, FORM_FOUR_PRICE_TZS, FORM_FOUR_SUBJECTS } from '@/lib/launchCatalog';
+import { FORM_FOUR_CLASS, FORM_FOUR_PRICE_TZS, FORM_FOUR_SUBJECTS, LAUNCH_CLASSES } from '@/lib/launchCatalog';
 import type { Course, EducationLevel, SubCategory } from '@/types';
 
 const G = '#10B981';
@@ -59,6 +59,7 @@ function CoursesContent(){
   const isLaunchRoute = level === FORM_FOUR_CLASS.level && sub === (FORM_FOUR_CLASS.subCategory || '');
   const isPublicLaunchView = !user || isLaunchRoute;
   const launchSubjects = FORM_FOUR_SUBJECTS.map((entry) => entry.catalogSubject);
+  const secondaryLaunchClasses = LAUNCH_CLASSES.filter((entry) => entry.level === 'secondary' && entry.subCategory);
 
   useEffect(() => {
     if (!isPublicLaunchView && !(!user && !level && !sub)) return;
@@ -229,14 +230,45 @@ function CoursesContent(){
             <div className="courses-launch-panel" style={{marginBottom:18,padding:'18px 18px 16px',border:'1px solid #e5e7eb',borderRadius:20,background:'linear-gradient(180deg,#ffffff 0%,#f7fbf9 100%)',boxShadow:'0 16px 40px rgba(15,23,42,0.05)'}}>
               <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:16,flexWrap:'wrap',marginBottom:14}}>
                 <div style={{maxWidth:620}}>
-                  <p style={{fontSize:12,fontWeight:800,letterSpacing:0.8,textTransform:'uppercase',color:'#047857',marginBottom:8}}>Browse by subject</p>
-                  <h2 style={{fontSize:22,fontWeight:900,color:'#111827',marginBottom:6}}>Focused subjects. Clear next steps. No clutter.</h2>
-                  <p style={{fontSize:14,lineHeight:1.7,color:'#6b7280'}}>Choose a Form Four subject below to see only the lessons, previews, and instructors that matter right now.</p>
+                  <p style={{fontSize:12,fontWeight:800,letterSpacing:0.8,textTransform:'uppercase',color:'#047857',marginBottom:8}}>Launch roadmap</p>
+                  <h2 style={{fontSize:22,fontWeight:900,color:'#111827',marginBottom:6}}>Form Four is live. Lower forms are queued next.</h2>
+                  <p style={{fontSize:14,lineHeight:1.7,color:'#6b7280'}}>Students can start with Form Four today. Form One to Form Three remain visible here as coming soon so the platform roadmap feels intentional and clear.</p>
                 </div>
                 <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-                  <span style={{fontSize:12,fontWeight:800,padding:'8px 12px',borderRadius:999,background:'#ecfdf5',color:'#047857'}}>Form 4 only</span>
+                  <span style={{fontSize:12,fontWeight:800,padding:'8px 12px',borderRadius:999,background:'#ecfdf5',color:'#047857'}}>Form 4 live now</span>
                   <span style={{fontSize:12,fontWeight:800,padding:'8px 12px',borderRadius:999,background:'#f3f4f6',color:'#374151'}}>Guest preview enabled</span>
                 </div>
+              </div>
+              <div className="courses-launch-classes" style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:12,marginBottom:14}}>
+                {secondaryLaunchClasses.map((entry) => {
+                  const isActiveClass = entry.subCategory === FORM_FOUR_CLASS.subCategory;
+                  return (
+                    <div
+                      key={entry.id}
+                      style={{
+                        padding:'16px 14px',
+                        borderRadius:18,
+                        border:'1px solid ' + (isActiveClass ? '#10B981' : '#e5e7eb'),
+                        background:isActiveClass ? '#ecfdf5' : '#fff',
+                        boxShadow:isActiveClass ? '0 14px 30px rgba(16,185,129,0.10)' : 'none'
+                      }}
+                    >
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,marginBottom:10}}>
+                        <p style={{fontSize:14,fontWeight:900,color:isActiveClass ? '#047857' : '#111827'}}>{entry.subCategory}</p>
+                        <span style={{fontSize:10,fontWeight:800,padding:'5px 8px',borderRadius:999,background:isActiveClass ? '#d1fae5' : '#f3f4f6',color:isActiveClass ? '#047857' : '#6b7280',textTransform:'uppercase',letterSpacing:0.5}}>
+                          {isActiveClass ? 'Live now' : 'Coming soon'}
+                        </span>
+                      </div>
+                      <p style={{fontSize:12,lineHeight:1.6,color:isActiveClass ? '#059669' : '#6b7280'}}>
+                        {isActiveClass ? 'Open the current Form Four learning path and preview available lessons.' : 'This class is part of the rollout plan and will open in a future release.'}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{maxWidth:620,marginBottom:12}}>
+                <p style={{fontSize:12,fontWeight:800,letterSpacing:0.8,textTransform:'uppercase',color:'#047857',marginBottom:8}}>Browse by subject</p>
+                <p style={{fontSize:14,lineHeight:1.7,color:'#6b7280'}}>Choose a Form Four subject below to see only the lessons, previews, and instructors that matter right now.</p>
               </div>
               <div className="courses-launch-subjects" style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:12}}>
                 {FORM_FOUR_SUBJECTS.map((entry) => {
@@ -446,6 +478,7 @@ function CoursesContent(){
           .courses-sidebar{display:none!important;}
           .courses-main{padding-left:0!important;padding-top:16px!important;}
           .courses-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important;}
+          .courses-launch-classes{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
           .courses-launch-subjects{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
           .courses-mobile-toolbar{display:block!important;}
           .courses-hero{padding:24px 16px!important;}
@@ -453,6 +486,7 @@ function CoursesContent(){
         }
         @media(max-width:640px){
           .courses-grid{grid-template-columns:1fr!important;}
+          .courses-launch-classes{grid-template-columns:1fr!important;}
           .courses-launch-subjects{grid-template-columns:1fr!important;}
           .courses-sub-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
           .courses-hero-stats{width:100%!important;justify-content:space-between!important;gap:12px!important;}
