@@ -80,8 +80,27 @@ export default function TopHeader() {
           </div>
           <span style={{ fontWeight: 800, fontSize: 18, color: '#0a0a0a' }}>Skolr</span>
         </Link>
-        <div className="top-header-search" style={{ flex: 1, maxWidth: 440 }}>
-          <SearchBar placeholder="Search courses, instructors..." />
+        <div className="top-header-search" style={{ flex: 1, maxWidth: user?.role === 'instructor' ? 320 : 440 }}>
+          {user?.role === 'instructor' ? (
+            <div
+              style={{
+                minHeight: 44,
+                borderRadius: 12,
+                border: '1px solid #e5e7eb',
+                background: '#f8fafc',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 14px',
+                color: '#6b7280',
+                fontSize: 13,
+                fontWeight: 700,
+              }}
+            >
+              Instructor workspace
+            </div>
+          ) : (
+            <SearchBar placeholder="Search courses, instructors..." />
+          )}
         </div>
         <div className="top-header-spacer" style={{ flex: 1 }} />
         <div ref={menuRef} style={{ position: 'relative', flexShrink: 0 }}>

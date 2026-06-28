@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { notFound, redirect } from 'next/navigation';
+import SubtleBackButton from '@/components/ui/SubtleBackButton';
+import { validateSession } from '@/lib/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import { FORM_FOUR_CLASS, FORM_FOUR_PRICE_TZS, FORM_FOUR_SUBJECTS, getLaunchSubjectBySlug } from '@/lib/launchCatalog';
 import type { Course, EducationLevel } from '@/types';
@@ -113,6 +116,13 @@ export async function generateMetadata({ params }: SubjectPageProps): Promise<Me
 }
 
 export default async function SubjectPage({ params }: SubjectPageProps) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('sk_token')?.value;
+  const session = token ? await validateSession(token) : null;
+  if (session?.user?.role === 'instructor') {
+    redirect('/instructor');
+  }
+
   const { slug } = await params;
   const data = await getSubjectData(slug);
 
@@ -125,6 +135,9 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
     <div style={{ minHeight: '100vh', background: '#f6f7f5', color: '#111827', fontFamily: "'Inter',-apple-system,sans-serif" }}>
       <section style={{ background: 'linear-gradient(135deg,#101413 0%,#16251f 54%,#0c7a55 100%)', padding: '34px 24px 52px' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+          <div style={{ marginBottom: 20 }}>
+            <SubtleBackButton fallbackHref="/courses?level=secondary&sub=Form%204" label="Back to subjects" light />
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 28 }}>
             <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: '#fff' }}>
               <div style={{ width: 34, height: 34, borderRadius: 10, background: '#24d366', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

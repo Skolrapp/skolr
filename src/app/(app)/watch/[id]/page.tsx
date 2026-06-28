@@ -351,7 +351,7 @@ function WatchContent() {
 
         <div className="watch-main" style={{ flex: 1, minWidth: 0 }}>
           <div style={{ marginBottom: 14 }}>
-            <SubtleBackButton fallbackHref="/courses" label="Back to library" />
+            <SubtleBackButton fallbackHref={user?.role === 'instructor' ? '/instructor' : '/courses'} label={user?.role === 'instructor' ? 'Back to dashboard' : 'Back to library'} />
           </div>
           <div style={{ padding: 0, background: '#fff' }}>
             <div className="watch-player-shell" style={{ maxWidth: 1080, marginLeft: 0, position: 'relative' }}>

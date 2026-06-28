@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { validateSession } from '@/lib/auth';
 import { getActiveLearnerFromCookies } from '@/lib/activeLearner';
 import VideoPlayer from '@/components/player/VideoPlayer';
+import SubtleBackButton from '@/components/ui/SubtleBackButton';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import type { Chapter, Course, EducationLevel, User } from '@/types';
 
@@ -167,6 +168,9 @@ export default async function CourseDetailPage(
   const cookieStore = await cookies();
   const token = cookieStore.get('sk_token')?.value;
   const session = token ? await validateSession(token) : null;
+  if (session?.user?.role === 'instructor') {
+    redirect('/instructor');
+  }
   const detail = await getCourseDetail(id, session?.user || null);
 
   if (!detail) {
@@ -218,6 +222,9 @@ export default async function CourseDetailPage(
       </header>
 
       <main style={{ maxWidth: 1240, margin: '0 auto', padding: '32px 24px 80px' }}>
+        <div style={{ marginBottom: 20 }}>
+          <SubtleBackButton fallbackHref="/courses" label="Back to courses" />
+        </div>
         <section className="course-detail-hero" style={{ display: 'grid', gridTemplateColumns: '1.32fr 0.68fr', gap: 20, alignItems: 'stretch', marginBottom: 24 }}>
           <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 24, padding: '28px 28px 30px', background: 'linear-gradient(155deg,#020617 0%,#0f172a 54%,#0b3b2e 100%)', minHeight: 380, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid rgba(148,163,184,0.16)', boxShadow: '0 20px 60px rgba(2,6,23,0.24)' }}>
             <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at top right, rgba(16,185,129,0.16), transparent 34%), radial-gradient(circle at bottom left, rgba(59,130,246,0.14), transparent 32%)' }} />
