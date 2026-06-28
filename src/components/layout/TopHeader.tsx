@@ -49,13 +49,19 @@ export default function TopHeader() {
         { label: 'User support', href: '/admin?tab=support' },
         { label: 'Course catalog', href: '/courses' },
       ]
-    : [
-        { label: 'Home', href: homeHref },
-        { label: 'Browse courses', href: '/courses' },
-        { label: 'Subscription', href: '/settings' },
-        ...(user?.role === 'instructor' ? [{ label: 'My courses', href: '/instructor' }] : []),
-        { label: 'Edit profile', href: user?.role === 'instructor' ? '/instructors/' + user?.id : '/settings' },
-      ];
+    : user?.role === 'instructor'
+      ? [
+          { label: 'Home', href: homeHref },
+          { label: 'Browse courses', href: '/courses' },
+          { label: 'My courses', href: '/instructor' },
+          { label: 'Public profile', href: '/instructors/' + user?.id },
+        ]
+      : [
+          { label: 'Home', href: homeHref },
+          { label: 'Browse courses', href: '/courses' },
+          { label: 'Subscription', href: '/settings' },
+          { label: 'Edit profile', href: '/settings' },
+        ];
 
   return (
     <>

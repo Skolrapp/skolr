@@ -5,6 +5,7 @@ import VideoPlayer from '@/components/player/VideoPlayer';
 import ZealQuiz from '@/components/ai/ZealQuiz';
 import Reviews from '@/components/ui/Reviews';
 import SkolrLoader from '@/components/ui/SkolrLoader';
+import SubtleBackButton from '@/components/ui/SubtleBackButton';
 import { useAuth } from '@/hooks/useAuth';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
 import { LEVEL_COLORS } from '@/lib/constants';
@@ -258,12 +259,16 @@ function WatchContent() {
           { label: 'User support', href: '/admin?tab=support' },
           { label: 'Course catalog', href: '/courses' },
         ]
-      : [
-          { label: 'Home', href: homeHref },
-          { label: 'Browse courses', href: '/courses' },
-          ...(user.role === 'instructor' ? [{ label: 'My courses', href: '/instructor' }] : []),
-          { label: 'Settings', href: '/settings' },
-        ];
+    : [
+        { label: 'Home', href: homeHref },
+        { label: 'Browse courses', href: '/courses' },
+        ...(user.role === 'instructor'
+          ? [
+              { label: 'My courses', href: '/instructor' },
+              { label: 'Public profile', href: `/instructors/${user.id}` },
+            ]
+          : [{ label: 'Settings', href: '/settings' }]),
+      ];
 
   return (
     <div className="watch-page" style={{ background: '#fff', minHeight: '100vh', fontFamily: "'Inter',-apple-system,sans-serif", color: '#0a0a0a' }}>
@@ -346,6 +351,9 @@ function WatchContent() {
       <div className="watch-layout" style={{ display: 'flex', alignItems: 'flex-start', gap: 24, maxWidth: 1500, margin: '0 auto', padding: '18px 24px 0' }}>
 
         <div className="watch-main" style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ marginBottom: 14 }}>
+            <SubtleBackButton fallbackHref="/courses" label="Back to library" />
+          </div>
           <div style={{ padding: 0, background: '#fff' }}>
             <div className="watch-player-shell" style={{ maxWidth: 1080, marginLeft: 0, position: 'relative' }}>
               <VideoPlayer
