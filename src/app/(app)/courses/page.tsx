@@ -62,7 +62,7 @@ function CoursesContent(){
 
   useEffect(() => {
     if (!isPublicLaunchView && !(!user && !level && !sub)) return;
-    if (level !== FORM_FOUR_CLASS.level) setLevel(FORM_FOUR_CLASS.level);
+    if (level !== FORM_FOUR_CLASS.level) setLevel(FORM_FOUR_CLASS.level as EducationLevel);
     if (sub !== (FORM_FOUR_CLASS.subCategory || '')) setSub((FORM_FOUR_CLASS.subCategory || '') as SubCategory);
     if (page !== 1) setPage(1);
   }, [isPublicLaunchView, level, page, sub, user]);
