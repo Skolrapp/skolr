@@ -246,22 +246,53 @@ function CoursesContent(){
                     <div
                       key={entry.id}
                       style={{
-                        padding:'16px 14px',
-                        borderRadius:18,
+                        padding:isActiveClass ? '18px 16px' : '16px 14px',
+                        borderRadius:20,
                         border:'1px solid ' + (isActiveClass ? '#10B981' : '#e5e7eb'),
-                        background:isActiveClass ? '#ecfdf5' : '#fff',
-                        boxShadow:isActiveClass ? '0 14px 30px rgba(16,185,129,0.10)' : 'none'
+                        background:isActiveClass ? 'linear-gradient(180deg,#ecfdf5 0%,#dff8ec 100%)' : 'linear-gradient(180deg,#ffffff 0%,#f8fafc 100%)',
+                        boxShadow:isActiveClass ? '0 18px 34px rgba(16,185,129,0.16)' : '0 8px 18px rgba(15,23,42,0.04)',
+                        position:'relative',
+                        overflow:'hidden'
                       }}
                     >
+                      {isActiveClass && (
+                        <div style={{position:'absolute',top:-32,right:-20,width:92,height:92,borderRadius:'50%',background:'rgba(16,185,129,0.12)'}} />
+                      )}
                       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,marginBottom:10}}>
-                        <p style={{fontSize:14,fontWeight:900,color:isActiveClass ? '#047857' : '#111827'}}>{entry.subCategory}</p>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          {!isActiveClass && (
+                            <span style={{width:28,height:28,borderRadius:999,background:'#eef2f7',display:'inline-flex',alignItems:'center',justifyContent:'center',color:'#6b7280',flexShrink:0}}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <rect x="5" y="11" width="14" height="10" rx="2" />
+                                <path d="M8 11V8a4 4 0 118 0v3" />
+                              </svg>
+                            </span>
+                          )}
+                          {isActiveClass && (
+                            <span style={{width:30,height:30,borderRadius:999,background:'#d1fae5',display:'inline-flex',alignItems:'center',justifyContent:'center',color:'#047857',flexShrink:0}}>
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3">
+                                <path d="M20 6L9 17l-5-5" />
+                              </svg>
+                            </span>
+                          )}
+                          <p style={{fontSize:isActiveClass ? 16 : 14,fontWeight:900,color:isActiveClass ? '#047857' : '#111827'}}>{entry.subCategory}</p>
+                        </div>
                         <span style={{fontSize:10,fontWeight:800,padding:'5px 8px',borderRadius:999,background:isActiveClass ? '#d1fae5' : '#f3f4f6',color:isActiveClass ? '#047857' : '#6b7280',textTransform:'uppercase',letterSpacing:0.5}}>
                           {isActiveClass ? 'Live now' : 'Coming soon'}
                         </span>
                       </div>
-                      <p style={{fontSize:12,lineHeight:1.6,color:isActiveClass ? '#059669' : '#6b7280'}}>
+                      <p style={{fontSize:12,lineHeight:1.6,color:isActiveClass ? '#059669' : '#6b7280',marginBottom:isActiveClass ? 12 : 0}}>
                         {isActiveClass ? 'Open the current Form Four learning path and preview available lessons.' : 'This class is part of the rollout plan and will open in a future release.'}
                       </p>
+                      {isActiveClass && (
+                        <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'9px 12px',borderRadius:999,background:'#ffffff',border:'1px solid rgba(16,185,129,0.16)',fontSize:11,fontWeight:800,color:'#047857'}}>
+                          Start here
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                            <path d="M5 12h14" />
+                            <path d="M13 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
