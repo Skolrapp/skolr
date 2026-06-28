@@ -9,6 +9,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import Footer from '@/components/layout/Footer';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
 import { EDUCATION_LEVELS } from '@/lib/constants';
+import { FORM_FOUR_CLASS, FORM_FOUR_PRICE_TZS, FORM_FOUR_SUBJECTS } from '@/lib/launchCatalog';
 import type { Course, EducationLevel, SubCategory } from '@/types';
 
 const G = '#10B981';
@@ -55,6 +56,15 @@ function CoursesContent(){
   const [page,setPage]=useState(1);
   const [fetching,setFetching]=useState(true);
   const PER=9;
+  const isPublicLaunchView = !user;
+  const launchSubjects = FORM_FOUR_SUBJECTS.map((entry) => entry.catalogSubject);
+
+  useEffect(() => {
+    if (!isPublicLaunchView) return;
+    if (level !== FORM_FOUR_CLASS.level) setLevel(FORM_FOUR_CLASS.level);
+    if (sub !== (FORM_FOUR_CLASS.subCategory || '')) setSub((FORM_FOUR_CLASS.subCategory || '') as SubCategory);
+    if (page !== 1) setPage(1);
+  }, [isPublicLaunchView, level, page, sub]);
 
   const fetchCourses=useCallback(()=>{
     const params=new URLSearchParams();
@@ -121,10 +131,17 @@ function CoursesContent(){
   const totalPages=Math.ceil(total/PER);
   const sortLabel = SORT_OPTIONS.find((option) => option.id === sort)?.label || 'Most popular';
   const levelMeta = level ? EDUCATION_LEVELS.find((entry) => entry.key === level) : null;
-  const guestNeedsClassChoice = !user && !!level && !sub;
-  const guestHeaderCopy = levelMeta
-    ? `Choose a class first, then preview real lessons before signing up.`
-    : 'Choose a level to explore classes, chapters, and preview lessons before signing up.';
+  const visibleLevels = isPublicLaunchView
+    ? [{ id: FORM_FOUR_CLASS.level, label: 'Form Four', color: '#10B981', bg: '#ecfdf5', sub: FORM_FOUR_CLASS.subCategory || 'Launch focus' }]
+    : LEVELS;
+  const visibleSubjects = isPublicLaunchView ? launchSubjects : SUBJECTS;
+  const guestNeedsClassChoice = !isPublicLaunchView && !user && !!level && !sub;
+  const guestHeaderCopy = isPublicLaunchView
+    ? 'Browse focused Form Four subjects, open real course pages, and preview lessons before signing up.'
+    : levelMeta
+      ? `Choose a class first, then preview real lessons before signing up.`
+      : 'Choose a level to explore classes, chapters, and preview lessons before signing up.';
+  const currentLabel = isPublicLaunchView ? 'Form Four Subjects' : currentLevel.label === 'All Levels' ? 'All Courses' : currentLevel.label + ' Courses';
 
   return(
     <div style={{background:'#fff',minHeight:'100vh',fontFamily:"'Inter',-apple-system,sans-serif",color:'#0a0a0a'}}>
@@ -148,13 +165,13 @@ function CoursesContent(){
       <div className="courses-hero" style={{background:level?'linear-gradient(135deg,'+(currentLevel as any).color+'dd,'+(currentLevel as any).color+'aa)':'linear-gradient(135deg,#0a0a0a,#1a1a2e)',padding:'28px 24px'}}>
         <div className="courses-hero-inner" style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:16}}>
           <div>
-            <h1 style={{fontSize:24,fontWeight:800,color:'#fff',marginBottom:6}}>{currentLevel.label==='All Levels'?'All Courses':currentLevel.label+' Courses'}</h1>
+            <h1 style={{fontSize:24,fontWeight:800,color:'#fff',marginBottom:6}}>{currentLabel}</h1>
             <p style={{fontSize:14,color:'rgba(255,255,255,0.65)',marginBottom:12}}>
               {!user ? guestHeaderCopy : `${(currentLevel as any).sub||'Browse all education levels'} · ${total} courses`}
             </p>
             <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-              {LEVELS.slice(1).map(l=>(
-                <button key={l.id} onClick={()=>{setLevel(l.id as EducationLevel);setSub('');setPage(1);}}
+              {visibleLevels.map(l=>(
+                <button key={l.id} onClick={()=>{if (!isPublicLaunchView) { setLevel(l.id as EducationLevel);setSub('');setPage(1);} }}
                   style={{padding:'4px 12px',fontSize:11,fontWeight:600,borderRadius:999,border:'none',background:level===l.id?'#fff':'rgba(255,255,255,0.18)',color:level===l.id?'#0a0a0a':'#fff',cursor:'pointer'}}>
                   {l.label}
                 </button>
@@ -162,7 +179,9 @@ function CoursesContent(){
             </div>
           </div>
           <div className="courses-hero-stats" style={{display:'flex',gap:20}}>
-            {[['Courses',String(total)],['Subjects','12'],['Students','8.4K']].map(([lbl,val])=>(
+            {(isPublicLaunchView
+              ? [['Subjects', String(FORM_FOUR_SUBJECTS.length)], ['Access', `${FORM_FOUR_PRICE_TZS.toLocaleString()} TZS`], ['Preview', 'Guest Ready']]
+              : [['Courses',String(total)],['Subjects','12'],['Students','8.4K']]).map(([lbl,val])=>(
               <div key={lbl} style={{textAlign:'center'}}>
                 <p style={{fontSize:20,fontWeight:800,color:'#fff'}}>{val}</p>
                 <p style={{fontSize:11,color:'rgba(255,255,255,0.5)',marginTop:2}}>{lbl}</p>
@@ -179,7 +198,7 @@ function CoursesContent(){
             <button onClick={()=>setSubject('')} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'6px 8px',borderRadius:7,border:'none',background:!subject?'#ecfdf5':'transparent',color:!subject?'#059669':'#6b7280',fontSize:12,fontWeight:!subject?700:400,cursor:'pointer',textAlign:'left',marginBottom:2}}>
               <div style={{width:7,height:7,borderRadius:2,background:!subject?G:'#e5e7eb',flexShrink:0}}/>All subjects
             </button>
-            {SUBJECTS.map(s=>(
+            {visibleSubjects.map(s=>(
               <button key={s} onClick={()=>setSubject(subject===s?'':s)} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'6px 8px',borderRadius:7,border:'none',background:subject===s?'#ecfdf5':'transparent',color:subject===s?'#059669':'#6b7280',fontSize:12,fontWeight:subject===s?700:400,cursor:'pointer',textAlign:'left',marginBottom:2}}>
                 <div style={{width:7,height:7,borderRadius:2,background:subject===s?G:'#e5e7eb',flexShrink:0}}/>{s}
               </button>
@@ -199,7 +218,7 @@ function CoursesContent(){
           <div className="courses-mobile-toolbar" style={{display:'none',marginBottom:16}}>
             <div className="courses-mobile-pills" style={{display:'flex',gap:8,flexWrap:'wrap'}}>
               <span style={{fontSize:11,fontWeight:700,padding:'6px 10px',borderRadius:999,background:'#eff6ff',color:'#2563eb'}}>
-                {sub || 'Choose class'}
+                {sub || (isPublicLaunchView ? 'Form 4' : 'Choose class')}
               </span>
               <span style={{fontSize:11,fontWeight:700,padding:'6px 10px',borderRadius:999,background:'#ecfdf5',color:'#059669'}}>
                 {subject || 'All subjects'}
@@ -210,14 +229,14 @@ function CoursesContent(){
             </div>
           </div>
           <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:4,marginBottom:16,scrollbarWidth:'none'}}>
-            {LEVELS.map(l=>(
-              <button key={l.id} onClick={()=>{setLevel(l.id as EducationLevel);setSub('');setPage(1);}}
+            {visibleLevels.map(l=>(
+              <button key={l.id} onClick={()=>{if (!isPublicLaunchView) { setLevel(l.id as EducationLevel);setSub('');setPage(1);} }}
                 style={{padding:'6px 14px',fontSize:11,fontWeight:600,borderRadius:999,border:'1.5px solid '+(level===l.id?'#0a0a0a':'#e5e7eb'),background:level===l.id?'#0a0a0a':'#fff',color:level===l.id?'#fff':'#6b7280',cursor:'pointer',whiteSpace:'nowrap',flexShrink:0}}>
                 {l.label}
               </button>
             ))}
           </div>
-          {levelMeta && (
+          {levelMeta && !isPublicLaunchView && (
             <div style={{marginBottom:20,padding:'18px 18px 16px',background:guestNeedsClassChoice ? '#f8fafc' : '#fff',border:'1px solid #e5e7eb',borderRadius:16}}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',marginBottom:12}}>
                 <div>
@@ -268,8 +287,8 @@ function CoursesContent(){
           {sub && !fetching && (
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',marginBottom:16,padding:'14px 16px',border:'1px solid #e5e7eb',borderRadius:14,background:'#fff'}}>
               <div>
-                <p style={{fontSize:15,fontWeight:800,color:'#0a0a0a',marginBottom:4}}>{sub} classes</p>
-                <p style={{fontSize:13,color:'#6b7280'}}>Guests can open any class here and watch a short preview before signing up.</p>
+                <p style={{fontSize:15,fontWeight:800,color:'#0a0a0a',marginBottom:4}}>{isPublicLaunchView ? 'Form Four subject catalog' : `${sub} classes`}</p>
+                <p style={{fontSize:13,color:'#6b7280'}}>{isPublicLaunchView ? 'Explore focused Form Four lessons and preview real teaching before signing up.' : 'Guests can open any class here and watch a short preview before signing up.'}</p>
               </div>
               {!user && (
                 <Link href="/register" style={{padding:'9px 14px',fontSize:12,fontWeight:700,color:'#fff',background:G,borderRadius:999,textDecoration:'none'}}>Start for Free</Link>
@@ -281,7 +300,7 @@ function CoursesContent(){
               ? 'Choose a class to unlock the preview catalog.'
               : fetching
                 ? 'Loading...'
-                : total+' courses'+(sub?' in '+sub:'')+(subject?' · '+subject:'')+(level?' · '+currentLevel.label:'')}
+                : total+' courses'+(sub?' in '+sub:'')+(subject?' · '+subject:'')+(level?' · '+(isPublicLaunchView ? 'Form Four' : currentLevel.label):'')}
           </p>
 
           {guestNeedsClassChoice ? (
