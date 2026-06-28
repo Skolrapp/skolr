@@ -468,60 +468,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         </div>
       </section>
 
-      <section style={{ padding: '0 0 72px', background: LIGHT_BG }}>
-        <div
-          style={{
-            width: '100%',
-            position: 'relative',
-            overflow: 'hidden',
-            background: 'linear-gradient(135deg,#121212 0%,#183229 48%,#0e6a55 100%)',
-            boxShadow: '0 28px 72px rgba(15,23,42,0.12)',
-          }}
-        >
-          <div style={{ position: 'absolute', inset: 0, opacity: 0.16, background: 'linear-gradient(90deg, rgba(255,255,255,0.04) 0%, transparent 18%, transparent 82%, rgba(255,255,255,0.04) 100%)' }} />
-          <div style={{ position: 'absolute', top: -140, right: -60, width: 320, height: 320, borderRadius: '50%', background: 'rgba(36,211,102,0.12)' }} />
-          <div style={{ position: 'absolute', bottom: -180, left: '8%', width: 360, height: 360, borderRadius: '50%', background: 'rgba(4,149,157,0.12)' }} />
-
-          <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto', position: 'relative', zIndex: 1, padding: '54px 24px' }}>
-            <div className="launch-launch-band" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.1fr) minmax(0,0.9fr)', gap: 28, alignItems: 'end' }}>
-              <div>
-                <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.9, color: '#bbf7d0', marginBottom: 10 }}>
-                  Launch Direction
-                </p>
-                <h2 style={{ maxWidth: 760, fontSize: 40, lineHeight: 1.05, fontWeight: 900, color: '#fff', marginBottom: 14 }}>
-                  Built for serious Form Four preparation from the very first release.
-                </h2>
-                <p style={{ maxWidth: 720, fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.74)' }}>
-                  Skolr is launching with a narrow, disciplined focus so students get a clearer path and parents can trust the learning structure from subject selection through revision.
-                </p>
-              </div>
-
-              <div className="launch-launch-band-points" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 12 }}>
-                {[
-                  ['Focused subject set', 'Seven visible Form Four subjects at launch.'],
-                  ['Exam-led structure', 'Lessons, revision, and mocks aligned to outcomes.'],
-                  ['Parent-ready clarity', 'Progress stays easier to follow over time.'],
-                ].map(([title, copy], index) => (
-                  <div
-                    key={title}
-                    style={{
-                      padding: '18px 18px 16px',
-                      borderRadius: 22,
-                      background: index === 1 ? 'rgba(36,211,102,0.16)' : 'rgba(255,255,255,0.08)',
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      backdropFilter: 'blur(8px)',
-                    }}
-                  >
-                    <p style={{ fontSize: 14, fontWeight: 900, color: '#fff', marginBottom: 7 }}>{title}</p>
-                    <p style={{ fontSize: 13, lineHeight: 1.7, color: 'rgba(255,255,255,0.7)' }}>{copy}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section style={{ padding: '0 24px 72px', background: LIGHT_BG }}>
         <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
           <div style={{ borderRadius: 30, background: 'linear-gradient(135deg,#f7fbf8 0%,#ffffff 40%,#eef8f2 100%)', border: '1px solid #dfe6df', padding: 30 }}>
