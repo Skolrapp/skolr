@@ -392,7 +392,7 @@ export default function ParentLearnerManager({ user, refetchUser, variant = 'das
           }
 
           .parent-learner-stats-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
           }
 
           .parent-learner-actions > button {
@@ -402,6 +402,10 @@ export default function ParentLearnerManager({ user, refetchUser, variant = 'das
 
         @media (max-width: 520px) {
           .parent-learner-grid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .parent-learner-stats-grid {
             grid-template-columns: 1fr !important;
           }
         }

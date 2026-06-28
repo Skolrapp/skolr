@@ -444,6 +444,39 @@ export default async function CourseDetailPage(
           </aside>
         </section>
       </main>
+
+      <style>{`
+        @media (max-width: 1100px) {
+          .course-detail-hero,
+          .course-detail-body {
+            grid-template-columns: minmax(0, 1fr) !important;
+          }
+        }
+
+        @media (max-width: 900px) {
+          .course-detail-two-col,
+          .course-detail-hero-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .course-detail-hero-stats,
+          .course-detail-two-col {
+            grid-template-columns: minmax(0, 1fr) !important;
+          }
+
+          .course-detail-hero-actions :global(a) {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+          }
+
+          main {
+            padding: 24px 16px 96px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

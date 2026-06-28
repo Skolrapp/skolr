@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import TopHeader from '@/components/layout/TopHeader';
 import BottomNav from '@/components/layout/BottomNav';
 import SkolrLoader from '@/components/ui/SkolrLoader';
+import SubtleBackButton from '@/components/ui/SubtleBackButton';
 import { useAuth } from '@/hooks/useAuth';
 
 const G = '#10B981';
@@ -55,6 +56,9 @@ export default function InstructorProfilePage() {
 
       <div style={{ background: 'linear-gradient(135deg,#0f172a,#111827 60%,#0f3d2e)', padding: '40px 24px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+          <div style={{ width: '100%', marginBottom: 4 }}>
+            <SubtleBackButton fallbackHref="/courses" label="Back to courses" light />
+          </div>
           <div style={{ width: 88, height: 88, borderRadius: '50%', background: '#ecfdf5', border: '3px solid rgba(255,255,255,0.2)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {instructor.avatar_url
               ? <img src={instructor.avatar_url} alt={instructor.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -119,7 +123,7 @@ export default function InstructorProfilePage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 16 }}>
+          <div className="instructor-course-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 16 }}>
             {courses.map((course: any) => (
               <Link key={course.id} href={`/courses/${course.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit', border: '1px solid #e5e7eb', borderRadius: 18, overflow: 'hidden', background: '#fff', boxShadow: '0 10px 24px rgba(15,23,42,0.04)' }}>
                 <div style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg,#ecfdf5,#dbeafe)', overflow: 'hidden' }}>
@@ -156,6 +160,10 @@ export default function InstructorProfilePage() {
         }
 
         @media (max-width: 640px) {
+          .instructor-course-grid {
+            grid-template-columns: 1fr !important;
+          }
+
           div[style*='grid-template-columns: repeat(3,minmax(0,1fr))'] {
             grid-template-columns: 1fr !important;
           }
