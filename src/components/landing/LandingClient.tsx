@@ -65,8 +65,8 @@ const REASSURANCE_BANNERS = [
     eyebrow: 'For Families',
     title: 'Personalised paths for every Form 4 student',
     copy: 'Give each learner a clearer route through lessons, revision, and exam preparation without losing momentum.',
-    href: '#free-trial',
-    cta: 'Start learning today',
+    href: '#pricing',
+    cta: 'View Form Four access',
   },
   {
     eyebrow: 'For Students',
@@ -546,37 +546,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         </div>
       </section>
 
-      <section id="free-trial" style={{ padding: '0 24px 26px', background: LIGHT_BG }}>
-        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
-          <div style={{ borderRadius: 28, background: '#ffffff', border: '1px solid #e1e6e9', padding: 28, boxShadow: '0 20px 48px rgba(18,18,18,0.05)' }}>
-            <div className="launch-trial-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(280px,0.62fr)', gap: 20, alignItems: 'center' }}>
-              <div>
-                <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Start for free</p>
-                <h2 style={{ fontSize: 32, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 10 }}>Start with a free trial before committing to the full Form Four plan.</h2>
-                <p style={{ fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>
-                  Review the structure, explore the subject flow, and get a feel for how Skolr teaches before moving into full monthly access.
-                </p>
-              </div>
-              <div style={{ display: 'grid', gap: 10 }}>
-                {[
-                  'Explore the Form Four subject catalog',
-                  'Understand the teaching structure before payment',
-                  'Move into full access when ready',
-                ].map((item) => (
-                  <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10, borderRadius: 16, background: '#f6f7f9', padding: '12px 14px' }}>
-                    <span style={{ width: 22, height: 22, borderRadius: 999, background: 'rgba(36,211,102,0.14)', color: '#0a7b3b', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, flexShrink: 0 }}>✓</span>
-                    <span style={{ fontSize: 13, color: '#3a464d' }}>{item}</span>
-                  </div>
-                ))}
-                <Link href="/register" style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 52, borderRadius: 16, background: GREEN, color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0.6 }}>
-                  Start for Free
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section id="pricing" style={{ padding: '0 24px 72px', background: LIGHT_BG }}>
         <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
           <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center', marginBottom: 24 }}>
@@ -639,8 +608,8 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
               Give students the clarity to start, and the confidence to keep going until exam season.
             </p>
             <div className="launch-final-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <Link href="/register" style={{ padding: '14px 22px', borderRadius: 16, background: '#fff', color: '#121212', fontSize: 15, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                Start for Free
+              <Link href="/courses?level=secondary&sub=Form%204" style={{ padding: '14px 22px', borderRadius: 16, background: '#fff', color: '#121212', fontSize: 15, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                View Form Four Subjects
               </Link>
             </div>
           </div>

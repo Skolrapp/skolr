@@ -171,7 +171,6 @@ function CoursesContent(){
             </Link>
             <div className="courses-top-actions" style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:12}}>
               <Link href="/login" style={{minHeight:44,padding:'0 20px',fontSize:13,fontWeight:800,color:'#111827',textDecoration:'none',border:'1px solid #d9dee7',borderRadius:999,display:'inline-flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(180deg,#ffffff 0%,#f8fafc 100%)',boxShadow:'0 8px 18px rgba(15,23,42,0.06)'}}>Log in</Link>
-              <Link href="/register" style={{minHeight:44,padding:'0 22px',fontSize:13,fontWeight:900,color:'#fff',background:'linear-gradient(135deg,#10B981 0%,#059669 100%)',textDecoration:'none',borderRadius:999,display:'inline-flex',alignItems:'center',justifyContent:'center',boxShadow:'0 12px 26px rgba(16,185,129,0.24)',border:'1px solid rgba(5,150,105,0.22)',letterSpacing:0.2}}>Start for Free</Link>
             </div>
           </div>
         </header>
@@ -377,7 +376,6 @@ function CoursesContent(){
                 </div>
                 {!user && (
                   <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-                    <Link href="/register" style={{padding:'9px 14px',fontSize:12,fontWeight:700,color:'#fff',background:G,textDecoration:'none',borderRadius:999}}>Start for Free</Link>
                     <Link href="/pricing" style={{padding:'9px 14px',fontSize:12,fontWeight:700,color:'#374151',background:'#fff',textDecoration:'none',border:'1px solid #e5e7eb',borderRadius:999}}>View plans</Link>
                   </div>
                 )}
@@ -416,9 +414,6 @@ function CoursesContent(){
                 <p style={{fontSize:15,fontWeight:800,color:'#0a0a0a',marginBottom:4}}>{isPublicLaunchView ? 'Form Four subject catalog' : `${sub} classes`}</p>
                 <p style={{fontSize:13,color:'#6b7280'}}>{isPublicLaunchView ? 'Explore focused Form Four lessons and preview real teaching before signing up.' : 'Guests can open any class here and watch a short preview before signing up.'}</p>
               </div>
-              {!user && (
-                <Link href="/register" style={{padding:'9px 14px',fontSize:12,fontWeight:700,color:'#fff',background:G,borderRadius:999,textDecoration:'none'}}>Start for Free</Link>
-              )}
             </div>
           )}
           <p style={{fontSize:13,color:'#9ca3af',marginBottom:16}}>

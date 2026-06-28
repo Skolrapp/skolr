@@ -153,9 +153,6 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
               <Link href="/login" style={{ minHeight: 46, padding: '0 18px', borderRadius: 999, textDecoration: 'none', color: '#fff', border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.08)', fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                 Log in
               </Link>
-              <Link href="/register" style={{ minHeight: 46, padding: '0 22px', borderRadius: 999, textDecoration: 'none', color: '#062314', background: 'linear-gradient(135deg,#dff8ea 0%,#24d366 100%)', fontSize: 13, fontWeight: 900, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 14px 28px rgba(36,211,102,0.22)' }}>
-                Start for Free
-              </Link>
             </div>
           </div>
 
@@ -313,9 +310,6 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
                 <p style={{ maxWidth: 680, fontSize: 14, lineHeight: 1.75, color: '#64748b', marginBottom: 14 }}>
                   The page is ready for launch. Once lessons are published in admin, they will appear here automatically with their instructors.
                 </p>
-                <Link href="/register" style={{ display: 'inline-flex', minHeight: 46, padding: '0 18px', borderRadius: 999, textDecoration: 'none', color: '#fff', background: '#111827', fontSize: 13, fontWeight: 800, alignItems: 'center' }}>
-                  Start for Free
-                </Link>
               </div>
             )}
           </div>
