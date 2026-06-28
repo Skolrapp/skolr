@@ -162,9 +162,12 @@ function CoursesContent(){
         </header>
       )}
 
-      <div className="courses-hero" style={{background:level?'linear-gradient(135deg,'+(currentLevel as any).color+'dd,'+(currentLevel as any).color+'aa)':'linear-gradient(135deg,#0a0a0a,#1a1a2e)',padding:'28px 24px'}}>
+      <div className="courses-hero" style={{background:isPublicLaunchView?'linear-gradient(135deg,#121212 0%,#16251f 58%,#0d7c55 100%)':level?'linear-gradient(135deg,'+(currentLevel as any).color+'dd,'+(currentLevel as any).color+'aa)':'linear-gradient(135deg,#0a0a0a,#1a1a2e)',padding:'34px 24px 30px'}}>
         <div className="courses-hero-inner" style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:16}}>
-          <div>
+          <div style={{maxWidth:isPublicLaunchView?720:undefined}}>
+            {isPublicLaunchView && (
+              <p style={{fontSize:12,fontWeight:800,letterSpacing:0.9,textTransform:'uppercase',color:'#86efac',marginBottom:10}}>Form Four launch focus</p>
+            )}
             <h1 style={{fontSize:24,fontWeight:800,color:'#fff',marginBottom:6}}>{currentLabel}</h1>
             <p style={{fontSize:14,color:'rgba(255,255,255,0.65)',marginBottom:12}}>
               {!user ? guestHeaderCopy : `${(currentLevel as any).sub||'Browse all education levels'} · ${total} courses`}
@@ -177,12 +180,18 @@ function CoursesContent(){
                 </button>
               ))}
             </div>
+            {isPublicLaunchView && (
+              <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:14}}>
+                <Link href="/register" style={{padding:'10px 16px',fontSize:13,fontWeight:800,color:'#121212',background:'#fff',borderRadius:999,textDecoration:'none'}}>Start for Free</Link>
+                <Link href="/pricing" style={{padding:'10px 16px',fontSize:13,fontWeight:700,color:'#fff',border:'1px solid rgba(255,255,255,0.18)',background:'rgba(255,255,255,0.06)',borderRadius:999,textDecoration:'none'}}>View Pricing</Link>
+              </div>
+            )}
           </div>
           <div className="courses-hero-stats" style={{display:'flex',gap:20}}>
             {(isPublicLaunchView
               ? [['Subjects', String(FORM_FOUR_SUBJECTS.length)], ['Access', `${FORM_FOUR_PRICE_TZS.toLocaleString()} TZS`], ['Preview', 'Guest Ready']]
               : [['Courses',String(total)],['Subjects','12'],['Students','8.4K']]).map(([lbl,val])=>(
-              <div key={lbl} style={{textAlign:'center'}}>
+              <div key={lbl} style={{textAlign:'center',padding:isPublicLaunchView?'14px 16px':'0',borderRadius:isPublicLaunchView?18:0,background:isPublicLaunchView?'rgba(255,255,255,0.08)':'transparent',border:isPublicLaunchView?'1px solid rgba(255,255,255,0.12)':'none',minWidth:isPublicLaunchView?128:0}}>
                 <p style={{fontSize:20,fontWeight:800,color:'#fff'}}>{val}</p>
                 <p style={{fontSize:11,color:'rgba(255,255,255,0.5)',marginTop:2}}>{lbl}</p>
               </div>
@@ -192,7 +201,7 @@ function CoursesContent(){
       </div>
 
       <div className="courses-shell" style={{maxWidth:1280,margin:'0 auto',display:'flex',gap:0,padding:'0 24px',alignItems:'flex-start'}}>
-        <aside className="courses-sidebar" style={{width:220,flexShrink:0,paddingTop:24,paddingRight:24,borderRight:'1px solid #e5e7eb',minHeight:600}}>
+        <aside className="courses-sidebar" style={{width:isPublicLaunchView?0:220,display:isPublicLaunchView?'none':'block',flexShrink:0,paddingTop:24,paddingRight:24,borderRight:'1px solid #e5e7eb',minHeight:600}}>
           <div style={{marginBottom:24}}>
             <p style={{fontSize:11,fontWeight:700,color:'#9ca3af',textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>Subject</p>
             <button onClick={()=>setSubject('')} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'6px 8px',borderRadius:7,border:'none',background:!subject?'#ecfdf5':'transparent',color:!subject?'#059669':'#6b7280',fontSize:12,fontWeight:!subject?700:400,cursor:'pointer',textAlign:'left',marginBottom:2}}>
@@ -215,6 +224,43 @@ function CoursesContent(){
         </aside>
 
         <div className="courses-main" style={{flex:1,paddingTop:24,paddingLeft:24,minWidth:0}}>
+          {isPublicLaunchView && (
+            <div className="courses-launch-panel" style={{marginBottom:18,padding:'18px 18px 16px',border:'1px solid #e5e7eb',borderRadius:20,background:'linear-gradient(180deg,#ffffff 0%,#f7fbf9 100%)',boxShadow:'0 16px 40px rgba(15,23,42,0.05)'}}>
+              <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:16,flexWrap:'wrap',marginBottom:14}}>
+                <div style={{maxWidth:620}}>
+                  <p style={{fontSize:12,fontWeight:800,letterSpacing:0.8,textTransform:'uppercase',color:'#047857',marginBottom:8}}>Browse by subject</p>
+                  <h2 style={{fontSize:22,fontWeight:900,color:'#111827',marginBottom:6}}>Focused subjects. Clear next steps. No clutter.</h2>
+                  <p style={{fontSize:14,lineHeight:1.7,color:'#6b7280'}}>Choose a Form Four subject below to see only the lessons, previews, and instructors that matter right now.</p>
+                </div>
+                <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                  <span style={{fontSize:12,fontWeight:800,padding:'8px 12px',borderRadius:999,background:'#ecfdf5',color:'#047857'}}>Form 4 only</span>
+                  <span style={{fontSize:12,fontWeight:800,padding:'8px 12px',borderRadius:999,background:'#f3f4f6',color:'#374151'}}>Guest preview enabled</span>
+                </div>
+              </div>
+              <div className="courses-launch-subjects" style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:12}}>
+                {FORM_FOUR_SUBJECTS.map((entry) => {
+                  const active = subject === entry.catalogSubject;
+                  return (
+                    <button
+                      key={entry.id}
+                      onClick={() => { setSubject(active ? '' : entry.catalogSubject); setPage(1); }}
+                      style={{
+                        padding:'14px 14px 12px',
+                        borderRadius:16,
+                        border:'1px solid ' + (active ? '#10B981' : '#e5e7eb'),
+                        background:active ? '#ecfdf5' : '#fff',
+                        textAlign:'left',
+                        cursor:'pointer'
+                      }}
+                    >
+                      <p style={{fontSize:13,fontWeight:900,color:active ? '#047857' : '#0f172a',marginBottom:5}}>{entry.name}</p>
+                      <p style={{fontSize:12,lineHeight:1.6,color:active ? '#059669' : '#6b7280'}}>{entry.confidenceLine}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <div className="courses-mobile-toolbar" style={{display:'none',marginBottom:16}}>
             <div className="courses-mobile-pills" style={{display:'flex',gap:8,flexWrap:'wrap'}}>
               <span style={{fontSize:11,fontWeight:700,padding:'6px 10px',borderRadius:999,background:'#eff6ff',color:'#2563eb'}}>
@@ -342,23 +388,23 @@ function CoursesContent(){
                 const access=isActive&&canAccessLevel(user?.subscription_tier,c.category);
                 return(
                   <Link key={c.id} href={'/courses/'+c.id}
-                    style={{textDecoration:'none',color:'inherit',display:'block',background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,overflow:'hidden',transition:'transform 0.2s,box-shadow 0.2s'}}
+                    style={{textDecoration:'none',color:'inherit',display:'block',background:'#fff',border:'1px solid #e5e7eb',borderRadius:18,overflow:'hidden',transition:'transform 0.2s,box-shadow 0.2s,border-color 0.2s',boxShadow:'0 12px 34px rgba(15,23,42,0.05)'}}
                     onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.08)';}}
-                    onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='none';}}>
+                    onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 12px 34px rgba(15,23,42,0.05)';}}>
                     <Thumb color={(lvl as any).color||'#3b82f6'} bg={(lvl as any).bg||'#eff6ff'} title={c.title} thumbnailUrl={c.thumbnail_url}/>
-                    <div style={{padding:'12px 14px'}}>
-                      <div style={{display:'flex',gap:5,marginBottom:7}}>
-                        <span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:4,background:(lvl as any).bg||'#eff6ff',color:(lvl as any).color||'#3b82f6'}}>{c.sub_category||c.category}</span>
-                        <span style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:4,background:'#f3f4f6',color:'#6b7280'}}>{c.subject}</span>
+                    <div style={{padding:'14px 15px 15px'}}>
+                      <div style={{display:'flex',gap:6,marginBottom:9,flexWrap:'wrap'}}>
+                        <span style={{fontSize:10,fontWeight:800,padding:'4px 8px',borderRadius:999,background:(lvl as any).bg||'#eff6ff',color:(lvl as any).color||'#3b82f6'}}>{c.sub_category||c.category}</span>
+                        <span style={{fontSize:10,fontWeight:800,padding:'4px 8px',borderRadius:999,background:'#f3f4f6',color:'#6b7280'}}>{c.subject}</span>
                       </div>
-                      <p style={{fontSize:13,fontWeight:700,lineHeight:1.4,marginBottom:5,color:'#0a0a0a'}}>{c.title}</p>
-                      <p style={{fontSize:11,color:'#9ca3af',marginBottom:10}}>{c.instructor_name}</p>
-                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                      <p style={{fontSize:15,fontWeight:800,lineHeight:1.45,marginBottom:6,color:'#0a0a0a'}}>{c.title}</p>
+                      <p style={{fontSize:12,color:'#6b7280',marginBottom:12}}>{c.instructor_name}</p>
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
                         <span style={{fontSize:11,color:'#f59e0b'}}>★★★★★</span>
-                        <span style={{fontSize:11,fontWeight:700,color:access?'#0a0a0a':G}}>{!user?'Preview lesson':'Watch now'}</span>
+                        <span style={{fontSize:12,fontWeight:800,color:access?'#0a0a0a':G}}>{!user?'Preview lesson':'Watch now'}</span>
                       </div>
                       {!user && (
-                        <div style={{marginTop:10,padding:'8px 10px',borderRadius:10,background:'#f8fafc',border:'1px solid #e5e7eb'}}>
+                        <div style={{marginTop:12,padding:'10px 11px',borderRadius:12,background:'#f8fafc',border:'1px solid #e5e7eb'}}>
                           <p style={{fontSize:11,fontWeight:700,color:'#111827',marginBottom:3}}>Guest preview available</p>
                           <p style={{fontSize:11,color:'#6b7280'}}>See chapters, instructor profile, and a short video preview before signup.</p>
                         </div>
@@ -399,12 +445,14 @@ function CoursesContent(){
           .courses-sidebar{display:none!important;}
           .courses-main{padding-left:0!important;padding-top:16px!important;}
           .courses-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important;}
+          .courses-launch-subjects{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
           .courses-mobile-toolbar{display:block!important;}
           .courses-hero{padding:24px 16px!important;}
           .courses-hero-inner{align-items:flex-start!important;}
         }
         @media(max-width:640px){
           .courses-grid{grid-template-columns:1fr!important;}
+          .courses-launch-subjects{grid-template-columns:1fr!important;}
           .courses-sub-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
           .courses-hero-stats{width:100%!important;justify-content:space-between!important;gap:12px!important;}
           .courses-hero h1{font-size:20px!important;}
