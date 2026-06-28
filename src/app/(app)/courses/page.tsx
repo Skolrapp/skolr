@@ -56,15 +56,16 @@ function CoursesContent(){
   const [page,setPage]=useState(1);
   const [fetching,setFetching]=useState(true);
   const PER=9;
-  const isPublicLaunchView = !user;
+  const isLaunchRoute = level === FORM_FOUR_CLASS.level && sub === (FORM_FOUR_CLASS.subCategory || '');
+  const isPublicLaunchView = !user || isLaunchRoute;
   const launchSubjects = FORM_FOUR_SUBJECTS.map((entry) => entry.catalogSubject);
 
   useEffect(() => {
-    if (!isPublicLaunchView) return;
+    if (!isPublicLaunchView && !(!user && !level && !sub)) return;
     if (level !== FORM_FOUR_CLASS.level) setLevel(FORM_FOUR_CLASS.level);
     if (sub !== (FORM_FOUR_CLASS.subCategory || '')) setSub((FORM_FOUR_CLASS.subCategory || '') as SubCategory);
     if (page !== 1) setPage(1);
-  }, [isPublicLaunchView, level, page, sub]);
+  }, [isPublicLaunchView, level, page, sub, user]);
 
   const fetchCourses=useCallback(()=>{
     const params=new URLSearchParams();
