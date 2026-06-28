@@ -156,9 +156,9 @@ function CoursesContent(){
               </div>
               <span style={{fontWeight:800,fontSize:18,color:'#0a0a0a'}}>Skolr</span>
             </Link>
-            <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:10}}>
-              <Link href="/login" style={{padding:'7px 14px',fontSize:13,fontWeight:700,color:'#0a0a0a',textDecoration:'none',border:'1px solid #e5e7eb',borderRadius:999}}>Log in</Link>
-              <Link href="/register" style={{padding:'7px 14px',fontSize:13,fontWeight:700,color:'#fff',background:G,textDecoration:'none',borderRadius:999}}>Start for Free</Link>
+            <div className="courses-top-actions" style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:12}}>
+              <Link href="/login" style={{minHeight:44,padding:'0 20px',fontSize:13,fontWeight:800,color:'#111827',textDecoration:'none',border:'1px solid #d9dee7',borderRadius:999,display:'inline-flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(180deg,#ffffff 0%,#f8fafc 100%)',boxShadow:'0 8px 18px rgba(15,23,42,0.06)'}}>Log in</Link>
+              <Link href="/register" style={{minHeight:44,padding:'0 22px',fontSize:13,fontWeight:900,color:'#fff',background:'linear-gradient(135deg,#10B981 0%,#059669 100%)',textDecoration:'none',borderRadius:999,display:'inline-flex',alignItems:'center',justifyContent:'center',boxShadow:'0 12px 26px rgba(16,185,129,0.24)',border:'1px solid rgba(5,150,105,0.22)',letterSpacing:0.2}}>Start for Free</Link>
             </div>
           </div>
         </header>
@@ -183,9 +183,9 @@ function CoursesContent(){
               ))}
             </div>
             {isPublicLaunchView && (
-              <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:14}}>
-                <Link href="/register" style={{padding:'10px 16px',fontSize:13,fontWeight:800,color:'#121212',background:'#fff',borderRadius:999,textDecoration:'none'}}>Start for Free</Link>
-                <Link href="/pricing" style={{padding:'10px 16px',fontSize:13,fontWeight:700,color:'#fff',border:'1px solid rgba(255,255,255,0.18)',background:'rgba(255,255,255,0.06)',borderRadius:999,textDecoration:'none'}}>View Pricing</Link>
+              <div className="courses-hero-actions" style={{display:'flex',gap:12,flexWrap:'wrap',marginTop:18}}>
+                <Link href="/register" style={{minHeight:52,padding:'0 22px',fontSize:14,fontWeight:900,color:'#0f172a',background:'linear-gradient(180deg,#ffffff 0%,#effaf4 100%)',borderRadius:999,textDecoration:'none',display:'inline-flex',alignItems:'center',justifyContent:'center',boxShadow:'0 18px 34px rgba(0,0,0,0.16)',border:'1px solid rgba(255,255,255,0.28)',letterSpacing:0.2}}>Start for Free</Link>
+                <Link href="/pricing" style={{minHeight:52,padding:'0 22px',fontSize:14,fontWeight:800,color:'#fff',border:'1px solid rgba(255,255,255,0.16)',background:'rgba(255,255,255,0.08)',borderRadius:999,textDecoration:'none',display:'inline-flex',alignItems:'center',justifyContent:'center',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.06)'}}>View Pricing</Link>
               </div>
             )}
           </div>
@@ -513,6 +513,7 @@ function CoursesContent(){
           .courses-mobile-toolbar{display:block!important;}
           .courses-hero{padding:24px 16px!important;}
           .courses-hero-inner{align-items:flex-start!important;}
+          .courses-top-actions{gap:10px!important;}
         }
         @media(max-width:640px){
           .courses-grid{grid-template-columns:1fr!important;}
@@ -521,6 +522,8 @@ function CoursesContent(){
           .courses-sub-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
           .courses-hero-stats{width:100%!important;justify-content:space-between!important;gap:12px!important;}
           .courses-hero h1{font-size:20px!important;}
+          .courses-top-actions,
+          .courses-hero-actions{width:100%!important;display:grid!important;grid-template-columns:1fr!important;}
         }
       `}</style>
     </div>
