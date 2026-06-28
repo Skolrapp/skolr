@@ -60,12 +60,6 @@ const HOW_IT_WORKS = [
   { step: '03', title: 'Practice for exams', copy: 'Use revision guidance and mock-focused study to prepare with purpose.' },
 ] as const;
 
-const STUDY_PARTNER_POINTS = [
-  'Short post-lesson check-ins that feel supportive, not distracting.',
-  'Instant feedback that helps students spot what actually landed.',
-  'A calmer revision rhythm between lessons, quizzes, and exam prep.',
-] as const;
-
 const REASSURANCE_BANNERS = [
   {
     eyebrow: 'For Families',
@@ -475,58 +469,51 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
       </section>
 
       <section style={{ padding: '0 0 72px', background: LIGHT_BG }}>
-        <div style={{ width: '100%' }}>
-          <div
-            className="launch-study-partner"
-            style={{
-              position: 'relative',
-              overflow: 'hidden',
-              borderRadius: 0,
-              padding: '42px 24px',
-              background: 'linear-gradient(120deg,#0f1c20 0%,#17363d 38%,#136a62 100%)',
-              boxShadow: '0 28px 72px rgba(15,23,42,0.14)',
-            }}
-          >
-            <div style={{ position: 'absolute', top: -90, right: -10, width: 280, height: 280, borderRadius: '50%', background: 'rgba(36,211,102,0.14)' }} />
-            <div style={{ position: 'absolute', bottom: -130, left: '18%', width: 320, height: 320, borderRadius: '50%', background: 'rgba(4,149,157,0.18)' }} />
-            <div style={{ position: 'absolute', inset: 0, opacity: 0.22, background: 'radial-gradient(circle at 78% 30%, rgba(255,255,255,0.22), transparent 22%), linear-gradient(135deg, transparent 0%, transparent 52%, rgba(255,255,255,0.08) 52%, rgba(255,255,255,0.08) 54%, transparent 54%, transparent 100%)' }} />
-            <div className="launch-shell launch-study-grid" style={{ maxWidth: 1240, margin: '0 auto', position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'minmax(0,1.05fr) minmax(320px,0.95fr)', gap: 28, alignItems: 'center' }}>
-              <div style={{ paddingRight: 8 }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', marginBottom: 18 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: GREEN }} />
-                  <span style={{ fontSize: 12, fontWeight: 800, color: '#d7fff1', textTransform: 'uppercase', letterSpacing: 0.5 }}>Virtual Study Partner</span>
-                </div>
-                <h2 style={{ fontSize: 34, fontWeight: 900, lineHeight: 1.08, color: '#fff', marginBottom: 12 }}>
-                  A smarter study companion for calmer, stronger revision.
-                </h2>
-                <p style={{ maxWidth: 620, fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.74)', marginBottom: 22 }}>
-                  Zeal helps students check understanding right after each lesson, build momentum between topics, and stay engaged without making revision feel heavy or confusing.
+        <div
+          style={{
+            width: '100%',
+            position: 'relative',
+            overflow: 'hidden',
+            background: 'linear-gradient(135deg,#121212 0%,#183229 48%,#0e6a55 100%)',
+            boxShadow: '0 28px 72px rgba(15,23,42,0.12)',
+          }}
+        >
+          <div style={{ position: 'absolute', inset: 0, opacity: 0.16, background: 'linear-gradient(90deg, rgba(255,255,255,0.04) 0%, transparent 18%, transparent 82%, rgba(255,255,255,0.04) 100%)' }} />
+          <div style={{ position: 'absolute', top: -140, right: -60, width: 320, height: 320, borderRadius: '50%', background: 'rgba(36,211,102,0.12)' }} />
+          <div style={{ position: 'absolute', bottom: -180, left: '8%', width: 360, height: 360, borderRadius: '50%', background: 'rgba(4,149,157,0.12)' }} />
+
+          <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto', position: 'relative', zIndex: 1, padding: '54px 24px' }}>
+            <div className="launch-launch-band" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.1fr) minmax(0,0.9fr)', gap: 28, alignItems: 'end' }}>
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.9, color: '#bbf7d0', marginBottom: 10 }}>
+                  Launch Direction
                 </p>
-                <div className="launch-final-actions" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                  <Link href="/register" style={{ padding: '14px 22px', borderRadius: 16, background: '#fff', color: '#121212', fontSize: 14, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                    Start for Free
-                  </Link>
-                  <Link href="/#mock-exams" style={{ padding: '14px 22px', borderRadius: 16, border: '1px solid rgba(255,255,255,0.16)', color: '#fff', fontSize: 14, fontWeight: 800, textDecoration: 'none', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                    See how it works
-                  </Link>
-                </div>
+                <h2 style={{ maxWidth: 760, fontSize: 40, lineHeight: 1.05, fontWeight: 900, color: '#fff', marginBottom: 14 }}>
+                  Built for serious Form Four preparation from the very first release.
+                </h2>
+                <p style={{ maxWidth: 720, fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.74)' }}>
+                  Skolr is launching with a narrow, disciplined focus so students get a clearer path and parents can trust the learning structure from subject selection through revision.
+                </p>
               </div>
 
-              <div className="launch-study-proof" style={{ display: 'grid', gap: 12 }}>
-                {STUDY_PARTNER_POINTS.map((item, index) => (
+              <div className="launch-launch-band-points" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 12 }}>
+                {[
+                  ['Focused subject set', 'Seven visible Form Four subjects at launch.'],
+                  ['Exam-led structure', 'Lessons, revision, and mocks aligned to outcomes.'],
+                  ['Parent-ready clarity', 'Progress stays easier to follow over time.'],
+                ].map(([title, copy], index) => (
                   <div
-                    key={item}
+                    key={title}
                     style={{
-                      padding: '20px 20px 18px',
+                      padding: '18px 18px 16px',
                       borderRadius: 22,
-                      background: index === 1 ? 'rgba(36,211,102,0.18)' : 'rgba(255,255,255,0.09)',
-                      border: '1px solid rgba(255,255,255,0.14)',
-                      backdropFilter: 'blur(12px)',
-                      boxShadow: '0 14px 30px rgba(4,10,18,0.14)',
+                      background: index === 1 ? 'rgba(36,211,102,0.16)' : 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      backdropFilter: 'blur(8px)',
                     }}
                   >
-                    <p style={{ fontSize: 14, fontWeight: 800, color: '#fff', marginBottom: 6 }}>{index === 0 ? 'Instant understanding checks' : index === 1 ? 'Motivation between lessons' : 'Better exam readiness'}</p>
-                    <p style={{ fontSize: 13, lineHeight: 1.7, color: 'rgba(255,255,255,0.72)' }}>{item}</p>
+                    <p style={{ fontSize: 14, fontWeight: 900, color: '#fff', marginBottom: 7 }}>{title}</p>
+                    <p style={{ fontSize: 13, lineHeight: 1.7, color: 'rgba(255,255,255,0.7)' }}>{copy}</p>
                   </div>
                 ))}
               </div>

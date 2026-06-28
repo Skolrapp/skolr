@@ -174,18 +174,14 @@ function CoursesContent(){
             <p style={{fontSize:14,color:'rgba(255,255,255,0.65)',marginBottom:12}}>
               {!user ? guestHeaderCopy : `${(currentLevel as any).sub||'Browse all education levels'} · ${total} courses`}
             </p>
-            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-              {visibleLevels.map(l=>(
-                <button key={l.id} onClick={()=>{if (!isPublicLaunchView) { setLevel(l.id as EducationLevel);setSub('');setPage(1);} }}
-                  style={{padding:'4px 12px',fontSize:11,fontWeight:600,borderRadius:999,border:'none',background:level===l.id?'#fff':'rgba(255,255,255,0.18)',color:level===l.id?'#0a0a0a':'#fff',cursor:'pointer'}}>
-                  {l.label}
-                </button>
-              ))}
-            </div>
-            {isPublicLaunchView && (
-              <div className="courses-hero-actions" style={{display:'flex',gap:12,flexWrap:'wrap',marginTop:18}}>
-                <Link href="/register" style={{minHeight:52,padding:'0 22px',fontSize:14,fontWeight:900,color:'#0f172a',background:'linear-gradient(180deg,#ffffff 0%,#effaf4 100%)',borderRadius:999,textDecoration:'none',display:'inline-flex',alignItems:'center',justifyContent:'center',boxShadow:'0 18px 34px rgba(0,0,0,0.16)',border:'1px solid rgba(255,255,255,0.28)',letterSpacing:0.2}}>Start for Free</Link>
-                <Link href="/pricing" style={{minHeight:52,padding:'0 22px',fontSize:14,fontWeight:800,color:'#fff',border:'1px solid rgba(255,255,255,0.16)',background:'rgba(255,255,255,0.08)',borderRadius:999,textDecoration:'none',display:'inline-flex',alignItems:'center',justifyContent:'center',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.06)'}}>View Pricing</Link>
+            {!isPublicLaunchView && (
+              <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                {visibleLevels.map(l=>(
+                  <button key={l.id} onClick={()=>{if (!isPublicLaunchView) { setLevel(l.id as EducationLevel);setSub('');setPage(1);} }}
+                    style={{padding:'4px 12px',fontSize:11,fontWeight:600,borderRadius:999,border:'none',background:level===l.id?'#fff':'rgba(255,255,255,0.18)',color:level===l.id?'#0a0a0a':'#fff',cursor:'pointer'}}>
+                    {l.label}
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -304,21 +300,22 @@ function CoursesContent(){
                 {FORM_FOUR_SUBJECTS.map((entry) => {
                   const active = subject === entry.catalogSubject;
                   return (
-                    <button
+                    <Link
                       key={entry.id}
-                      onClick={() => { setSubject(active ? '' : entry.catalogSubject); setPage(1); }}
+                      href={entry.href}
                       style={{
+                        display:'block',
                         padding:'14px 14px 12px',
                         borderRadius:16,
                         border:'1px solid ' + (active ? '#10B981' : '#e5e7eb'),
                         background:active ? '#ecfdf5' : '#fff',
                         textAlign:'left',
-                        cursor:'pointer'
+                        textDecoration:'none'
                       }}
                     >
                       <p style={{fontSize:13,fontWeight:900,color:active ? '#047857' : '#0f172a',marginBottom:5}}>{entry.name}</p>
                       <p style={{fontSize:12,lineHeight:1.6,color:active ? '#059669' : '#6b7280'}}>{entry.confidenceLine}</p>
-                    </button>
+                    </Link>
                   );
                 })}
               </div>
