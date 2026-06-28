@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import TopHeader from '@/components/layout/TopHeader';
 import BottomNav from '@/components/layout/BottomNav';
 import Footer from '@/components/layout/Footer';
+import SubtleBackButton from '@/components/ui/SubtleBackButton';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
 import { EDUCATION_LEVELS } from '@/lib/constants';
 import { FORM_FOUR_CLASS, FORM_FOUR_PRICE_TZS, FORM_FOUR_SUBJECTS, LAUNCH_CLASSES } from '@/lib/launchCatalog';
@@ -179,6 +180,13 @@ function CoursesContent(){
       <div className="courses-hero" style={{background:isPublicLaunchView?'linear-gradient(135deg,#121212 0%,#16251f 58%,#0d7c55 100%)':level?'linear-gradient(135deg,'+(currentLevel as any).color+'dd,'+(currentLevel as any).color+'aa)':'linear-gradient(135deg,#0a0a0a,#1a1a2e)',padding:'34px 24px 30px'}}>
         <div className="courses-hero-inner" style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:16}}>
           <div style={{maxWidth:isPublicLaunchView?720:undefined}}>
+            <div style={{marginBottom:16}}>
+              <SubtleBackButton
+                fallbackHref={user ? '/dashboard' : '/'}
+                label={user ? 'Back' : 'Back to home'}
+                light
+              />
+            </div>
             {isPublicLaunchView && (
               <p style={{fontSize:12,fontWeight:800,letterSpacing:0.9,textTransform:'uppercase',color:'#86efac',marginBottom:10}}>Form Four launch focus</p>
             )}

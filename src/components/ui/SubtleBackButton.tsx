@@ -22,9 +22,24 @@ export default function SubtleBackButton({
     <button
       type="button"
       onClick={() => {
-        if (typeof window !== 'undefined' && window.history.length > 1) {
-          router.back();
-          return;
+        if (typeof window !== 'undefined') {
+          const hasHistory = window.history.length > 1;
+          const referrer = document.referrer;
+
+          if (referrer) {
+            try {
+              const previousUrl = new URL(referrer);
+              if (previousUrl.origin === window.location.origin && hasHistory) {
+                router.back();
+                return;
+              }
+            } catch {
+              // Fall through to the fallback route when the referrer cannot be parsed.
+            }
+          } else if (hasHistory) {
+            router.back();
+            return;
+          }
         }
         router.push(fallbackHref);
       }}
