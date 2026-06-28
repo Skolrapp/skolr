@@ -231,8 +231,7 @@ function CoursesContent(){
               <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:16,flexWrap:'wrap',marginBottom:14}}>
                 <div style={{maxWidth:620}}>
                   <p style={{fontSize:12,fontWeight:800,letterSpacing:0.8,textTransform:'uppercase',color:'#047857',marginBottom:8}}>Launch roadmap</p>
-                  <h2 style={{fontSize:22,fontWeight:900,color:'#111827',marginBottom:6}}>Form Four is live. Lower forms are queued next.</h2>
-                  <p style={{fontSize:14,lineHeight:1.7,color:'#6b7280'}}>Students can start with Form Four today. Form One to Form Three remain visible here as coming soon so the platform roadmap feels intentional and clear.</p>
+                  <h2 style={{fontSize:22,fontWeight:900,color:'#111827',marginBottom:0}}>Choose where to start.</h2>
                 </div>
                 <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
                   <span style={{fontSize:12,fontWeight:800,padding:'8px 12px',borderRadius:999,background:'#ecfdf5',color:'#047857'}}>Form 4 live now</span>
