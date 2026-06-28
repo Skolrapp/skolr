@@ -15,7 +15,7 @@ export default function RegisterPage() {
   const router  = useRouter();
   const [pending, start] = useTransition();
   const [role,     setRole]     = useState<'student'|'instructor'>('student');
-  const [learnerLevel] = useState<EducationLevel>(FORM_FOUR_CLASS.level);
+  const [learnerLevel] = useState<EducationLevel>(FORM_FOUR_CLASS.level as EducationLevel);
   const [learnerSubCategory] = useState(FORM_FOUR_CLASS.subCategory || 'Form 4');
   const [form, setForm] = useState({
     accountName: '',
