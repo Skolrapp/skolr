@@ -52,7 +52,6 @@ export default function TopHeader() {
     : user?.role === 'instructor'
       ? [
           { label: 'Home', href: homeHref },
-          { label: 'Browse courses', href: '/courses' },
           { label: 'My courses', href: '/instructor' },
           { label: 'Public profile', href: '/instructors/' + user?.id },
         ]

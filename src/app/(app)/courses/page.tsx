@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 import { useState, Suspense, useEffect, useCallback } from 'react';
-import { useSearchParams, usePathname } from 'next/navigation';
+import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import TopHeader from '@/components/layout/TopHeader';
@@ -46,6 +46,7 @@ function Thumb({color,bg,title,thumbnailUrl}:{color:string;bg:string;title:strin
 function CoursesContent(){
   const {user}=useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const sp=useSearchParams();
   const [level,setLevel]=useState<EducationLevel|''>((sp.get('level') as EducationLevel)||'');
   const [sub,setSub]=useState<SubCategory | ''>((sp.get('sub') as SubCategory) || '');
@@ -62,6 +63,16 @@ function CoursesContent(){
   const secondaryLaunchClasses = LAUNCH_CLASSES.filter((entry) => entry.level === 'secondary' && entry.subCategory);
 
   useEffect(() => {
+    if (user?.role === 'instructor') {
+      router.replace('/instructor');
+    }
+  }, [router, user?.role]);
+
+  if (user?.role === 'instructor') {
+    return null;
+  }
+
+  useEffect(() => {
     if (!isPublicLaunchView && !(!user && !level && !sub)) return;
     if (level !== FORM_FOUR_CLASS.level) setLevel(FORM_FOUR_CLASS.level as EducationLevel);
     if (sub !== (FORM_FOUR_CLASS.subCategory || '')) setSub((FORM_FOUR_CLASS.subCategory || '') as SubCategory);
@@ -73,6 +84,7 @@ function CoursesContent(){
     if(level)params.set('level',level);
     if(sub)params.set('sub',sub);
     if(subject)params.set('subject',subject);
+    if(isPublicLaunchView)params.set('launch_only','1');
     params.set('per_page',String(PER));
     params.set('page',String(page));
     const cacheKey = params.toString();
@@ -114,7 +126,7 @@ function CoursesContent(){
         }
       })
       .finally(()=>setFetching(false));
-  },[level,sub,subject,page]);
+  },[isPublicLaunchView, level,sub,subject,page]);
 
   useEffect(()=>{fetchCourses();},[fetchCourses]);
 

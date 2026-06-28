@@ -261,7 +261,6 @@ function WatchContent() {
         ]
     : [
         { label: 'Home', href: homeHref },
-        { label: 'Browse courses', href: '/courses' },
         ...(user.role === 'instructor'
           ? [
               { label: 'My courses', href: '/instructor' },
