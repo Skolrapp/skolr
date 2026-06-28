@@ -37,7 +37,7 @@ async function getSubjectData(slug: string) {
     .eq('subject', subject.catalogSubject)
     .order('created_at', { ascending: false });
 
-  const rows = (data || []) as Array<Record<string, unknown> & {
+  const rows = (data || []) as Array<Partial<Course> & {
     users?: {
       id?: string;
       name?: string;
@@ -48,11 +48,25 @@ async function getSubjectData(slug: string) {
     } | null;
   }>;
 
-  const courses = rows.map((course) => ({
-    ...course,
+  const courses: SubjectCourse[] = rows.map((course) => ({
+    id: String(course.id || ''),
+    title: String(course.title || 'Untitled lesson'),
+    description: course.description,
+    category: course.category || FORM_FOUR_CLASS.level,
+    sub_category: course.sub_category,
+    subject: String(course.subject || subject.catalogSubject),
+    instructor_id: String(course.instructor_id || ''),
     instructor_name: course.users?.name || 'Skolr instructor',
-    users: undefined,
-  })) as SubjectCourse[];
+    thumbnail_url: course.thumbnail_url,
+    video_hls_url: String(course.video_hls_url || ''),
+    duration_seconds: Number(course.duration_seconds || 0),
+    is_published: Boolean(course.is_published),
+    language: course.language || 'en',
+    view_count: Number(course.view_count || 0),
+    review_status: course.review_status,
+    admin_notes: course.admin_notes,
+    created_at: String(course.created_at || ''),
+  }));
 
   const instructorsMap = new Map<string, InstructorCard>();
   courses.forEach((course, index) => {
