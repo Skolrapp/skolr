@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import { FORM_FOUR_CLASS, FORM_FOUR_PRICE_TZS, FORM_FOUR_SUBJECTS, getLaunchSubjectBySlug } from '@/lib/launchCatalog';
-import type { Course } from '@/types';
+import type { Course, EducationLevel } from '@/types';
 
 type SubjectPageProps = {
   params: Promise<{ slug: string }>;
@@ -52,7 +52,7 @@ async function getSubjectData(slug: string) {
     id: String(course.id || ''),
     title: String(course.title || 'Untitled lesson'),
     description: course.description,
-    category: course.category || FORM_FOUR_CLASS.level,
+    category: (course.category || FORM_FOUR_CLASS.level) as EducationLevel,
     sub_category: course.sub_category,
     subject: String(course.subject || subject.catalogSubject),
     instructor_id: String(course.instructor_id || ''),
