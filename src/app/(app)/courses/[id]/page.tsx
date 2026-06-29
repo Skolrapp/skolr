@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { validateSession } from '@/lib/auth';
 import { getActiveLearnerFromCookies } from '@/lib/activeLearner';
+import PublicTopNav from '@/components/public/PublicTopNav';
 import VideoPlayer from '@/components/player/VideoPlayer';
 import PublicTopNav from '@/components/public/PublicTopNav';
 import SubtleBackButton from '@/components/ui/SubtleBackButton';
