@@ -67,9 +67,11 @@ export default function InstructorProfilePage() {
           <div style={{ flex: 1, minWidth: 220 }}>
             <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, color: G, textTransform: 'uppercase', marginBottom: 8 }}>Instructor profile</p>
             <h1 style={{ fontSize: 32, fontWeight: 900, color: '#fff', lineHeight: 1.1, marginBottom: 8 }}>{instructor.name}</h1>
-            <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.72)', lineHeight: 1.7, maxWidth: 700 }}>
-              {instructor.bio || 'Experienced educator on Skolr helping students move from introduction to mastery with structured lessons.'}
-            </p>
+            {instructor.bio && (
+              <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.72)', lineHeight: 1.7, maxWidth: 700 }}>
+                {instructor.bio}
+              </p>
+            )}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(120px,1fr))', gap: 10 }}>
             <div style={{ padding: 14, borderRadius: 16, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -88,9 +90,11 @@ export default function InstructorProfilePage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 20 }}>
           <div style={{ padding: 22, borderRadius: 20, background: '#fff', border: '1px solid #e5e7eb', boxShadow: '0 10px 24px rgba(15,23,42,0.05)' }}>
             <h2 style={{ fontSize: 18, fontWeight: 900, marginBottom: 14 }}>About the instructor</h2>
-            <p style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.8, marginBottom: 16 }}>
-              {instructor.bio || 'Bio coming soon.'}
-            </p>
+            {instructor.bio && (
+              <p style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.8, marginBottom: 16 }}>
+                {instructor.bio}
+              </p>
+            )}
             {instructor.education && <p style={{ fontSize: 14, color: '#111827', marginBottom: 8 }}><strong>Education:</strong> {instructor.education}</p>}
             {instructor.experience && <p style={{ fontSize: 14, color: '#111827', marginBottom: 8 }}><strong>Experience:</strong> {instructor.experience}</p>}
             {Array.isArray(instructor.specialties) && instructor.specialties.length > 0 && (

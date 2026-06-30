@@ -144,9 +144,9 @@ function getTeacherProfiles(courses: LandingCourse[]) {
       id: teacherId,
       name,
       subject: course.subject,
-      qualification: course.education || 'Qualification details can be added here.',
-      experience: course.experience || 'Experience details can be added here.',
-      philosophy: course.bio || `Teach ${course.subject} with clear explanations, steady pacing, and direct exam preparation.`,
+      qualification: course.education || '',
+      experience: course.experience || '',
+      philosophy: course.bio || '',
       courseCount: 1,
       avatar_url: course.avatar_url || null,
     });
@@ -541,9 +541,15 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
                     <h3 style={{ fontSize: 19, fontWeight: 900, color: '#121212', marginBottom: 8 }}>{teacher.name}</h3>
                     <div style={{ display: 'grid', gap: 10 }}>
                       <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Subject taught:</strong> {teacher.subject}</p>
-                      <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Qualification:</strong> {teacher.qualification}</p>
-                      <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Experience:</strong> {teacher.experience}</p>
-                      <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Teaching philosophy:</strong> {teacher.philosophy}</p>
+                      {teacher.qualification && (
+                        <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Qualification:</strong> {teacher.qualification}</p>
+                      )}
+                      {teacher.experience && (
+                        <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Experience:</strong> {teacher.experience}</p>
+                      )}
+                      {teacher.philosophy && (
+                        <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Teaching philosophy:</strong> {teacher.philosophy}</p>
+                      )}
                     </div>
                     <p style={{ fontSize: 12, fontWeight: 800, color: '#047857', marginTop: 14 }}>{teacher.courseCount} live subject stream{teacher.courseCount === 1 ? '' : 's'}</p>
                   </div>
@@ -551,26 +557,9 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
               </div>
             </div>
           ) : (
-            <div className="launch-teacher-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 16 }}>
-              {[
-                { id: 'placeholder-maths', name: 'Mathematics teacher', subject: 'Mathematics', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Teach with worked examples, patient pacing, and exam-focused revision.', courseCount: 1, avatar_url: null },
-                { id: 'placeholder-science', name: 'Science teacher', subject: 'Physics and Chemistry', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Turn difficult concepts into structured explanations students can revisit.', courseCount: 1, avatar_url: null },
-                { id: 'placeholder-english', name: 'English teacher', subject: 'English', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Build confidence through clear language guidance and repeatable exam practice.', courseCount: 1, avatar_url: null },
-              ].map((teacher, index) => (
-                <div key={teacher.id} style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 22 }}>
-                  <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', background: index === 1 ? '#f0fdf4' : '#f5f7f3', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18, border: '1px solid #d9efe1' }}>
-                    <span style={{ fontSize: 24, fontWeight: 900, color: '#047857' }}>{teacher.name.charAt(0)}</span>
-                  </div>
-                  <h3 style={{ fontSize: 19, fontWeight: 900, color: '#121212', marginBottom: 8 }}>{teacher.name}</h3>
-                  <div style={{ display: 'grid', gap: 10 }}>
-                    <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Subject taught:</strong> {teacher.subject}</p>
-                    <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Qualification:</strong> {teacher.qualification}</p>
-                    <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Experience:</strong> {teacher.experience}</p>
-                    <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Teaching philosophy:</strong> {teacher.philosophy}</p>
-                  </div>
-                  <p style={{ fontSize: 12, fontWeight: 800, color: '#047857', marginTop: 14 }}>{teacher.courseCount} live subject stream</p>
-                </div>
-              ))}
+            <div style={{ borderRadius: 24, border: '1px dashed #d7ded9', background: '#fff', padding: 24 }}>
+              <p style={{ fontSize: 16, fontWeight: 800, color: '#121212', marginBottom: 6 }}>No instructors are live on the public homepage yet.</p>
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: '#64706a' }}>Teacher profiles will appear here automatically once active instructor accounts have published Form Four lessons.</p>
             </div>
           )}
         </div>

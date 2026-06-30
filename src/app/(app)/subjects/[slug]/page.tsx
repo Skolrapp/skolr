@@ -246,9 +246,9 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
                 </div>
                 <div style={{ display: 'grid', gap: 8 }}>
                   <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5b6570', margin: 0 }}><strong>Subject taught:</strong> {subject.name}</p>
-                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5b6570', margin: 0 }}><strong>Qualification:</strong> {instructor.education || 'Qualification details can be added here.'}</p>
-                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5b6570', margin: 0 }}><strong>Experience:</strong> {instructor.experience || 'Experience details can be added here.'}</p>
-                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5b6570', margin: 0 }}><strong>Teaching philosophy:</strong> {instructor.bio || `${subject.name} taught with clear explanations, calm pacing, and direct exam preparation.`}</p>
+                  {instructor.education && <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5b6570', margin: 0 }}><strong>Qualification:</strong> {instructor.education}</p>}
+                  {instructor.experience && <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5b6570', margin: 0 }}><strong>Experience:</strong> {instructor.experience}</p>}
+                  {instructor.bio && <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5b6570', margin: 0 }}><strong>Teaching philosophy:</strong> {instructor.bio}</p>}
                 </div>
               </Link>
             )) : (
