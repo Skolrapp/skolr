@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
       role: user.role,
       subscription_tier: user.subscription_tier,
       subscription_expires_at: user.subscription_expires_at,
+      avatar_url: user.avatar_url || null,
       is_impersonating: user.is_impersonating || false,
       impersonated_by: user.impersonated_by || null,
     },

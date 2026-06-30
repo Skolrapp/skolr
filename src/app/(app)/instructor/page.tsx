@@ -13,8 +13,15 @@ const fmt = (n: number) => n.toLocaleString('en-TZ');
 const fmtDate = (s: string) => new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 const fmtReviewDate = (s: string) => new Date(s).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
+type InstructorProfileForm = {
+  avatar_url: string;
+  education: string;
+  experience: string;
+  bio: string;
+};
+
 export default function InstructorPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, refetch } = useAuth();
   const [data,    setData]    = useState<EarningsSummary | null>(null);
   const [courses, setCourses] = useState<any[]>([]);
   const [engagement, setEngagement] = useState<any>(null);
@@ -23,6 +30,16 @@ export default function InstructorPage() {
   const [coursesLoading, setCoursesLoading] = useState(true);
   const [engagementLoading, setEngagementLoading] = useState(true);
   const [courseActionMessage, setCourseActionMessage] = useState('');
+  const [profile, setProfile] = useState<InstructorProfileForm>({
+    avatar_url: '',
+    education: '',
+    experience: '',
+    bio: '',
+  });
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [portraitUploading, setPortraitUploading] = useState(false);
+  const [profileMessage, setProfileMessage] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -48,6 +65,25 @@ export default function InstructorPage() {
       .finally(() => setEngagementLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (!user?.id) return;
+    setProfileLoading(true);
+    fetch(`/api/instructors/${user.id}`, { credentials: 'include' })
+      .then(r => r.json())
+      .then((d) => {
+        if (d.success) {
+          const instructor = d.data?.instructor || {};
+          setProfile({
+            avatar_url: instructor.avatar_url || user.avatar_url || '',
+            education: instructor.education || '',
+            experience: instructor.experience || '',
+            bio: instructor.bio || '',
+          });
+        }
+      })
+      .finally(() => setProfileLoading(false));
+  }, [user?.id, user?.avatar_url]);
+
   const submitForReview = async (courseId: string) => {
     const res = await fetch(`/api/instructor/courses/${courseId}/submit-review`, {
       method: 'POST',
@@ -65,6 +101,55 @@ export default function InstructorPage() {
       setCourseActionMessage(data.error || 'Failed to submit course for review.');
     }
     setTimeout(() => setCourseActionMessage(''), 4000);
+  };
+
+  const saveProfile = async () => {
+    if (!user?.id) return;
+    setProfileSaving(true);
+    setProfileMessage('');
+    const response = await fetch(`/api/instructors/${user.id}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        avatar_url: profile.avatar_url || null,
+        education: profile.education.trim() || null,
+        experience: profile.experience.trim() || null,
+        bio: profile.bio.trim() || null,
+      }),
+    });
+    const result = await response.json();
+    if (result.success) {
+      setProfileMessage('Profile updated.');
+      await refetch();
+    } else {
+      setProfileMessage(result.error || 'Failed to update profile.');
+    }
+    setProfileSaving(false);
+    setTimeout(() => setProfileMessage(''), 4000);
+  };
+
+  const uploadPortrait = async (file: File) => {
+    setPortraitUploading(true);
+    setProfileMessage('');
+    const body = new FormData();
+    body.append('file', file);
+
+    const response = await fetch('/api/profile/avatar', {
+      method: 'POST',
+      credentials: 'include',
+      body,
+    });
+    const result = await response.json();
+    if (result.success) {
+      setProfile((current) => ({ ...current, avatar_url: result.avatar_url || '' }));
+      setProfileMessage('Portrait uploaded.');
+      await refetch();
+    } else {
+      setProfileMessage(result.error || 'Portrait upload failed.');
+    }
+    setPortraitUploading(false);
+    setTimeout(() => setProfileMessage(''), 4000);
   };
 
   if (!user) return null;
@@ -93,6 +178,105 @@ export default function InstructorPage() {
         </div>
 
         <h1 className="text-xl font-bold mb-5" style={{ color: '#fff' }}>Earnings dashboard</h1>
+
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="sec-head !mb-0">Instructor profile</h2>
+          </div>
+          <div className="card">
+            {profileLoading ? (
+              <div className="space-y-3">
+                <div className="skel h-20 rounded-2xl" />
+                <div className="skel h-12 rounded-xl" />
+                <div className="skel h-12 rounded-xl" />
+                <div className="skel h-28 rounded-xl" />
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#1a1a1a', border: '1px solid #262626' }}>
+                    {profile.avatar_url ? (
+                      <img src={profile.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-lg font-bold" style={{ color: G }}>
+                        {user.name.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold mb-1" style={{ color: '#fff' }}>Portrait photo</p>
+                    <p className="text-xs mb-3" style={{ color: '#737373' }}>Add a clear headshot so students and parents can recognize the instructor behind each subject.</p>
+                    <label className="inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-semibold cursor-pointer"
+                      style={{ background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.24)' }}>
+                      {portraitUploading ? 'Uploading...' : 'Upload portrait'}
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadPortrait(file);
+                          e.currentTarget.value = '';
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {profileMessage && (
+                  <div className="rounded-xl p-3 mb-4 text-sm" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', color: '#34d399' }}>
+                    {profileMessage}
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold mb-2" style={{ color: '#a3a3a3' }}>Qualification</label>
+                    <input
+                      value={profile.education}
+                      onChange={(e) => setProfile((current) => ({ ...current, education: e.target.value }))}
+                      placeholder="e.g. BSc in Mathematics Education"
+                      className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+                      style={{ background: '#1a1a1a', border: '1px solid #262626', color: '#fff' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-2" style={{ color: '#a3a3a3' }}>Experience</label>
+                    <input
+                      value={profile.experience}
+                      onChange={(e) => setProfile((current) => ({ ...current, experience: e.target.value }))}
+                      placeholder="e.g. 8 years preparing students for NECTA"
+                      className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+                      style={{ background: '#1a1a1a', border: '1px solid #262626', color: '#fff' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-2" style={{ color: '#a3a3a3' }}>Teaching philosophy</label>
+                    <textarea
+                      value={profile.bio}
+                      onChange={(e) => setProfile((current) => ({ ...current, bio: e.target.value }))}
+                      placeholder="Describe how you teach and what students should expect from your lessons."
+                      rows={4}
+                      className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none"
+                      style={{ background: '#1a1a1a', border: '1px solid #262626', color: '#fff' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={saveProfile}
+                    disabled={profileSaving || portraitUploading}
+                    className="rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-60"
+                    style={{ background: G, color: '#04130c' }}
+                  >
+                    {profileSaving ? 'Saving...' : 'Save profile'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
 
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">

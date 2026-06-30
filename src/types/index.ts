@@ -33,7 +33,7 @@ export interface User {
   role: UserRole;
   subscription_tier: SubscriptionTier;
   subscription_expires_at?: string | null;
-  avatar_url?: string;
+  avatar_url?: string | null;
   is_impersonating?: boolean;
   impersonated_by?: string | null;
   is_active: boolean;
