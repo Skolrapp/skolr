@@ -200,6 +200,9 @@ export default async function CourseDetailPage(
     redirect(`/watch/${course.id}`);
   }
 
+  const primaryHref = '/register';
+  const primaryLabel = 'Try Skolr Free';
+
   return (
     <div style={{ minHeight: '100vh', background: '#f7f8fa', color: '#0a0a0a', fontFamily: "'Inter',-apple-system,sans-serif" }}>
       <PublicTopNav />
