@@ -172,7 +172,7 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
               </p>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 <Link href="/register" style={{ minHeight: 52, padding: '0 22px', borderRadius: 16, textDecoration: 'none', color: '#062314', background: '#fff', fontSize: 14, fontWeight: 900, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 18px 34px rgba(0,0,0,0.16)' }}>
-                  Start for Free
+                  Try Skolr Free
                 </Link>
                 <Link href={`/courses?level=${FORM_FOUR_CLASS.level}&sub=${encodeURIComponent(FORM_FOUR_CLASS.subCategory || '')}&subject=${encodeURIComponent(subject.catalogSubject)}`} style={{ minHeight: 52, padding: '0 22px', borderRadius: 16, textDecoration: 'none', color: '#fff', border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.08)', fontSize: 14, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                   See all lessons
@@ -204,7 +204,7 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
               </div>
               <div style={{ padding: 18, borderRadius: 22, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.08)' }}>
                 <p style={{ fontSize: 14, lineHeight: 1.75, color: 'rgba(255,255,255,0.78)' }}>
-                  Guests can inspect the lesson lineup, see the instructors teaching this subject, and move into the sign-up flow only when they are ready.
+                  Guests can inspect the lesson lineup, see the instructors teaching this subject, and preview selected Form Four lessons before choosing full monthly access.
                 </p>
               </div>
             </div>
@@ -219,7 +219,7 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
               <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: '#04959d', marginBottom: 8 }}>Instructors</p>
               <h2 style={{ fontSize: 30, lineHeight: 1.1, fontWeight: 900, color: '#111827', marginBottom: 8 }}>Meet the teachers behind {subject.name}.</h2>
               <p style={{ maxWidth: 720, fontSize: 15, lineHeight: 1.75, color: '#55616d' }}>
-                Each instructor card opens into a fuller profile so parents and students can see who is teaching before subscribing.
+                Each instructor card should answer the practical trust questions first: who is teaching, what subject they handle, and what credibility details a parent would want to inspect.
               </p>
             </div>
           </div>
@@ -244,12 +244,11 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
                     <p style={{ fontSize: 12, fontWeight: 700, color: '#047857' }}>{instructor.courseCount} {instructor.courseCount === 1 ? 'lesson track' : 'lesson tracks'}</p>
                   </div>
                 </div>
-                <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5b6570', marginBottom: 12 }}>
-                  {instructor.bio || `${subject.name} instructor focused on clear explanations, calm pacing, and exam-readiness.`}
-                </p>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {instructor.education ? <span style={{ padding: '6px 10px', borderRadius: 999, background: '#eff6ff', color: '#1d4ed8', fontSize: 11, fontWeight: 700 }}>{instructor.education}</span> : null}
-                  {instructor.experience ? <span style={{ padding: '6px 10px', borderRadius: 999, background: '#ecfdf5', color: '#047857', fontSize: 11, fontWeight: 700 }}>{instructor.experience}</span> : null}
+                <div style={{ display: 'grid', gap: 8 }}>
+                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5b6570', margin: 0 }}><strong>Subject taught:</strong> {subject.name}</p>
+                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5b6570', margin: 0 }}><strong>Qualification:</strong> {instructor.education || 'Qualification details can be added here.'}</p>
+                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5b6570', margin: 0 }}><strong>Experience:</strong> {instructor.experience || 'Experience details can be added here.'}</p>
+                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5b6570', margin: 0 }}><strong>Teaching philosophy:</strong> {instructor.bio || `${subject.name} taught with clear explanations, calm pacing, and direct exam preparation.`}</p>
                 </div>
               </Link>
             )) : (

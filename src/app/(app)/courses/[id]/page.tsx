@@ -200,7 +200,7 @@ export default async function CourseDetailPage(
   }
 
   let primaryHref = '/register';
-  let primaryLabel = 'Start free trial';
+  let primaryLabel = 'Try Skolr Free';
   let secondaryHref = '/login';
   let secondaryLabel = 'Log in';
 
@@ -215,7 +215,7 @@ export default async function CourseDetailPage(
             <span style={{ fontSize: 19, fontWeight: 800, color: '#0a0a0a' }}>Skolr</span>
           </Link>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <Link href="/courses" style={{ padding: '10px 16px', borderRadius: 999, border: '1px solid #dbe0e7', color: '#334155', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Browse classes</Link>
+            <Link href="/courses?level=secondary&sub=Form%204" style={{ padding: '10px 16px', borderRadius: 999, border: '1px solid #dbe0e7', color: '#334155', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Form Four subjects</Link>
             <Link href={primaryHref} style={{ padding: '10px 16px', borderRadius: 999, background: G, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>{primaryLabel}</Link>
           </div>
         </div>
@@ -267,7 +267,7 @@ export default async function CourseDetailPage(
                 <Link href="#lesson-outline" style={{ padding: '14px 18px', borderRadius: 14, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>See lesson outline</Link>
               </div>
               <p style={{ marginTop: 10, fontSize: 12, lineHeight: 1.6, color: 'rgba(255,255,255,0.6)' }}>
-                Listen to the instructor intro, review the chapter path, then create an account when you are ready to continue.
+                Listen to the instructor intro, review the chapter path, then create an account when you are ready to continue into full Form Four access.
               </p>
             </div>
           </div>
@@ -294,7 +294,7 @@ export default async function CourseDetailPage(
                   </span>
                 </div>
                 <p style={{ fontSize: 14, lineHeight: 1.7, color: '#94a3b8', marginBottom: 16 }}>
-                  Guests can listen to the instructor's brief introduction here, then review the chapter flow before deciding to continue.
+                Guests can listen to the instructor's brief introduction here, then review the chapter flow before deciding whether the Form Four path is right for them.
                 </p>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   <span style={{ padding: '7px 10px', borderRadius: 999, background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 12, fontWeight: 700 }}>Structured path</span>
@@ -414,7 +414,7 @@ export default async function CourseDetailPage(
             <div style={{ position: 'sticky', top: 94, borderRadius: 22, background: '#fff', border: '1px solid #e6eaf0', boxShadow: '0 18px 50px rgba(15,23,42,0.06)', padding: 20 }}>
               <p style={{ fontSize: 12, fontWeight: 800, color: G, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 }}>Next step</p>
               <h3 style={{ fontSize: 28, lineHeight: 1.05, fontWeight: 900, color: '#0a0a0a', margin: '0 0 8px' }}>
-                Start free, then continue
+                Try free, then continue
               </h3>
               <p style={{ fontSize: 14, lineHeight: 1.7, color: '#64748b', marginBottom: 18 }}>
                 Create an account when you are ready to start learning, unlock the class, and save progress.

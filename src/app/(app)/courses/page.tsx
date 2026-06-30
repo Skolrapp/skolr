@@ -10,7 +10,7 @@ import Footer from '@/components/layout/Footer';
 import SubtleBackButton from '@/components/ui/SubtleBackButton';
 import { canAccessLevel, isSubscriptionActive } from '@/lib/subscriptions';
 import { EDUCATION_LEVELS } from '@/lib/constants';
-import { FORM_FOUR_CLASS, FORM_FOUR_PRICE_TZS, FORM_FOUR_SUBJECTS, LAUNCH_CLASSES } from '@/lib/launchCatalog';
+import { FORM_FOUR_CLASS, FORM_FOUR_PRICE_TZS, FORM_FOUR_SUBJECTS } from '@/lib/launchCatalog';
 import type { Course, EducationLevel, SubCategory } from '@/types';
 
 const G = '#10B981';
@@ -61,7 +61,6 @@ function CoursesContent(){
   const isLaunchRoute = level === FORM_FOUR_CLASS.level && sub === (FORM_FOUR_CLASS.subCategory || '');
   const isPublicLaunchView = !user || isLaunchRoute;
   const launchSubjects = FORM_FOUR_SUBJECTS.map((entry) => entry.catalogSubject);
-  const secondaryLaunchClasses = LAUNCH_CLASSES.filter((entry) => entry.level === 'secondary' && entry.subCategory);
 
   useEffect(() => {
     if (user?.role === 'instructor') {
@@ -150,19 +149,23 @@ function CoursesContent(){
     ? [{ id: FORM_FOUR_CLASS.level, label: 'Form Four', color: '#10B981', bg: '#ecfdf5', sub: FORM_FOUR_CLASS.subCategory || 'Launch focus' }]
     : LEVELS;
   const visibleSubjects = isPublicLaunchView ? launchSubjects : SUBJECTS;
+  const launchSubjectCounts = FORM_FOUR_SUBJECTS.reduce<Record<string, number>>((acc, entry) => {
+    acc[entry.catalogSubject] = courses.filter((course) => course.subject === entry.catalogSubject).length;
+    return acc;
+  }, {});
   const guestNeedsClassChoice = !isPublicLaunchView && !user && !!level && !sub;
   const guestHeaderCopy = isPublicLaunchView
-    ? 'Browse focused Form Four subjects, open real course pages, and preview lessons before signing up.'
+    ? 'Premium Form Four exam preparation with subject-by-subject lesson previews before full monthly access.'
     : levelMeta
       ? `Choose a class first, then preview real lessons before signing up.`
       : 'Choose a level to explore classes, chapters, and preview lessons before signing up.';
-  const currentLabel = isPublicLaunchView ? 'Form Four Subjects' : currentLevel.label === 'All Levels' ? 'All Courses' : currentLevel.label + ' Courses';
+  const currentLabel = isPublicLaunchView ? 'Form Four subjects' : currentLevel.label === 'All Levels' ? 'All Courses' : currentLevel.label + ' Courses';
 
   return(
     <div style={{background:'#fff',minHeight:'100vh',fontFamily:"'Inter',-apple-system,sans-serif",color:'#0a0a0a'}}>
       {user ? <TopHeader /> : (
-        <header style={{background:'#fff',borderBottom:'1px solid #e5e7eb',position:'sticky',top:0,zIndex:50}}>
-          <div style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',gap:16,height:60,padding:'0 24px'}}>
+        <header className="courses-guest-header" style={{background:'#fff',borderBottom:'1px solid #e5e7eb',position:'sticky',top:0,zIndex:50}}>
+          <div className="courses-guest-header-inner" style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',gap:16,height:60,padding:'0 24px'}}>
             <Link href="/" style={{display:'flex',alignItems:'center',gap:8,textDecoration:'none',flexShrink:0}}>
               <div style={{width:30,height:30,background:G,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center'}}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
@@ -191,7 +194,7 @@ function CoursesContent(){
             )}
             <h1 style={{fontSize:24,fontWeight:800,color:'#fff',marginBottom:6}}>{currentLabel}</h1>
             <p style={{fontSize:14,color:'rgba(255,255,255,0.65)',marginBottom:12}}>
-              {!user ? guestHeaderCopy : `${(currentLevel as any).sub||'Browse all education levels'} · ${total} courses`}
+              {!user ? guestHeaderCopy : `${(currentLevel as any).sub||'Form Four focus'} · ${total} courses`}
             </p>
             {!isPublicLaunchView && (
               <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
@@ -208,7 +211,7 @@ function CoursesContent(){
             {(isPublicLaunchView
               ? [['Subjects', String(FORM_FOUR_SUBJECTS.length)], ['Access', `${FORM_FOUR_PRICE_TZS.toLocaleString()} TZS`], ['Preview', 'Guest Ready']]
               : [['Courses',String(total)],['Subjects','12'],['Students','8.4K']]).map(([lbl,val])=>(
-              <div key={lbl} style={{textAlign:'center',padding:isPublicLaunchView?'14px 16px':'0',borderRadius:isPublicLaunchView?18:0,background:isPublicLaunchView?'rgba(255,255,255,0.08)':'transparent',border:isPublicLaunchView?'1px solid rgba(255,255,255,0.12)':'none',minWidth:isPublicLaunchView?128:0}}>
+              <div className="courses-hero-stat-card" key={lbl} style={{textAlign:'center',padding:isPublicLaunchView?'14px 16px':'0',borderRadius:isPublicLaunchView?18:0,background:isPublicLaunchView?'rgba(255,255,255,0.08)':'transparent',border:isPublicLaunchView?'1px solid rgba(255,255,255,0.12)':'none',minWidth:isPublicLaunchView?128:0}}>
                 <p style={{fontSize:20,fontWeight:800,color:'#fff'}}>{val}</p>
                 <p style={{fontSize:11,color:'rgba(255,255,255,0.5)',marginTop:2}}>{lbl}</p>
               </div>
@@ -253,71 +256,14 @@ function CoursesContent(){
                   <span style={{fontSize:12,fontWeight:800,padding:'8px 12px',borderRadius:999,background:'#f3f4f6',color:'#374151'}}>Guest preview enabled</span>
                 </div>
               </div>
-              <div className="courses-launch-classes" style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:12,marginBottom:14}}>
-                {secondaryLaunchClasses.map((entry) => {
-                  const isActiveClass = entry.subCategory === FORM_FOUR_CLASS.subCategory;
-                  return (
-                    <div
-                      key={entry.id}
-                      style={{
-                        padding:isActiveClass ? '18px 16px' : '16px 14px',
-                        borderRadius:20,
-                        border:'1px solid ' + (isActiveClass ? '#10B981' : '#e5e7eb'),
-                        background:isActiveClass ? 'linear-gradient(180deg,#ecfdf5 0%,#dff8ec 100%)' : 'linear-gradient(180deg,#ffffff 0%,#f8fafc 100%)',
-                        boxShadow:isActiveClass ? '0 18px 34px rgba(16,185,129,0.16)' : '0 8px 18px rgba(15,23,42,0.04)',
-                        position:'relative',
-                        overflow:'hidden'
-                      }}
-                    >
-                      {isActiveClass && (
-                        <div style={{position:'absolute',top:-32,right:-20,width:92,height:92,borderRadius:'50%',background:'rgba(16,185,129,0.12)'}} />
-                      )}
-                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,marginBottom:10}}>
-                        <div style={{display:'flex',alignItems:'center',gap:8}}>
-                          {!isActiveClass && (
-                            <span style={{width:28,height:28,borderRadius:999,background:'#eef2f7',display:'inline-flex',alignItems:'center',justifyContent:'center',color:'#6b7280',flexShrink:0}}>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <rect x="5" y="11" width="14" height="10" rx="2" />
-                                <path d="M8 11V8a4 4 0 118 0v3" />
-                              </svg>
-                            </span>
-                          )}
-                          {isActiveClass && (
-                            <span style={{width:30,height:30,borderRadius:999,background:'#d1fae5',display:'inline-flex',alignItems:'center',justifyContent:'center',color:'#047857',flexShrink:0}}>
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3">
-                                <path d="M20 6L9 17l-5-5" />
-                              </svg>
-                            </span>
-                          )}
-                          <p style={{fontSize:isActiveClass ? 16 : 14,fontWeight:900,color:isActiveClass ? '#047857' : '#111827'}}>{entry.subCategory}</p>
-                        </div>
-                        <span style={{fontSize:10,fontWeight:800,padding:'5px 8px',borderRadius:999,background:isActiveClass ? '#d1fae5' : '#f3f4f6',color:isActiveClass ? '#047857' : '#6b7280',textTransform:'uppercase',letterSpacing:0.5}}>
-                          {isActiveClass ? 'Live now' : 'Coming soon'}
-                        </span>
-                      </div>
-                      <p style={{fontSize:12,lineHeight:1.6,color:isActiveClass ? '#059669' : '#6b7280',marginBottom:isActiveClass ? 12 : 0}}>
-                        {isActiveClass ? 'Open the current Form Four learning path and preview available lessons.' : 'This class is part of the rollout plan and will open in a future release.'}
-                      </p>
-                      {isActiveClass && (
-                        <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'9px 12px',borderRadius:999,background:'#ffffff',border:'1px solid rgba(16,185,129,0.16)',fontSize:11,fontWeight:800,color:'#047857'}}>
-                          Start here
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                            <path d="M5 12h14" />
-                            <path d="M13 5l7 7-7 7" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
               <div style={{maxWidth:620,marginBottom:12}}>
                 <p style={{fontSize:12,fontWeight:800,letterSpacing:0.8,textTransform:'uppercase',color:'#047857',marginBottom:8}}>Browse by subject</p>
-                <p style={{fontSize:14,lineHeight:1.7,color:'#6b7280'}}>Choose a Form Four subject below to see only the lessons, previews, and instructors that matter right now.</p>
+                <p style={{fontSize:14,lineHeight:1.7,color:'#6b7280'}}>Choose a Form Four subject to preview available lessons, inspect the instructor, and decide whether to continue into the free trial flow.</p>
               </div>
               <div className="courses-launch-subjects" style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:12}}>
                 {FORM_FOUR_SUBJECTS.map((entry) => {
                   const active = subject === entry.catalogSubject;
+                  const lessonCount = launchSubjectCounts[entry.catalogSubject] || 0;
                   return (
                     <Link
                       key={entry.id}
@@ -332,8 +278,19 @@ function CoursesContent(){
                         textDecoration:'none'
                       }}
                     >
-                      <p style={{fontSize:13,fontWeight:900,color:active ? '#047857' : '#0f172a',marginBottom:5}}>{entry.name}</p>
-                      <p style={{fontSize:12,lineHeight:1.6,color:active ? '#059669' : '#6b7280'}}>{entry.confidenceLine}</p>
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,marginBottom:8}}>
+                        <p style={{fontSize:13,fontWeight:900,color:active ? '#047857' : '#0f172a'}}>{entry.name}</p>
+                        <span style={{fontSize:10,fontWeight:800,padding:'5px 8px',borderRadius:999,background:active ? '#d1fae5' : '#f3f4f6',color:active ? '#047857' : '#6b7280'}}>Form Four</span>
+                      </div>
+                      <p style={{fontSize:12,lineHeight:1.6,color:active ? '#059669' : '#6b7280',marginBottom:10}}>{entry.confidenceLine}</p>
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,flexWrap:'wrap'}}>
+                        <span style={{fontSize:11,color:active ? '#047857' : '#6b7280',fontWeight:700}}>
+                          {lessonCount ? `${lessonCount} lesson${lessonCount === 1 ? '' : 's'} ready` : 'Lessons coming soon'}
+                        </span>
+                        <span style={{fontSize:11,fontWeight:800,color:'#111827'}}>
+                          {lessonCount ? 'Preview lesson' : 'Start learning'}
+                        </span>
+                      </div>
                     </Link>
                   );
                 })}
@@ -353,14 +310,14 @@ function CoursesContent(){
               </span>
             </div>
           </div>
-          <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:4,marginBottom:16,scrollbarWidth:'none'}}>
+          {!isPublicLaunchView && <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:4,marginBottom:16,scrollbarWidth:'none'}}>
             {visibleLevels.map(l=>(
               <button key={l.id} onClick={()=>{if (!isPublicLaunchView) { setLevel(l.id as EducationLevel);setSub('');setPage(1);} }}
                 style={{padding:'6px 14px',fontSize:11,fontWeight:600,borderRadius:999,border:'1.5px solid '+(level===l.id?'#0a0a0a':'#e5e7eb'),background:level===l.id?'#0a0a0a':'#fff',color:level===l.id?'#fff':'#6b7280',cursor:'pointer',whiteSpace:'nowrap',flexShrink:0}}>
                 {l.label}
               </button>
             ))}
-          </div>
+          </div>}
           {levelMeta && !isPublicLaunchView && (
             <div style={{marginBottom:20,padding:'18px 18px 16px',background:guestNeedsClassChoice ? '#f8fafc' : '#fff',border:'1px solid #e5e7eb',borderRadius:16}}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',marginBottom:12}}>
@@ -516,6 +473,7 @@ function CoursesContent(){
       {user && <BottomNav role={user.role} adminTab={user.role === 'admin' ? 'catalog' : undefined} />}
       <style>{`
         @media(max-width:900px){
+          .courses-guest-header-inner{padding:0 16px!important;}
           .courses-shell{padding:0 16px 90px!important;display:block!important;}
           .courses-sidebar{display:none!important;}
           .courses-main{padding-left:0!important;padding-top:16px!important;}
@@ -528,14 +486,47 @@ function CoursesContent(){
           .courses-top-actions{gap:10px!important;}
         }
         @media(max-width:640px){
+          .courses-guest-header-inner{
+            height:auto!important;
+            min-height:60px!important;
+            padding:10px 16px!important;
+            flex-wrap:wrap!important;
+            align-items:center!important;
+          }
+          .courses-top-actions{
+            margin-left:auto!important;
+            width:auto!important;
+            display:flex!important;
+            grid-template-columns:none!important;
+          }
+          .courses-top-actions a{
+            min-height:40px!important;
+            padding:0 16px!important;
+            font-size:12px!important;
+          }
           .courses-grid{grid-template-columns:1fr!important;}
           .courses-launch-classes{grid-template-columns:1fr!important;}
           .courses-launch-subjects{grid-template-columns:1fr!important;}
           .courses-sub-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-          .courses-hero-stats{width:100%!important;justify-content:space-between!important;gap:12px!important;}
+          .courses-hero-stats{
+            width:100%!important;
+            display:grid!important;
+            grid-template-columns:repeat(3,minmax(0,1fr))!important;
+            justify-content:stretch!important;
+            gap:10px!important;
+          }
+          .courses-hero-stat-card{
+            min-width:0!important;
+            padding:12px 8px!important;
+          }
           .courses-hero h1{font-size:20px!important;}
-          .courses-top-actions,
           .courses-hero-actions{width:100%!important;display:grid!important;grid-template-columns:1fr!important;}
+        }
+        @media(max-width:420px){
+          .courses-guest-header-inner{gap:10px!important;}
+          .courses-top-actions{width:100%!important;justify-content:flex-start!important;}
+          .courses-top-actions a{width:100%!important;}
+          .courses-sub-grid{grid-template-columns:1fr!important;}
         }
       `}</style>
     </div>

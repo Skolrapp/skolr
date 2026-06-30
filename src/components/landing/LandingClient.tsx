@@ -24,33 +24,26 @@ type LandingClientProps = {
   initialBanners: Record<string, string | null>;
 };
 
-const TRUST_POINTS = [
-  'Structured learning paths',
-  'Qualified instructors',
-  'Exam-focused teaching',
-  'Progress tracking',
-] as const;
-
-const BENEFIT_CARDS = [
+const TRUST_CARDS = [
   {
-    title: 'Structured learning paths',
-    copy: 'Move topic by topic in an academic flow that feels ordered and manageable.',
-    icon: 'path',
-  },
-  {
-    title: 'Qualified instructors',
-    copy: 'Learn from calm, subject-focused teachers who explain with seriousness and clarity.',
-    icon: 'user',
-  },
-  {
-    title: 'Exam-focused teaching',
-    copy: 'Every lesson is shaped to prepare students for real Form Four exam performance.',
+    title: 'Form Four focused learning',
+    copy: 'The public Skolr journey is built around Form Four only, so students and parents are not distracted by unrelated levels.',
     icon: 'target',
   },
   {
-    title: 'Progress tracking',
-    copy: 'Parents and students can see consistency build over time instead of guessing.',
+    title: 'Subject-by-subject preparation',
+    copy: 'Mathematics, Physics, Chemistry, Biology, Bookkeeping, Computer Studies, and English each follow their own clear revision path.',
+    icon: 'path',
+  },
+  {
+    title: 'Parent progress visibility',
+    copy: 'Parents can track consistency and understand how learning is moving, instead of waiting only for tuition feedback.',
     icon: 'chart',
+  },
+  {
+    title: 'Mobile-money friendly access',
+    copy: 'Skolr is being prepared for a payment flow that fits the Tanzanian market and everyday family habits.',
+    icon: 'wallet',
   },
 ] as const;
 
@@ -60,42 +53,74 @@ const HOW_IT_WORKS = [
   { step: '03', title: 'Practice for exams', copy: 'Use revision guidance and mock-focused study to prepare with purpose.' },
 ] as const;
 
-const REASSURANCE_BANNERS = [
+const TUITION_COMPARISON = [
   {
-    eyebrow: 'For Families',
-    title: 'Personalised paths for every Form 4 student',
-    copy: 'Give each learner a clearer route through lessons, revision, and exam preparation without losing momentum.',
-    href: '#pricing',
-    cta: 'View Form Four access',
+    side: 'Traditional tuition',
+    points: [
+      'Fixed schedule',
+      'Hard to replay missed explanations',
+      'Parent may not see daily progress',
+      'Can become expensive across subjects',
+    ],
   },
   {
-    eyebrow: 'For Students',
-    title: 'Real-time updates that put parents at ease',
-    copy: 'Parents can stay informed with progress visibility that feels reassuring, supportive, and easy to follow.',
-    href: '#subjects',
-    cta: 'Learn More',
-  },
-] as const;
-
-const PARENT_ASSURANCE = [
-  'Students move through a clear sequence instead of jumping between disconnected videos.',
-  'Parents can trust that Skolr is serious, academic, and built around exam readiness.',
-  'Lessons are designed to help consistency grow week by week, not only before exams.',
-] as const;
-
-const SUCCESS_STORIES = [
-  {
-    name: 'Amina, Form Four student',
-    quote: 'The lessons break topics down clearly. I stopped feeling lost and started revising with confidence.',
-  },
-  {
-    name: 'Mr. Joseph, parent',
-    quote: 'Skolr feels structured and reliable. It gives me confidence that revision time is being used well.',
+    side: 'Skolr',
+    points: [
+      'Study anytime',
+      'Replay lessons',
+      'Structured Form Four path',
+      'Parent progress visibility',
+      '15,000 TZS/month access',
+    ],
   },
 ] as const;
 
-function getTeachers(courses: Course[]) {
-  const grouped = new Map<string, { name: string; subject: string; courseCount: number }>();
+const FAQ_ITEMS = [
+  {
+    question: 'What exactly is free?',
+    answer: 'Parents and students can preview selected Form Four lessons before choosing full monthly access.',
+  },
+  {
+    question: 'What happens after I pay?',
+    answer: 'The account moves into monthly Form Four access so the learner can continue across the visible subjects with progress tracking.',
+  },
+  {
+    question: 'Is Skolr live or recorded?',
+    answer: 'The current experience is built around recorded lesson support so students can replay explanations when needed.',
+  },
+  {
+    question: 'Can my child study on a phone?',
+    answer: 'Yes. The platform is being shaped for mobile use so students can learn on a phone without losing the lesson structure.',
+  },
+  {
+    question: 'Does Skolr replace tuition?',
+    answer: 'Skolr is positioned as a structured support layer. Families can use it alongside tuition or as an additional revision path at home.',
+  },
+  {
+    question: 'How does a parent know the child is progressing?',
+    answer: 'Skolr is built to make lesson progress and study consistency more visible instead of leaving parents to guess.',
+  },
+  {
+    question: 'Which subjects are currently available?',
+    answer: 'The public launch is focused on seven Form Four subjects: Mathematics, Physics, Chemistry, Biology, Bookkeeping, Computer Studies, and English.',
+  },
+  {
+    question: 'Can I pay with mobile money?',
+    answer: 'That is the intended direction for the Tanzanian market, and the pricing flow is being prepared with mobile-money support in mind.',
+  },
+] as const;
+
+type TeacherProfile = {
+  name: string;
+  subject: string;
+  qualification: string;
+  experience: string;
+  philosophy: string;
+  courseCount: number;
+};
+
+function getTeacherProfiles(courses: Course[]) {
+  const grouped = new Map<string, TeacherProfile>();
 
   courses.forEach((course) => {
     const name = course.instructor_name || 'Skolr instructor';
@@ -107,11 +132,14 @@ function getTeachers(courses: Course[]) {
     grouped.set(name, {
       name,
       subject: course.subject,
+      qualification: 'Qualification details can be added here.',
+      experience: 'Experience details can be added here.',
+      philosophy: `Teach ${course.subject} with clear explanations, steady pacing, and direct exam preparation.`,
       courseCount: 1,
     });
   });
 
-  return Array.from(grouped.values()).slice(0, 3);
+  return Array.from(grouped.values()).slice(0, 4);
 }
 
 export default function LandingClient({ initialCourses, initialBanners }: LandingClientProps) {
@@ -196,7 +224,7 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
     });
   }, [initialBanners, initialCourses]);
 
-  const teachers = getTeachers(courses);
+  const teachers = getTeacherProfiles(courses);
 
   return (
     <div style={{ fontFamily: "'Inter',-apple-system,sans-serif", background: '#fcfcfa', color: '#121212' }}>
@@ -288,13 +316,16 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
                   Master Form Four. Pass with Confidence.
                 </h1>
                 <p style={{ maxWidth: 620, fontSize: 18, lineHeight: 1.8, color: 'rgba(255,255,255,0.82)', marginBottom: 0 }}>
-                  Skolr empowers Form 4 students with personalised learning paths, crystal-clear explanations and progress updates that give parents confidence and assurance.
+                  Premium Form Four exam preparation with structured lessons, subject-by-subject revision, and parent-friendly progress visibility for Tanzania families.
                 </p>
                 <div className="launch-hero-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 2 }}>
                   <Link href="/register" style={{ minHeight: 54, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '14px 24px', borderRadius: 16, background: GREEN, color: '#fff', fontSize: 14, fontWeight: 900, textDecoration: 'none', letterSpacing: 0.2, boxShadow: '0 18px 40px rgba(36,211,102,0.18)' }}>
-                    Start for Free
+                    Try Skolr Free
                   </Link>
                 </div>
+                <p style={{ fontSize: 13, lineHeight: 1.7, color: 'rgba(255,255,255,0.68)', marginBottom: 0 }}>
+                  Preview selected Form Four lessons before choosing full monthly access.
+                </p>
                 <div className="launch-hero-meta" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 6 }}>
                   <div style={{ padding: '10px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', fontSize: 13, fontWeight: 700 }}>
                     7 visible Form Four subjects
@@ -337,21 +368,21 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
           <div className="launch-section-head" style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 24 }}>
             <div>
-              <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Why families choose Skolr</p>
-              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Support for Every Student.</h2>
+              <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Trust and clarity</p>
+              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Why families can trust the Skolr path.</h2>
               <p style={{ maxWidth: 700, fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>
-                Skolr is designed to feel serious, calm, and academically grounded from the first lesson onward.
+                Everything on the public journey should answer a parent's first questions quickly: what is being offered, how it is structured, and why it fits Form Four preparation.
               </p>
             </div>
           </div>
           <div className="launch-benefit-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 14 }}>
-            {BENEFIT_CARDS.map((point) => (
+            {TRUST_CARDS.map((point) => (
               <div key={point.title} style={{ borderRadius: 22, border: '1px solid #e6e8e3', background: '#fff', padding: 20, boxShadow: '0 12px 28px rgba(18,18,18,0.04)' }}>
                 <div style={{ width: 42, height: 42, borderRadius: 14, background: '#e9fbfc', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                   {point.icon === 'path' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="1.8"><path d="M4 18c4 0 4-12 8-12s4 12 8 12" /><path d="M4 18h3" /><path d="M17 18h3" /></svg>}
-                  {point.icon === 'user' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="1.8"><path d="M20 21a8 8 0 0 0-16 0" /><circle cx="12" cy="8" r="4" /></svg>}
                   {point.icon === 'target' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="1.8"><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" /><path d="M12 2v3" /></svg>}
                   {point.icon === 'chart' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="1.8"><path d="M4 19h16" /><path d="M7 16v-4" /><path d="M12 16V8" /><path d="M17 16v-6" /></svg>}
+                  {point.icon === 'wallet' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="1.8"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M16 12h2" /><path d="M7 10h5" /></svg>}
                 </div>
                 <p style={{ fontSize: 16, lineHeight: 1.55, fontWeight: 800, color: '#121212', marginBottom: 8 }}>{point.title}</p>
                 <p style={{ fontSize: 14, lineHeight: 1.7, color: '#5b666f' }}>{point.copy}</p>
@@ -363,15 +394,33 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
 
       <section style={{ padding: '0 24px 34px', background: LIGHT_BG }}>
         <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
-          <div style={{ borderRadius: 22, border: '1px solid #dfe6e3', background: '#fff', padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', boxShadow: '0 12px 28px rgba(18,18,18,0.04)' }}>
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: TEAL, marginBottom: 6 }}>{REASSURANCE_BANNERS[0].eyebrow}</p>
-              <h3 style={{ fontSize: 22, lineHeight: 1.2, fontWeight: 900, color: '#121212', marginBottom: 4 }}>{REASSURANCE_BANNERS[0].title}</h3>
-              <p style={{ fontSize: 14, lineHeight: 1.7, color: '#5a645f' }}>{REASSURANCE_BANNERS[0].copy}</p>
+          <div style={{ borderRadius: 24, border: '1px solid #dfe6e3', background: '#fff', padding: '22px 24px', boxShadow: '0 12px 28px rgba(18,18,18,0.04)' }}>
+            <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 18 }}>
+              <div>
+                <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: TEAL, marginBottom: 6 }}>Practical comparison</p>
+                <h3 style={{ fontSize: 26, lineHeight: 1.15, fontWeight: 900, color: '#121212', marginBottom: 6 }}>Why Skolr instead of relying only on tuition?</h3>
+                <p style={{ fontSize: 14, lineHeight: 1.7, color: '#5a645f', maxWidth: 720 }}>
+                  Skolr does not attack tuition. It gives families a more structured support layer around it, especially when revision needs to continue beyond fixed teaching hours.
+                </p>
+              </div>
             </div>
-            <Link href={REASSURANCE_BANNERS[0].href} style={{ fontSize: 13, fontWeight: 800, color: '#047857', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-              {REASSURANCE_BANNERS[0].cta}
-            </Link>
+            <div className="launch-story-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 16 }}>
+              {TUITION_COMPARISON.map((column, index) => (
+                <div key={column.side} style={{ borderRadius: 20, padding: 20, background: index === 1 ? 'linear-gradient(180deg,#f2fbf6 0%,#ffffff 100%)' : '#f8fafc', border: `1px solid ${index === 1 ? '#cfe7da' : '#e5e7eb'}` }}>
+                  <p style={{ fontSize: 18, fontWeight: 900, color: '#121212', marginBottom: 12 }}>{column.side}</p>
+                  <div style={{ display: 'grid', gap: 10 }}>
+                    {column.points.map((point) => (
+                      <div key={point} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                        <span style={{ width: 22, height: 22, borderRadius: 999, background: index === 1 ? '#dcfce7' : '#e5e7eb', color: index === 1 ? '#047857' : '#475569', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, flexShrink: 0 }}>
+                          {index === 1 ? '✓' : '•'}
+                        </span>
+                        <span style={{ fontSize: 14, lineHeight: 1.7, color: '#475569' }}>{point}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -404,10 +453,10 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
                   <p style={{ fontSize: 13, lineHeight: 1.7, color: '#1f4036', marginBottom: 20, fontWeight: 700 }}>{subject.confidenceLine}</p>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                     <Link href={subject.href} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 16px', borderRadius: 16, background: '#121212', color: '#fff', fontSize: 13, fontWeight: 800, textDecoration: 'none' }}>
-                      Explore Subject
-                    </Link>
+                      {matchingCourse ? 'Preview lesson' : 'Start learning'}
+                  </Link>
                     <span style={{ fontSize: 12, color: '#738079' }}>
-                      {matchingCourse ? 'Live lessons available' : 'Subject ready for launch content'}
+                      {matchingCourse ? 'Preview lessons available' : 'Lessons coming soon'}
                     </span>
                   </div>
                 </div>
@@ -445,36 +494,25 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         </div>
       </section>
 
-      <section style={{ padding: '0 24px 34px', background: LIGHT_BG }}>
-        <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
-          <div style={{ borderRadius: 22, border: '1px solid #cfe7da', background: 'linear-gradient(135deg,#f7fcf9 0%,#ffffff 100%)', padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', boxShadow: '0 12px 28px rgba(18,18,18,0.04)' }}>
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: TEAL, marginBottom: 6 }}>{REASSURANCE_BANNERS[1].eyebrow}</p>
-              <h3 style={{ fontSize: 22, lineHeight: 1.2, fontWeight: 900, color: '#121212', marginBottom: 4 }}>{REASSURANCE_BANNERS[1].title}</h3>
-              <p style={{ fontSize: 14, lineHeight: 1.7, color: '#5a645f' }}>{REASSURANCE_BANNERS[1].copy}</p>
-            </div>
-            <Link href={REASSURANCE_BANNERS[1].href} style={{ fontSize: 13, fontWeight: 800, color: '#047857', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-              {REASSURANCE_BANNERS[1].cta}
-            </Link>
-          </div>
-        </div>
-      </section>
-
       <section style={{ padding: '0 24px 72px', background: LIGHT_BG }}>
         <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
           <div style={{ borderRadius: 30, background: 'linear-gradient(135deg,#f7fbf8 0%,#ffffff 40%,#eef8f2 100%)', border: '1px solid #dfe6df', padding: 30 }}>
             <div className="launch-assurance-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,0.95fr) minmax(0,1.05fr)', gap: 24, alignItems: 'center' }}>
               <div>
-                <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Parent assurance</p>
+                <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Parent support</p>
                 <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 12 }}>
-                  Reassurance Built Into Every Step.
+                  What parents are actually looking for.
                 </h2>
                 <p style={{ fontSize: 15, lineHeight: 1.8, color: '#5a645f' }}>
-                  At launch, that promise is focused tightly on Form Four so the experience remains disciplined, trustworthy, and outcome-driven.
+                  Parents do not need hype. They need to know the lessons are structured, visible, and easy to continue on a phone when the child needs revision support.
                 </p>
               </div>
               <div style={{ display: 'grid', gap: 12 }}>
-                {PARENT_ASSURANCE.map((item) => (
+                {[
+                  'Form Four is the only public focus, so the learning path stays clear.',
+                  'Parents can follow progress habits instead of guessing whether revision happened.',
+                  'The monthly offer is simple to understand and designed for steady exam preparation.',
+                ].map((item) => (
                   <div key={item} style={{ borderRadius: 20, background: '#fff', border: '1px solid #e6e8e3', padding: 18, display: 'flex', gap: 12 }}>
                     <span style={{ width: 28, height: 28, borderRadius: 999, background: '#ecfdf5', color: '#047857', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, flexShrink: 0 }}>✓</span>
                     <p style={{ fontSize: 14, lineHeight: 1.75, color: '#4f5b55' }}>{item}</p>
@@ -491,27 +529,30 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
           <div className="launch-section-head" style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 22 }}>
             <div>
               <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Teachers</p>
-              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Teaching Families Can Rely On.</h2>
+              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Instructor credibility should be easy to inspect.</h2>
               <p style={{ maxWidth: 720, fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>
-                Instructors on Skolr are presented as calm academic guides, not noisy personalities.
+                Each subject page should show who is teaching, what they teach, and the credibility details a parent would expect before paying.
               </p>
             </div>
           </div>
           <div className="launch-teacher-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 16 }}>
             {(teachers.length ? teachers : [
-              { name: 'Mathematics instructor', subject: 'Mathematics', courseCount: 1 },
-              { name: 'Science instructor', subject: 'Physics and Chemistry', courseCount: 1 },
-              { name: 'Language instructor', subject: 'English', courseCount: 1 },
+              { name: 'Mathematics teacher', subject: 'Mathematics', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Teach with worked examples, patient pacing, and exam-focused revision.', courseCount: 1 },
+              { name: 'Science teacher', subject: 'Physics and Chemistry', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Turn difficult concepts into structured explanations students can revisit.', courseCount: 1 },
+              { name: 'English teacher', subject: 'English', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Build confidence through clear language guidance and repeatable exam practice.', courseCount: 1 },
             ]).map((teacher, index) => (
               <div key={teacher.name} style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 22 }}>
                 <div style={{ width: 62, height: 62, borderRadius: 20, background: index === 1 ? '#f0fdf4' : '#f5f7f3', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
                   <span style={{ fontSize: 24, fontWeight: 900, color: '#047857' }}>{teacher.name.charAt(0)}</span>
                 </div>
                 <h3 style={{ fontSize: 19, fontWeight: 900, color: '#121212', marginBottom: 8 }}>{teacher.name}</h3>
-                <p style={{ fontSize: 14, lineHeight: 1.75, color: '#58655e', marginBottom: 14 }}>
-                  Teaching focus: {teacher.subject}. Designed to help Form Four learners understand, revise, and stay consistent.
-                </p>
-                <p style={{ fontSize: 12, fontWeight: 800, color: '#047857' }}>{teacher.courseCount} live subject stream{teacher.courseCount === 1 ? '' : 's'}</p>
+                <div style={{ display: 'grid', gap: 10 }}>
+                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Subject taught:</strong> {teacher.subject}</p>
+                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Qualification:</strong> {teacher.qualification}</p>
+                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Experience:</strong> {teacher.experience}</p>
+                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Teaching philosophy:</strong> {teacher.philosophy}</p>
+                </div>
+                <p style={{ fontSize: 12, fontWeight: 800, color: '#047857', marginTop: 14 }}>{teacher.courseCount} live subject stream{teacher.courseCount === 1 ? '' : 's'}</p>
               </div>
             ))}
           </div>
@@ -550,8 +591,8 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
           <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center', marginBottom: 24 }}>
             <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Pricing</p>
-            <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 10 }}>Simple, Secure Access for Every Learner.</h2>
-            <p style={{ fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>One calm subscription. All visible Form Four subjects included.</p>
+            <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 10 }}>15,000 TZS/month for focused Form Four support.</h2>
+            <p style={{ fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>One monthly offer. No broad plan maze. No public confusion about other levels.</p>
           </div>
           <div style={{ maxWidth: 520, margin: '0 auto', borderRadius: 30, background: '#fff', border: '1px solid #e6e8e3', padding: 30, boxShadow: '0 24px 60px rgba(18,18,18,0.05)' }}>
             <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 10 }}>Form Four Monthly Access</p>
@@ -563,9 +604,11 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
             </p>
             <div style={{ display: 'grid', gap: 10, marginBottom: 22 }}>
               {[
-                'All public Form Four subject access',
-                'Clear lesson progression and revision flow',
-                'Progress tracking for consistency and confidence',
+                'Access to Form Four learning support',
+                'Monthly access',
+                'Mobile money payment supported',
+                'Start with a free preview',
+                'No confusing long-term commitment language',
               ].map((item) => (
                 <div key={item} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', textAlign: 'left' }}>
                   <span style={{ width: 22, height: 22, borderRadius: 999, background: '#ecfdf5', color: '#047857', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, flexShrink: 0 }}>✓</span>
@@ -573,26 +616,32 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
                 </div>
               ))}
             </div>
+            <p style={{ fontSize: 13, lineHeight: 1.7, color: '#5a645f', marginBottom: 16 }}>
+              Built for parents who want structure, visibility, and consistent exam preparation without depending only on tuition.
+            </p>
             <Link href="/register" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 52, borderRadius: 16, background: GREEN, color: '#fff', textDecoration: 'none', fontSize: 15, fontWeight: 900 }}>
-              Start for Free
+              Try Skolr Free
             </Link>
+            <p style={{ fontSize: 12, lineHeight: 1.6, color: '#6b7280', textAlign: 'center', marginTop: 10 }}>
+              Preview selected Form Four lessons before choosing full monthly access.
+            </p>
           </div>
         </div>
       </section>
 
-      <section id="success-stories" style={{ padding: '0 24px 72px', background: LIGHT_BG }}>
+      <section id="faq" style={{ padding: '0 24px 72px', background: LIGHT_BG }}>
         <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
           <div className="launch-section-head" style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 22 }}>
             <div>
-              <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Success stories</p>
-              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Results Families Can Feel Good About.</h2>
+              <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>FAQ</p>
+              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Questions parents and students need answered before paying.</h2>
             </div>
           </div>
           <div className="launch-story-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 16 }}>
-            {SUCCESS_STORIES.map((story) => (
-              <div key={story.name} style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 24 }}>
-                <p style={{ fontSize: 18, lineHeight: 1.7, color: '#1f2d27', marginBottom: 20 }}>&ldquo;{story.quote}&rdquo;</p>
-                <p style={{ fontSize: 13, fontWeight: 900, color: '#121212' }}>{story.name}</p>
+            {FAQ_ITEMS.map((item) => (
+              <div key={item.question} style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 24 }}>
+                <p style={{ fontSize: 18, lineHeight: 1.4, color: '#121212', marginBottom: 12, fontWeight: 900 }}>{item.question}</p>
+                <p style={{ fontSize: 14, lineHeight: 1.75, color: '#55616d' }}>{item.answer}</p>
               </div>
             ))}
           </div>
@@ -605,20 +654,23 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
             <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: '#86efac', marginBottom: 10 }}>Final step</p>
             <h2 style={{ fontSize: 38, lineHeight: 1.05, fontWeight: 900, marginBottom: 12 }}>Begin Form Four Learning</h2>
             <p style={{ maxWidth: 700, margin: '0 auto 22px', fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.74)' }}>
-              Give students the clarity to start, and the confidence to keep going until exam season.
+              Try selected Form Four lessons first, then move into full monthly access only when the path feels right for your family.
             </p>
             <div className="launch-final-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <Link href="/courses?level=secondary&sub=Form%204" style={{ padding: '14px 22px', borderRadius: 16, background: '#fff', color: '#121212', fontSize: 15, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                View Form Four Subjects
+              <Link href="/register" style={{ padding: '14px 22px', borderRadius: 16, background: '#fff', color: '#121212', fontSize: 15, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                Try Skolr Free
               </Link>
             </div>
+            <p style={{ marginTop: 12, fontSize: 12, color: 'rgba(255,255,255,0.62)' }}>
+              Preview selected Form Four lessons before choosing full monthly access.
+            </p>
           </div>
         </div>
       </section>
 
       <footer style={{ background: '#121212', color: '#fff', padding: '34px 24px 28px' }}>
         <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
-          <div className="launch-footer-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr 0.8fr 0.8fr', gap: 18, paddingBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="launch-footer-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr 0.8fr', gap: 18, paddingBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
             <div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                 <div style={{ width: 34, height: 34, borderRadius: 10, background: GREEN, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -640,12 +692,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
               <Link href="/#pricing" style={{ display: 'block', marginBottom: 9, fontSize: 13, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Pricing</Link>
             </div>
             <div>
-              <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(255,255,255,0.34)', marginBottom: 12 }}>Future ready</p>
-              {['Form One', 'Form Two', 'Form Three', 'A-Level', 'Professional Courses'].map((item) => (
-                <p key={item} style={{ marginBottom: 9, fontSize: 13, color: 'rgba(255,255,255,0.48)' }}>{item}</p>
-              ))}
-            </div>
-            <div>
               <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(255,255,255,0.34)', marginBottom: 12 }}>Support</p>
               {[
                 ['Login', '/login'],
@@ -659,7 +705,7 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', paddingTop: 18, fontSize: 12, color: 'rgba(255,255,255,0.42)' }}>
             <span>2026 Skolr. All rights reserved.</span>
-            <span>Focused launch for Tanzania Form Four learners.</span>
+            <span>Premium Form Four exam preparation for Tanzania families.</span>
           </div>
         </div>
       </footer>

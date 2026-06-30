@@ -8,22 +8,22 @@ import { getSiteUrl } from "@/lib/site";
 const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
-  title: "Online learning in Tanzania for Primary to University",
+  title: "Premium Form Four exam preparation in Tanzania",
   description:
-    "Skolr is Tanzania's online learning platform for Primary, Secondary, High School, and University learners with structured lessons, NECTA-aligned study paths, and parent-friendly progress tracking.",
+    "Skolr is a premium Form Four exam-preparation platform for Tanzania with structured lessons, subject-by-subject revision, parent progress visibility, and mobile-friendly access.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Skolr | Online learning in Tanzania for Primary to University",
+    title: "Skolr | Premium Form Four exam preparation",
     description:
-      "Structured lessons, exam-ready learning paths, and parent-friendly progress tracking for learners across Tanzania.",
+      "Structured Form Four lessons, exam-ready study paths, and parent-friendly progress visibility for Tanzania families.",
     url: siteUrl,
   },
   twitter: {
-    title: "Skolr | Online learning in Tanzania for Primary to University",
+    title: "Skolr | Premium Form Four exam preparation",
     description:
-      "Structured lessons, exam-ready learning paths, and parent-friendly progress tracking for learners across Tanzania.",
+      "Structured Form Four lessons, exam-ready study paths, and parent-friendly progress visibility for Tanzania families.",
   },
 };
 
@@ -34,7 +34,7 @@ const organizationSchema = {
   url: siteUrl,
   logo: `${siteUrl}/icons/icon-192.png`,
   description:
-    "Tanzania online learning platform for Primary, Secondary, High School, and University learners.",
+    "Premium Form Four exam-preparation platform for Tanzania families.",
   areaServed: "TZ",
 };
 
@@ -44,7 +44,7 @@ const websiteSchema = {
   name: "Skolr",
   url: siteUrl,
   description:
-    "Structured online learning platform for Tanzania learners from Primary to University.",
+    "Structured Form Four exam-preparation platform for Tanzania.",
   inLanguage: "en-TZ",
 };
 

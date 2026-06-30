@@ -16,7 +16,7 @@ export default function Footer() {
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#525252', textTransform: 'uppercase', marginBottom: 10 }}>Launch focus</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[{href:'/courses?level=secondary&sub=Form%204',label:'Form Four Subjects'},{href:'/pricing',label:'Form Four Access'},{href:'/register',label:'Start for Free'},{href:'/login',label:'Student Login'}].map(l=>(
+              {[{href:'/courses?level=secondary&sub=Form%204',label:'Form Four Subjects'},{href:'/pricing',label:'15,000 TZS Monthly Access'},{href:'/register',label:'Try Skolr Free'},{href:'/login',label:'Student Login'}].map(l=>(
                 <Link key={l.href} href={l.href} style={{ fontSize: 13, color: '#a3a3a3', textDecoration: 'none' }}>{l.label}</Link>
               ))}
             </div>
@@ -24,7 +24,7 @@ export default function Footer() {
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#525252', textTransform: 'uppercase', marginBottom: 10 }}>Skolr</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[{href:'/dashboard',label:'Form Four Dashboard'},{href:'/courses',label:'Browse Courses'},{href:'/privacy',label:'Privacy'},{href:'/contact',label:'Contact'}].map(l=>(
+              {[{href:'/dashboard',label:'Form Four Dashboard'},{href:'/courses?level=secondary&sub=Form%204',label:'Course Catalog'},{href:'/privacy',label:'Privacy'},{href:'/contact',label:'Contact'}].map(l=>(
                 <Link key={l.href} href={l.href} style={{ fontSize: 13, color: '#a3a3a3', textDecoration: 'none' }}>{l.label}</Link>
               ))}
             </div>

@@ -107,5 +107,5 @@ export const LAUNCH_NAV_ITEMS = [
   { label: 'Teachers', href: '/#teachers' },
   { label: 'Mock Exams', href: '/#mock-exams' },
   { label: 'Pricing', href: '/#pricing' },
-  { label: 'Success Stories', href: '/#success-stories' },
+  { label: 'FAQ', href: '/#faq' },
 ] as const;
