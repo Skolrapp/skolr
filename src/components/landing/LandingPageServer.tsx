@@ -41,7 +41,7 @@ async function getInitialCourses() {
   const supabase = createSupabaseAdmin();
   const { data } = await supabase
     .from('courses')
-    .select('*, users!instructor_id(name)')
+    .select('*, users!instructor_id(id, name, avatar_url, bio, education, experience)')
     .eq('is_published', true)
     .eq('category', FORM_FOUR_CLASS.level)
     .eq('sub_category', FORM_FOUR_CLASS.subCategory || null)
@@ -49,9 +49,21 @@ async function getInitialCourses() {
     .order('created_at', { ascending: false })
     .limit(7);
 
-  return ((data || []) as Array<Record<string, unknown> & { users?: { name: string } | null }>).map((course) => ({
+  return ((data || []) as Array<Record<string, unknown> & { users?: {
+    id?: string;
+    name?: string;
+    avatar_url?: string | null;
+    bio?: string | null;
+    education?: string | null;
+    experience?: string | null;
+  } | null }>).map((course) => ({
     ...course,
     instructor_name: course.users?.name || 'Unknown',
+    instructor_id: course.users?.id || course.instructor_id,
+    avatar_url: course.users?.avatar_url || null,
+    bio: course.users?.bio || null,
+    education: course.users?.education || null,
+    experience: course.users?.experience || null,
     users: undefined,
   })) as unknown as Course[];
 }

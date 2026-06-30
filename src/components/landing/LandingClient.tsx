@@ -152,7 +152,7 @@ function getTeacherProfiles(courses: LandingCourse[]) {
     });
   });
 
-  return Array.from(grouped.values()).slice(0, 4);
+  return Array.from(grouped.values());
 }
 
 export default function LandingClient({ initialCourses, initialBanners }: LandingClientProps) {
@@ -238,6 +238,7 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
   }, [initialBanners, initialCourses]);
 
   const teachers = getTeacherProfiles(courses);
+  const teacherStrip = teachers.length > 1 ? [...teachers, ...teachers] : teachers;
 
   return (
     <div style={{ fontFamily: "'Inter',-apple-system,sans-serif", background: '#fcfcfa', color: '#121212' }}>
@@ -525,31 +526,53 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
               <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Meet the teachers behind the subjects.</h2>
             </div>
           </div>
-          <div className="launch-teacher-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 16 }}>
-            {(teachers.length ? teachers : [
-              { name: 'Mathematics teacher', subject: 'Mathematics', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Teach with worked examples, patient pacing, and exam-focused revision.', courseCount: 1 },
-              { name: 'Science teacher', subject: 'Physics and Chemistry', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Turn difficult concepts into structured explanations students can revisit.', courseCount: 1 },
-              { name: 'English teacher', subject: 'English', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Build confidence through clear language guidance and repeatable exam practice.', courseCount: 1 },
-            ]).map((teacher, index) => (
-              <div key={teacher.id} style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 22 }}>
-                <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', background: index === 1 ? '#f0fdf4' : '#f5f7f3', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18, border: '1px solid #d9efe1' }}>
-                  {teacher.avatar_url ? (
-                    <img src={teacher.avatar_url} alt={teacher.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <span style={{ fontSize: 24, fontWeight: 900, color: '#047857' }}>{teacher.name.charAt(0)}</span>
-                  )}
-                </div>
-                <h3 style={{ fontSize: 19, fontWeight: 900, color: '#121212', marginBottom: 8 }}>{teacher.name}</h3>
-                <div style={{ display: 'grid', gap: 10 }}>
-                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Subject taught:</strong> {teacher.subject}</p>
-                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Qualification:</strong> {teacher.qualification}</p>
-                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Experience:</strong> {teacher.experience}</p>
-                  <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Teaching philosophy:</strong> {teacher.philosophy}</p>
-                </div>
-                <p style={{ fontSize: 12, fontWeight: 800, color: '#047857', marginTop: 14 }}>{teacher.courseCount} live subject stream{teacher.courseCount === 1 ? '' : 's'}</p>
+          {teachers.length ? (
+            <div className="launch-teacher-marquee">
+              <div className="launch-teacher-track">
+                {teacherStrip.map((teacher, index) => (
+                  <div key={`${teacher.id}-${index}`} className="launch-teacher-card" style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 22 }}>
+                    <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', background: index % 2 === 1 ? '#f0fdf4' : '#f5f7f3', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18, border: '1px solid #d9efe1' }}>
+                      {teacher.avatar_url ? (
+                        <img src={teacher.avatar_url} alt={teacher.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <span style={{ fontSize: 24, fontWeight: 900, color: '#047857' }}>{teacher.name.charAt(0)}</span>
+                      )}
+                    </div>
+                    <h3 style={{ fontSize: 19, fontWeight: 900, color: '#121212', marginBottom: 8 }}>{teacher.name}</h3>
+                    <div style={{ display: 'grid', gap: 10 }}>
+                      <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Subject taught:</strong> {teacher.subject}</p>
+                      <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Qualification:</strong> {teacher.qualification}</p>
+                      <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Experience:</strong> {teacher.experience}</p>
+                      <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Teaching philosophy:</strong> {teacher.philosophy}</p>
+                    </div>
+                    <p style={{ fontSize: 12, fontWeight: 800, color: '#047857', marginTop: 14 }}>{teacher.courseCount} live subject stream{teacher.courseCount === 1 ? '' : 's'}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="launch-teacher-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 16 }}>
+              {[
+                { id: 'placeholder-maths', name: 'Mathematics teacher', subject: 'Mathematics', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Teach with worked examples, patient pacing, and exam-focused revision.', courseCount: 1, avatar_url: null },
+                { id: 'placeholder-science', name: 'Science teacher', subject: 'Physics and Chemistry', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Turn difficult concepts into structured explanations students can revisit.', courseCount: 1, avatar_url: null },
+                { id: 'placeholder-english', name: 'English teacher', subject: 'English', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Build confidence through clear language guidance and repeatable exam practice.', courseCount: 1, avatar_url: null },
+              ].map((teacher, index) => (
+                <div key={teacher.id} style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 22 }}>
+                  <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', background: index === 1 ? '#f0fdf4' : '#f5f7f3', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18, border: '1px solid #d9efe1' }}>
+                    <span style={{ fontSize: 24, fontWeight: 900, color: '#047857' }}>{teacher.name.charAt(0)}</span>
+                  </div>
+                  <h3 style={{ fontSize: 19, fontWeight: 900, color: '#121212', marginBottom: 8 }}>{teacher.name}</h3>
+                  <div style={{ display: 'grid', gap: 10 }}>
+                    <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Subject taught:</strong> {teacher.subject}</p>
+                    <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Qualification:</strong> {teacher.qualification}</p>
+                    <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Experience:</strong> {teacher.experience}</p>
+                    <p style={{ fontSize: 13, lineHeight: 1.7, color: '#58655e', margin: 0 }}><strong>Teaching philosophy:</strong> {teacher.philosophy}</p>
+                  </div>
+                  <p style={{ fontSize: 12, fontWeight: 800, color: '#047857', marginTop: 14 }}>{teacher.courseCount} live subject stream</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -698,6 +721,24 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
       </footer>
 
       <style>{`
+        .launch-teacher-marquee {
+          overflow: hidden;
+          mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+          -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+        }
+
+        .launch-teacher-track {
+          display: flex;
+          gap: 16px;
+          width: max-content;
+          animation: teacher-marquee 34s linear infinite;
+        }
+
+        .launch-teacher-card {
+          width: 340px;
+          flex: 0 0 340px;
+        }
+
         @media (max-width: 1024px) {
           .launch-hero-grid,
           .launch-how-grid,
@@ -750,6 +791,24 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
           .launch-subject-grid,
           .launch-teacher-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          .launch-teacher-marquee {
+            overflow-x: auto;
+            overflow-y: hidden;
+            mask-image: none;
+            -webkit-mask-image: none;
+            padding-bottom: 6px;
+          }
+
+          .launch-teacher-track {
+            animation: none !important;
+            width: max-content;
+          }
+
+          .launch-teacher-card {
+            width: min(72vw, 320px);
+            flex: 0 0 min(72vw, 320px);
           }
         }
 
@@ -804,6 +863,20 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
 
           .launch-how-grid > div:last-child > div {
             grid-template-columns: 58px minmax(0, 1fr) !important;
+          }
+
+          .launch-teacher-card {
+            width: min(86vw, 300px);
+            flex: 0 0 min(86vw, 300px);
+          }
+        }
+
+        @keyframes teacher-marquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(calc(-50% - 8px));
           }
         }
       `}</style>

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   let query = supabase
     .from('courses')
-    .select('*, users!instructor_id(name)', { count: 'exact' })
+    .select('*, users!instructor_id(id, name, avatar_url, bio, education, experience)', { count: 'exact' })
     .eq('is_published', true);
 
   if (level)   query = query.eq('category', level);
@@ -33,9 +33,21 @@ export async function GET(request: NextRequest) {
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
 
   // Flatten instructor name
-  const items = (data || []).map((c: Record<string, unknown> & { users?: { name: string } | null }) => ({
+  const items = (data || []).map((c: Record<string, unknown> & { users?: {
+    id?: string;
+    name?: string;
+    avatar_url?: string | null;
+    bio?: string | null;
+    education?: string | null;
+    experience?: string | null;
+  } | null }) => ({
     ...c,
     instructor_name: c.users?.name || 'Unknown',
+    instructor_id: c.users?.id || c.instructor_id,
+    avatar_url: c.users?.avatar_url || null,
+    bio: c.users?.bio || null,
+    education: c.users?.education || null,
+    experience: c.users?.experience || null,
     users: undefined,
   }));
 
