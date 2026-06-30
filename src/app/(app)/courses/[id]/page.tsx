@@ -202,6 +202,8 @@ export default async function CourseDetailPage(
 
   const primaryHref = '/register';
   const primaryLabel = 'Try Skolr Free';
+  const secondaryHref = '/login';
+  const secondaryLabel = 'Log in';
 
   return (
     <div style={{ minHeight: '100vh', background: '#f7f8fa', color: '#0a0a0a', fontFamily: "'Inter',-apple-system,sans-serif" }}>
