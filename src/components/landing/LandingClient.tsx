@@ -368,11 +368,7 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         <div className="launch-shell" style={{ maxWidth: 1240, margin: '0 auto' }}>
           <div className="launch-section-head" style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 24 }}>
             <div>
-              <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Trust and clarity</p>
-              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Why families can trust the Skolr path.</h2>
-              <p style={{ maxWidth: 700, fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>
-                Everything on the public journey should answer a parent's first questions quickly: what is being offered, how it is structured, and why it fits Form Four preparation.
-              </p>
+              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 0 }}>Focused support for serious Form Four preparation.</h2>
             </div>
           </div>
           <div className="launch-benefit-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 14 }}>
