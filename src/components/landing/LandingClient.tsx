@@ -16,12 +16,20 @@ const GREEN = '#24d366';
 const LIGHT_BG = '#f6f7f9';
 const LANDING_COURSES_CACHE_KEY = 'skolr:landing:courses';
 const LANDING_BRANDING_CACHE_KEY = 'skolr:landing:branding';
-let landingCoursesCache: Course[] | null = null;
+let landingCoursesCache: LandingCourse[] | null = null;
 let landingBrandingCache: Record<string, string | null> | null = null;
 
 type LandingClientProps = {
-  initialCourses: Course[];
+  initialCourses: LandingCourse[];
   initialBanners: Record<string, string | null>;
+};
+
+type LandingCourse = Course & {
+  instructor_name?: string;
+  avatar_url?: string | null;
+  bio?: string | null;
+  education?: string | null;
+  experience?: string | null;
 };
 
 const TRUST_CARDS = [
@@ -111,31 +119,36 @@ const FAQ_ITEMS = [
 ] as const;
 
 type TeacherProfile = {
+  id: string;
   name: string;
   subject: string;
   qualification: string;
   experience: string;
   philosophy: string;
   courseCount: number;
+  avatar_url?: string | null;
 };
 
-function getTeacherProfiles(courses: Course[]) {
+function getTeacherProfiles(courses: LandingCourse[]) {
   const grouped = new Map<string, TeacherProfile>();
 
   courses.forEach((course) => {
+    const teacherId = course.instructor_id || course.instructor_name || course.title;
     const name = course.instructor_name || 'Skolr instructor';
-    const current = grouped.get(name);
+    const current = grouped.get(teacherId);
     if (current) {
       current.courseCount += 1;
       return;
     }
-    grouped.set(name, {
+    grouped.set(teacherId, {
+      id: teacherId,
       name,
       subject: course.subject,
-      qualification: 'Qualification details can be added here.',
-      experience: 'Experience details can be added here.',
-      philosophy: `Teach ${course.subject} with clear explanations, steady pacing, and direct exam preparation.`,
+      qualification: course.education || 'Qualification details can be added here.',
+      experience: course.experience || 'Experience details can be added here.',
+      philosophy: course.bio || `Teach ${course.subject} with clear explanations, steady pacing, and direct exam preparation.`,
       courseCount: 1,
+      avatar_url: course.avatar_url || null,
     });
   });
 
@@ -144,7 +157,7 @@ function getTeacherProfiles(courses: Course[]) {
 
 export default function LandingClient({ initialCourses, initialBanners }: LandingClientProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [courses, setCourses] = useState<Course[]>(landingCoursesCache || initialCourses);
+  const [courses, setCourses] = useState<LandingCourse[]>(landingCoursesCache || initialCourses);
   const [banners, setBanners] = useState<Record<string, string | null>>(landingBrandingCache || initialBanners);
 
   useEffect(() => {
@@ -168,7 +181,7 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
         const cachedCourses = window.sessionStorage.getItem(LANDING_COURSES_CACHE_KEY);
         if (cachedCourses) {
           try {
-            const parsed = JSON.parse(cachedCourses) as Course[];
+            const parsed = JSON.parse(cachedCourses) as LandingCourse[];
             landingCoursesCache = parsed;
             setCourses(parsed);
             shouldFetchCourses = false;
@@ -203,7 +216,7 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
       const brandingResult = shouldFetchBranding ? results.shift() : null;
 
       if (coursesResult && coursesResult.status === 'fulfilled' && (coursesResult.value as { success?: boolean }).success) {
-        const nextCourses = ((coursesResult.value as { data?: { items?: Course[] } }).data?.items || []).filter(
+        const nextCourses = ((coursesResult.value as { data?: { items?: LandingCourse[] } }).data?.items || []).filter(
           (course) => course.category === FORM_FOUR_CLASS.level && course.sub_category === FORM_FOUR_CLASS.subCategory
         );
         landingCoursesCache = nextCourses;
@@ -343,9 +356,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
               <div>
                 <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 10 }}>Parent Trust</p>
                 <h3 style={{ fontSize: 26, lineHeight: 1.2, fontWeight: 900, color: '#172126', marginBottom: 8 }}>Built to feel serious, structured, and visible.</h3>
-                <p style={{ fontSize: 14, lineHeight: 1.7, color: '#51606a' }}>
-                  A calmer learning environment for students, and clearer academic signals for parents.
-                </p>
               </div>
               <div className="launch-parent-points" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 12 }}>
                 {[
@@ -381,7 +391,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
                   {point.icon === 'wallet' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="1.8"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M16 12h2" /><path d="M7 10h5" /></svg>}
                 </div>
                 <p style={{ fontSize: 16, lineHeight: 1.55, fontWeight: 800, color: '#121212', marginBottom: 8 }}>{point.title}</p>
-                <p style={{ fontSize: 14, lineHeight: 1.7, color: '#5b666f' }}>{point.copy}</p>
               </div>
             ))}
           </div>
@@ -395,9 +404,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
               <div>
                 <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: TEAL, marginBottom: 6 }}>Practical comparison</p>
                 <h3 style={{ fontSize: 26, lineHeight: 1.15, fontWeight: 900, color: '#121212', marginBottom: 6 }}>Why Skolr instead of relying only on tuition?</h3>
-                <p style={{ fontSize: 14, lineHeight: 1.7, color: '#5a645f', maxWidth: 720 }}>
-                  Skolr does not attack tuition. It gives families a more structured support layer around it, especially when revision needs to continue beyond fixed teaching hours.
-                </p>
               </div>
             </div>
             <div className="launch-story-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 16 }}>
@@ -427,9 +433,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
             <div>
               <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Form Four subjects</p>
               <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Progress You Can Trust.</h2>
-              <p style={{ maxWidth: 700, fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>
-                Every public subject on Skolr right now is focused on Form Four exam preparation and confidence building.
-              </p>
             </div>
             <Link href="/courses?level=secondary&sub=Form%204" style={{ fontSize: 13, fontWeight: 800, color: '#047857', textDecoration: 'none' }}>
               View all Form Four subjects
@@ -468,9 +471,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
             <div style={{ borderRadius: 28, background: '#121212', color: '#fff', padding: 28 }}>
               <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: '#baf5d3', marginBottom: 10 }}>How Skolr works</p>
               <h2 style={{ fontSize: 34, lineHeight: 1.08, fontWeight: 900, marginBottom: 12 }}>Learning Support That Builds Confidence.</h2>
-              <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.72)', marginBottom: 18 }}>
-                Students need clarity. Parents need structure. Skolr is built to deliver both without overwhelming the learner.
-              </p>
             </div>
 
             <div style={{ display: 'grid', gap: 14 }}>
@@ -499,9 +499,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
                 <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 12 }}>
                   What parents are actually looking for.
                 </h2>
-                <p style={{ fontSize: 15, lineHeight: 1.8, color: '#5a645f' }}>
-                  Parents do not need hype. They need to know the lessons are structured, visible, and easy to continue on a phone when the child needs revision support.
-                </p>
               </div>
               <div style={{ display: 'grid', gap: 12 }}>
                 {[
@@ -525,10 +522,7 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
           <div className="launch-section-head" style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 22 }}>
             <div>
               <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Teachers</p>
-              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Instructor credibility should be easy to inspect.</h2>
-              <p style={{ maxWidth: 720, fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>
-                Each subject page should show who is teaching, what they teach, and the credibility details a parent would expect before paying.
-              </p>
+              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Meet the teachers behind the subjects.</h2>
             </div>
           </div>
           <div className="launch-teacher-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 16 }}>
@@ -537,9 +531,13 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
               { name: 'Science teacher', subject: 'Physics and Chemistry', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Turn difficult concepts into structured explanations students can revisit.', courseCount: 1 },
               { name: 'English teacher', subject: 'English', qualification: 'Qualification details can be added here.', experience: 'Experience details can be added here.', philosophy: 'Build confidence through clear language guidance and repeatable exam practice.', courseCount: 1 },
             ]).map((teacher, index) => (
-              <div key={teacher.name} style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 22 }}>
-                <div style={{ width: 62, height: 62, borderRadius: 20, background: index === 1 ? '#f0fdf4' : '#f5f7f3', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
-                  <span style={{ fontSize: 24, fontWeight: 900, color: '#047857' }}>{teacher.name.charAt(0)}</span>
+              <div key={teacher.id} style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 22 }}>
+                <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', background: index === 1 ? '#f0fdf4' : '#f5f7f3', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18, border: '1px solid #d9efe1' }}>
+                  {teacher.avatar_url ? (
+                    <img src={teacher.avatar_url} alt={teacher.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <span style={{ fontSize: 24, fontWeight: 900, color: '#047857' }}>{teacher.name.charAt(0)}</span>
+                  )}
                 </div>
                 <h3 style={{ fontSize: 19, fontWeight: 900, color: '#121212', marginBottom: 8 }}>{teacher.name}</h3>
                 <div style={{ display: 'grid', gap: 10 }}>
@@ -562,9 +560,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
               <div>
                 <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: '#86efac', marginBottom: 8 }}>Mock exams</p>
                 <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, marginBottom: 12 }}>Exam Preparation You Can Trust.</h2>
-                <p style={{ fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.72)' }}>
-                  Mock exams and revision planning are part of the Form Four direction from day one, helping learners move from lessons into exam confidence.
-                </p>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 12 }}>
                 {[
@@ -588,7 +583,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
           <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center', marginBottom: 24 }}>
             <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Pricing</p>
             <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 10 }}>15,000 TZS/month for focused Form Four support.</h2>
-            <p style={{ fontSize: 15, lineHeight: 1.75, color: '#5a645f' }}>One monthly offer. No broad plan maze. No public confusion about other levels.</p>
           </div>
           <div style={{ maxWidth: 520, margin: '0 auto', borderRadius: 30, background: '#fff', border: '1px solid #e6e8e3', padding: 30, boxShadow: '0 24px 60px rgba(18,18,18,0.05)' }}>
             <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 10 }}>Form Four Monthly Access</p>
@@ -630,7 +624,7 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
           <div className="launch-section-head" style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 22 }}>
             <div>
               <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>FAQ</p>
-              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Questions parents and students need answered before paying.</h2>
+              <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Frequently asked questions.</h2>
             </div>
           </div>
           <div className="launch-story-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 16 }}>
@@ -649,9 +643,6 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
           <div style={{ borderRadius: 30, background: 'linear-gradient(135deg,#121212 0%,#10231c 100%)', color: '#fff', padding: 34, textAlign: 'center' }}>
             <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: '#86efac', marginBottom: 10 }}>Final step</p>
             <h2 style={{ fontSize: 38, lineHeight: 1.05, fontWeight: 900, marginBottom: 12 }}>Begin Form Four Learning</h2>
-            <p style={{ maxWidth: 700, margin: '0 auto 22px', fontSize: 15, lineHeight: 1.8, color: 'rgba(255,255,255,0.74)' }}>
-              Try selected Form Four lessons first, then move into full monthly access only when the path feels right for your family.
-            </p>
             <div className="launch-final-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
               <Link href="/register" style={{ padding: '14px 22px', borderRadius: 16, background: '#fff', color: '#121212', fontSize: 15, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase', letterSpacing: 0.5 }}>
                 Try Skolr Free
