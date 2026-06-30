@@ -5,6 +5,7 @@ import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import TopHeader from '@/components/layout/TopHeader';
+import PublicTopNav from '@/components/public/PublicTopNav';
 import BottomNav from '@/components/layout/BottomNav';
 import Footer from '@/components/layout/Footer';
 import SubtleBackButton from '@/components/ui/SubtleBackButton';
@@ -163,21 +164,7 @@ function CoursesContent(){
 
   return(
     <div style={{background:'#fff',minHeight:'100vh',fontFamily:"'Inter',-apple-system,sans-serif",color:'#0a0a0a'}}>
-      {user ? <TopHeader /> : (
-        <header className="courses-guest-header" style={{background:'#fff',borderBottom:'1px solid #e5e7eb',position:'sticky',top:0,zIndex:50}}>
-          <div className="courses-guest-header-inner" style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',gap:16,height:60,padding:'0 24px'}}>
-            <Link href="/" style={{display:'flex',alignItems:'center',gap:8,textDecoration:'none',flexShrink:0}}>
-              <div style={{width:30,height:30,background:G,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-              </div>
-              <span style={{fontWeight:800,fontSize:18,color:'#0a0a0a'}}>Skolr</span>
-            </Link>
-            <div className="courses-top-actions" style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:12}}>
-              <Link href="/login" style={{minHeight:44,padding:'0 20px',fontSize:13,fontWeight:800,color:'#111827',textDecoration:'none',border:'1px solid #d9dee7',borderRadius:999,display:'inline-flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(180deg,#ffffff 0%,#f8fafc 100%)',boxShadow:'0 8px 18px rgba(15,23,42,0.06)'}}>Log in</Link>
-            </div>
-          </div>
-        </header>
-      )}
+      {user ? <TopHeader /> : <PublicTopNav />}
 
       <div className="courses-hero" style={{background:isPublicLaunchView?'linear-gradient(135deg,#121212 0%,#16251f 58%,#0d7c55 100%)':level?'linear-gradient(135deg,'+(currentLevel as any).color+'dd,'+(currentLevel as any).color+'aa)':'linear-gradient(135deg,#0a0a0a,#1a1a2e)',padding:'34px 24px 30px'}}>
         <div className="courses-hero-inner" style={{maxWidth:1280,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:16}}>

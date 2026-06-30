@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { validateSession } from '@/lib/auth';
 import { getActiveLearnerFromCookies } from '@/lib/activeLearner';
 import VideoPlayer from '@/components/player/VideoPlayer';
+import PublicTopNav from '@/components/public/PublicTopNav';
 import SubtleBackButton from '@/components/ui/SubtleBackButton';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import type { Chapter, Course, EducationLevel, User } from '@/types';
@@ -199,27 +200,9 @@ export default async function CourseDetailPage(
     redirect(`/watch/${course.id}`);
   }
 
-  let primaryHref = '/register';
-  let primaryLabel = 'Try Skolr Free';
-  let secondaryHref = '/login';
-  let secondaryLabel = 'Log in';
-
   return (
     <div style={{ minHeight: '100vh', background: '#f7f8fa', color: '#0a0a0a', fontFamily: "'Inter',-apple-system,sans-serif" }}>
-      <header style={{ position: 'sticky', top: 0, zIndex: 30, backdropFilter: 'blur(14px)', background: 'rgba(247,248,250,0.88)', borderBottom: '1px solid rgba(15,23,42,0.08)' }}>
-        <div style={{ maxWidth: 1240, margin: '0 auto', padding: '14px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: G, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            </div>
-            <span style={{ fontSize: 19, fontWeight: 800, color: '#0a0a0a' }}>Skolr</span>
-          </Link>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <Link href="/courses?level=secondary&sub=Form%204" style={{ padding: '10px 16px', borderRadius: 999, border: '1px solid #dbe0e7', color: '#334155', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Form Four subjects</Link>
-            <Link href={primaryHref} style={{ padding: '10px 16px', borderRadius: 999, background: G, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>{primaryLabel}</Link>
-          </div>
-        </div>
-      </header>
+      <PublicTopNav />
 
       <main style={{ maxWidth: 1240, margin: '0 auto', padding: '32px 24px 80px' }}>
         <div style={{ marginBottom: 20 }}>

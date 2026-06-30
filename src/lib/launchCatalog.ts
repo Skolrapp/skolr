@@ -102,7 +102,6 @@ export const FORM_FOUR_PRICE_TZS = 15000;
 export const getLaunchSubjectBySlug = (slug: string) => FORM_FOUR_SUBJECTS.find((subject) => subject.slug === slug);
 
 export const LAUNCH_NAV_ITEMS = [
-  { label: 'Home', href: '/' },
   { label: 'Subjects', href: '/courses?level=secondary&sub=Form%204' },
   { label: 'Teachers', href: '/instructors' },
   { label: 'Mock Exams', href: '/#mock-exams' },

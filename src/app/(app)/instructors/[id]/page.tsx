@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import TopHeader from '@/components/layout/TopHeader';
+import PublicTopNav from '@/components/public/PublicTopNav';
 import BottomNav from '@/components/layout/BottomNav';
 import SkolrLoader from '@/components/ui/SkolrLoader';
 import SubtleBackButton from '@/components/ui/SubtleBackButton';
@@ -38,7 +39,7 @@ export default function InstructorProfilePage() {
   if (!data?.instructor) {
     return (
       <div style={{ minHeight: '100vh', background: '#fff' }}>
-        {user ? <TopHeader /> : null}
+        {user ? <TopHeader /> : <PublicTopNav />}
         <div style={{ maxWidth: 960, margin: '0 auto', padding: '48px 24px' }}>
           <h1 style={{ fontSize: 28, fontWeight: 900, color: '#0a0a0a', marginBottom: 12 }}>Instructor not found</h1>
           <Link href="/courses" style={{ color: G, fontWeight: 700, textDecoration: 'none' }}>Back to courses</Link>
@@ -52,7 +53,7 @@ export default function InstructorProfilePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff', color: '#0a0a0a', fontFamily: "'Inter',-apple-system,sans-serif" }}>
-      {user ? <TopHeader /> : null}
+      {user ? <TopHeader /> : <PublicTopNav />}
 
       <div style={{ background: 'linear-gradient(135deg,#0f172a,#111827 60%,#0f3d2e)', padding: '40px 24px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>

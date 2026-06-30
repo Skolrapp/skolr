@@ -1,7 +1,5 @@
-import Link from 'next/link';
 import Footer from '@/components/layout/Footer';
-
-const G = '#10B981';
+import PublicTopNav from '@/components/public/PublicTopNav';
 
 type Section = {
   title: string;
@@ -20,23 +18,7 @@ type Props = {
 export default function PublicInfoPage({ eyebrow, title, description, sections, ctaLabel = 'Browse courses', ctaHref = '/courses' }: Props) {
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc', color: '#0a0a0a', fontFamily: "'Inter',-apple-system,sans-serif" }}>
-      <div style={{ borderBottom: '1px solid #e5e7eb', background: '#fff' }}>
-        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: '#0a0a0a' }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(16,185,129,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={G} strokeWidth="2.2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            </div>
-            <div>
-              <p style={{ fontSize: 15, fontWeight: 800, lineHeight: 1 }}>Skolr</p>
-              <p style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>Master Form Four. Pass with Confidence.</p>
-            </div>
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', width: '100%', maxWidth: 280 }}>
-            <Link href="/pricing" style={{ flex: 1, minWidth: 120, padding: '9px 14px', borderRadius: 999, border: '1px solid #d1d5db', color: '#334155', textDecoration: 'none', fontSize: 13, fontWeight: 700, textAlign: 'center' }}>Pricing</Link>
-            <Link href="/register" style={{ flex: 1, minWidth: 140, padding: '9px 14px', borderRadius: 999, background: G, color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700, textAlign: 'center' }}>Start for Free</Link>
-          </div>
-        </div>
-      </div>
+      <PublicTopNav />
 
       <main style={{ maxWidth: 1120, margin: '0 auto', padding: '32px 20px 56px' }}>
         <section style={{ marginBottom: 28, padding: '28px 24px', borderRadius: 24, background: 'linear-gradient(135deg,#0f172a,#10231a)', color: '#fff' }}>

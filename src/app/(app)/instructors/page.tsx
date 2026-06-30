@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import type { Metadata } from 'next';
 import TopHeader from '@/components/layout/TopHeader';
+import PublicTopNav from '@/components/public/PublicTopNav';
 import SubtleBackButton from '@/components/ui/SubtleBackButton';
 import { getCurrentUser } from '@/lib/auth';
 import { FORM_FOUR_CLASS } from '@/lib/launchCatalog';
@@ -80,7 +81,7 @@ export default async function InstructorsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f6f7f5', color: '#111827', fontFamily: "'Inter',-apple-system,sans-serif" }}>
-      {user ? <TopHeader /> : null}
+      {user ? <TopHeader /> : <PublicTopNav />}
 
       <section style={{ background: 'linear-gradient(135deg,#101413 0%,#16251f 54%,#0c7a55 100%)', padding: '34px 24px 52px' }}>
         <div style={{ maxWidth: 1180, margin: '0 auto' }}>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
+import PublicTopNav from '@/components/public/PublicTopNav';
 import SubtleBackButton from '@/components/ui/SubtleBackButton';
 import { validateSession } from '@/lib/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
@@ -133,29 +134,12 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f6f7f5', color: '#111827', fontFamily: "'Inter',-apple-system,sans-serif" }}>
+      <PublicTopNav userRole={session?.user?.role || null} />
       <section style={{ background: 'linear-gradient(135deg,#101413 0%,#16251f 54%,#0c7a55 100%)', padding: '34px 24px 52px' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto' }}>
           <div style={{ marginBottom: 20 }}>
             <SubtleBackButton fallbackHref="/courses?level=secondary&sub=Form%204" label="Back to subjects" light />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 28 }}>
-            <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: '#fff' }}>
-              <div style={{ width: 34, height: 34, borderRadius: 10, background: '#24d366', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
-              </div>
-              <div>
-                <p style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}>Skolr</p>
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.62)' }}>Master Form Four. Pass with Confidence.</p>
-              </div>
-            </Link>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <Link href="/login" style={{ minHeight: 46, padding: '0 18px', borderRadius: 999, textDecoration: 'none', color: '#fff', border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.08)', fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                Log in
-              </Link>
-            </div>
-          </div>
-
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]" style={{ alignItems: 'stretch' }}>
             <div style={{ padding: '10px 0' }}>
               <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.9, color: '#a7f3d0', marginBottom: 10 }}>

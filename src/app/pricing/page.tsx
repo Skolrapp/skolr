@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import PublicTopNav from '@/components/public/PublicTopNav';
 import { FORM_FOUR_PRICE_TZS } from '@/lib/launchCatalog';
 
 const G = '#10B981';
@@ -37,23 +38,7 @@ const FAQ_ITEMS = [
 export default function PricingPage() {
   return (
     <div style={{ fontFamily: "'Inter',-apple-system,sans-serif", background: '#f6f7f5', color: '#0a0a0a', minHeight: '100vh' }}>
-      <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '0 24px' }}>
-        <div style={{ maxWidth: 1240, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, minHeight: 68, flexWrap: 'wrap', padding: '10px 0' }}>
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-            <div style={{ width: 30, height: 30, background: G, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            </div>
-            <div>
-              <span style={{ display: 'block', fontWeight: 800, fontSize: 18, color: '#0a0a0a' }}>Skolr</span>
-              <span style={{ display: 'block', fontSize: 11, color: '#6b7280' }}>Premium Form Four exam preparation</span>
-            </div>
-          </Link>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <Link href="/login" style={{ padding: '10px 16px', fontSize: 14, fontWeight: 700, color: '#0a0a0a', textDecoration: 'none', border: '1px solid #e5e7eb', borderRadius: 999 }}>Log in</Link>
-            <Link href="/register" style={{ padding: '10px 18px', fontSize: 14, fontWeight: 800, color: '#fff', background: G, textDecoration: 'none', borderRadius: 999 }}>Try Skolr Free</Link>
-          </div>
-        </div>
-      </header>
+      <PublicTopNav />
 
       <section style={{ padding: '56px 24px 28px' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto' }}>
