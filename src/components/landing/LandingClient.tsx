@@ -524,13 +524,21 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
             <div>
               <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: TEAL, marginBottom: 8 }}>Teachers</p>
               <h2 style={{ fontSize: 34, lineHeight: 1.1, fontWeight: 900, color: '#121212', marginBottom: 8 }}>Meet the teachers behind the subjects.</h2>
+              {teachers.length > 0 && (
+                <p style={{ fontSize: 14, lineHeight: 1.7, color: '#64706a', margin: 0 }}>
+                  {teachers.length} real instructor{teachers.length === 1 ? '' : 's'} currently visible on the public Form Four journey.
+                </p>
+              )}
             </div>
+            <Link href="/instructors" style={{ fontSize: 13, fontWeight: 800, color: '#047857', textDecoration: 'none' }}>
+              View all instructors
+            </Link>
           </div>
           {teachers.length ? (
             <div className="launch-teacher-marquee">
               <div className="launch-teacher-track">
                 {teacherStrip.map((teacher, index) => (
-                  <div key={`${teacher.id}-${index}`} className="launch-teacher-card" style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 22 }}>
+                  <Link href={`/instructors/${teacher.id}`} key={`${teacher.id}-${index}`} className="launch-teacher-card" style={{ borderRadius: 24, border: '1px solid #e6e8e3', background: '#fff', padding: 22, textDecoration: 'none', color: 'inherit', display: 'block' }}>
                     <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', background: index % 2 === 1 ? '#f0fdf4' : '#f5f7f3', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18, border: '1px solid #d9efe1' }}>
                       {teacher.avatar_url ? (
                         <img src={teacher.avatar_url} alt={teacher.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -552,7 +560,7 @@ export default function LandingClient({ initialCourses, initialBanners }: Landin
                       )}
                     </div>
                     <p style={{ fontSize: 12, fontWeight: 800, color: '#047857', marginTop: 14 }}>{teacher.courseCount} live subject stream{teacher.courseCount === 1 ? '' : 's'}</p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

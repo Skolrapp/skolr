@@ -57,7 +57,7 @@ export default function InstructorProfilePage() {
       <div style={{ background: 'linear-gradient(135deg,#0f172a,#111827 60%,#0f3d2e)', padding: '40px 24px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
           <div style={{ width: '100%', marginBottom: 4 }}>
-            <SubtleBackButton fallbackHref="/courses" label="Back to courses" light />
+            <SubtleBackButton fallbackHref="/instructors" label="Back to instructors" light />
           </div>
           <div style={{ width: 88, height: 88, borderRadius: '50%', background: '#ecfdf5', border: '3px solid rgba(255,255,255,0.2)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {instructor.avatar_url
