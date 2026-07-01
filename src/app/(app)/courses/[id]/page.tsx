@@ -6,7 +6,6 @@ import { validateSession } from '@/lib/auth';
 import { getActiveLearnerFromCookies } from '@/lib/activeLearner';
 import PublicTopNav from '@/components/public/PublicTopNav';
 import VideoPlayer from '@/components/player/VideoPlayer';
-import PublicTopNav from '@/components/public/PublicTopNav';
 import SubtleBackButton from '@/components/ui/SubtleBackButton';
 import { createSupabaseAdmin } from '@/lib/supabase/server';
 import type { Chapter, Course, EducationLevel, User } from '@/types';
