@@ -34,6 +34,9 @@ export default function PublicTopNav({ userRole = null }: Props) {
               {item.label}
             </Link>
           ))}
+        </nav>
+
+        <div className="public-top-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           {userRole ? (
             <Link href={dashboardHref} className="public-top-nav-action" style={{ marginLeft: 8, padding: '10px 16px', fontSize: 14, fontWeight: 800, color: '#fff', background: '#121212', borderRadius: 999, textDecoration: 'none' }}>
               Dashboard
@@ -49,7 +52,7 @@ export default function PublicTopNav({ userRole = null }: Props) {
               </Link>
             </>
           )}
-        </nav>
+        </div>
 
         <style>{`
           @media (max-width: 860px) {
