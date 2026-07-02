@@ -42,15 +42,9 @@ export default function PublicTopNav({ userRole = null }: Props) {
               Dashboard
             </Link>
           ) : (
-            <>
-              <Link href="/login" className="public-top-nav-action" style={{ marginLeft: 8, padding: '10px 16px', fontSize: 14, fontWeight: 800, color: '#111827', border: '1px solid #d9dee7', borderRadius: 999, textDecoration: 'none', background: 'linear-gradient(180deg,#ffffff 0%,#f8fafc 100%)' }}>
-                Log in
-              </Link>
-              <Link href="/register" className="public-top-nav-action public-top-nav-action-primary" style={{ padding: '10px 18px', fontSize: 14, fontWeight: 800, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>
-                <span className="public-top-nav-label-desktop">Try Skolr Free</span>
-                <span className="public-top-nav-label-mobile">Start Free</span>
-              </Link>
-            </>
+            <Link href="/login" className="public-top-nav-action" style={{ marginLeft: 8, padding: '10px 16px', fontSize: 14, fontWeight: 800, color: '#111827', border: '1px solid #d9dee7', borderRadius: 999, textDecoration: 'none', background: 'linear-gradient(180deg,#ffffff 0%,#f8fafc 100%)' }}>
+              Log in
+            </Link>
           )}
         </div>
 
@@ -123,24 +117,6 @@ export default function PublicTopNav({ userRole = null }: Props) {
               min-height: 42px !important;
             }
 
-            .public-top-nav-action-primary {
-              flex: 1 1 0;
-            }
-
-            .public-top-nav-label-desktop {
-              display: none;
-            }
-
-            .public-top-nav-label-mobile {
-              display: inline;
-            }
-          }
-
-          @media (min-width: 641px) {
-            .public-top-nav-label-mobile {
-              display: none;
-            }
-          }
         `}</style>
       </div>
     </header>
