@@ -135,13 +135,13 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
   return (
     <div style={{ minHeight: '100vh', background: '#f6f7f5', color: '#111827', fontFamily: "'Inter',-apple-system,sans-serif" }}>
       <PublicTopNav userRole={session?.user?.role || null} />
-      <section style={{ background: 'linear-gradient(135deg,#101413 0%,#16251f 54%,#0c7a55 100%)', padding: '34px 24px 52px' }}>
+      <section className="subject-page-hero" style={{ background: 'linear-gradient(135deg,#101413 0%,#16251f 54%,#0c7a55 100%)', padding: '34px 24px 52px' }}>
         <div style={{ maxWidth: 1240, margin: '0 auto' }}>
           <div style={{ marginBottom: 20 }}>
             <SubtleBackButton fallbackHref="/courses?level=secondary&sub=Form%204" label="Back to subjects" light />
           </div>
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]" style={{ alignItems: 'stretch' }}>
-            <div style={{ padding: '10px 0' }}>
+          <div className="subject-page-hero-grid grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]" style={{ alignItems: 'stretch' }}>
+            <div className="subject-page-hero-copy" style={{ padding: '10px 0', minWidth: 0 }}>
               <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.9, color: '#a7f3d0', marginBottom: 10 }}>
                 Form Four subject
               </p>
@@ -154,7 +154,7 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
               <p style={{ maxWidth: 640, fontSize: 15, lineHeight: 1.75, color: '#d1fae5', marginBottom: 24 }}>
                 {subject.confidenceLine}
               </p>
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <div className="subject-page-hero-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 <Link href="/register" style={{ minHeight: 52, padding: '0 22px', borderRadius: 16, textDecoration: 'none', color: '#062314', background: '#fff', fontSize: 14, fontWeight: 900, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 18px 34px rgba(0,0,0,0.16)' }}>
                   Try Skolr Free
                 </Link>
@@ -164,11 +164,11 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
               </div>
             </div>
 
-            <div style={{ borderRadius: 28, border: '1px solid rgba(255,255,255,0.12)', background: 'linear-gradient(180deg,rgba(255,255,255,0.14) 0%,rgba(255,255,255,0.06) 100%)', padding: 24, boxShadow: '0 22px 50px rgba(0,0,0,0.16)' }}>
+            <div className="subject-page-overview-card" style={{ borderRadius: 28, border: '1px solid rgba(255,255,255,0.12)', background: 'linear-gradient(180deg,rgba(255,255,255,0.14) 0%,rgba(255,255,255,0.06) 100%)', padding: 24, boxShadow: '0 22px 50px rgba(0,0,0,0.16)', minWidth: 0 }}>
               <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.9, color: '#bbf7d0', marginBottom: 12 }}>
                 Subject overview
               </p>
-              <div className="grid grid-cols-2 gap-3" style={{ marginBottom: 16 }}>
+              <div className="subject-page-stats grid grid-cols-2 gap-3" style={{ marginBottom: 16 }}>
                 <div style={{ padding: 16, borderRadius: 20, background: 'rgba(15,23,42,0.26)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <p style={{ fontSize: 28, fontWeight: 900, color: '#fff' }}>{courses.length}</p>
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.62)' }}>Published lessons</p>
@@ -196,8 +196,8 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
         </div>
       </section>
 
-      <main style={{ maxWidth: 1240, margin: '0 auto', padding: '30px 24px 88px' }}>
-        <section style={{ marginBottom: 24, borderRadius: 28, background: '#ffffff', border: '1px solid #e5e7eb', boxShadow: '0 18px 44px rgba(15,23,42,0.05)', padding: 24 }}>
+      <main className="subject-page-main" style={{ maxWidth: 1240, margin: '0 auto', padding: '30px 24px 88px' }}>
+        <section className="subject-page-section" style={{ marginBottom: 24, borderRadius: 28, background: '#ffffff', border: '1px solid #e5e7eb', boxShadow: '0 18px 44px rgba(15,23,42,0.05)', padding: 24 }}>
           <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 18 }}>
             <div>
               <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: '#04959d', marginBottom: 8 }}>Instructors</p>
@@ -244,7 +244,7 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
           </div>
         </section>
 
-        <section style={{ marginBottom: 24 }}>
+        <section className="subject-page-section" style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
             <div>
               <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: '#04959d', marginBottom: 8 }}>Lessons</p>
@@ -298,7 +298,7 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
           </div>
         </section>
 
-        <section style={{ borderRadius: 28, background: 'linear-gradient(135deg,#ffffff 0%,#f5faf8 100%)', border: '1px solid #deebe4', boxShadow: '0 16px 34px rgba(15,23,42,0.04)', padding: 24 }}>
+        <section className="subject-page-section" style={{ borderRadius: 28, background: 'linear-gradient(135deg,#ffffff 0%,#f5faf8 100%)', border: '1px solid #deebe4', boxShadow: '0 16px 34px rgba(15,23,42,0.04)', padding: 24 }}>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]" style={{ alignItems: 'center' }}>
             <div>
               <p style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, color: '#04959d', marginBottom: 8 }}>Keep browsing</p>
@@ -322,6 +322,58 @@ export default async function SubjectPage({ params }: SubjectPageProps) {
           </div>
         </section>
       </main>
+
+      <style>{`
+        @media (max-width: 900px) {
+          .subject-page-hero {
+            padding: 28px 20px 40px !important;
+          }
+
+          .subject-page-main {
+            padding: 24px 20px 72px !important;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .subject-page-hero-grid,
+          .subject-page-stats {
+            grid-template-columns: 1fr !important;
+          }
+
+          .subject-page-hero-copy h1 {
+            line-height: 1.04 !important;
+          }
+
+          .subject-page-hero-actions {
+            flex-direction: column;
+          }
+
+          .subject-page-hero-actions a {
+            width: 100%;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .subject-page-hero {
+            padding: 24px 16px 32px !important;
+          }
+
+          .subject-page-main {
+            padding: 20px 16px 64px !important;
+          }
+
+          .subject-page-section,
+          .subject-page-overview-card {
+            padding: 18px !important;
+            border-radius: 22px !important;
+          }
+
+          .subject-page-hero-copy p,
+          .subject-page-section p {
+            max-width: 100% !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
