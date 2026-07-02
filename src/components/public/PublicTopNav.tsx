@@ -44,7 +44,8 @@ export default function PublicTopNav({ userRole = null }: Props) {
                 Log in
               </Link>
               <Link href="/register" className="public-top-nav-action public-top-nav-action-primary" style={{ padding: '10px 18px', fontSize: 14, fontWeight: 800, color: '#fff', background: G, borderRadius: 999, textDecoration: 'none' }}>
-                Try Skolr Free
+                <span className="public-top-nav-label-desktop">Try Skolr Free</span>
+                <span className="public-top-nav-label-mobile">Start Free</span>
               </Link>
             </>
           )}
@@ -113,10 +114,28 @@ export default function PublicTopNav({ userRole = null }: Props) {
               min-width: 0;
               text-align: center;
               margin-left: 0 !important;
+              white-space: nowrap;
+              line-height: 1 !important;
+              font-size: 12px !important;
+              min-height: 42px !important;
             }
 
             .public-top-nav-action-primary {
-              flex: 1.2 1 0;
+              flex: 1 1 0;
+            }
+
+            .public-top-nav-label-desktop {
+              display: none;
+            }
+
+            .public-top-nav-label-mobile {
+              display: inline;
+            }
+          }
+
+          @media (min-width: 641px) {
+            .public-top-nav-label-mobile {
+              display: none;
             }
           }
         `}</style>
